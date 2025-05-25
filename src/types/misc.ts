@@ -1,6 +1,7 @@
 import type { FieldType } from "@/types/tableField.ts";
 
 export interface UserSettings {
+    // Tables
     defaultPrimaryKey: FieldType;
 
     // Autosave
@@ -9,6 +10,9 @@ export interface UserSettings {
 
     // Visual
     relationLineDisplay: 'ortho' | 'direct';
+
+    // Functional
+    dragCanvasButton: 'middle' | 'left';
 }
 
 export const defaultSettings: UserSettings = {
@@ -18,4 +22,6 @@ export const defaultSettings: UserSettings = {
     autosaveIntervalMinutes: 5,
 
     relationLineDisplay: 'ortho',
+
+    dragCanvasButton: 'middle',
 }

@@ -1,4 +1,4 @@
-export type userAction =
+export type UserAction =
     'table' | // Create new table
     'oto' | // Create One-to-One relation
     'otm' | // Create One-to-Many relation

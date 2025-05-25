@@ -7,6 +7,7 @@
       <Tooltip v-for="(item, itemIndex) in section.items"
                :key="itemIndex"
                :text="item.hint"
+               :button="item.button"
       >
         <div
             class="p-2 hover:opacity-50 text-lycheeIce cursor-pointer relative"
@@ -50,41 +51,47 @@ const actionStore = useActionsStore();
 interface MenuItem {
   pic: IconDefinition;
   hint: string;
+  button?: string;
   action: () => void;
 }
 
 const functionsMenuTopItems: readonly MenuItem[] = [
   {
     pic: faTable,
-    hint: 'Create table (T)',
+    hint: 'Create table',
+    button: 'T',
     action: () => {
       actionStore.setAction('table');
     }
   },
   {
     pic: faArrowRight,
-    hint: 'One-to-One relation (B)',
+    hint: 'One-to-One relation',
+    button: 'B',
     action: () => {
       actionStore.setAction('oto');
     }
   },
   {
     pic: faArrowsSplitUpAndLeft,
-    hint: 'One-to-Many relation (N)',
+    hint: 'One-to-Many relation',
+    button: 'N',
     action: () => {
       actionStore.setAction('otm');
     }
   },
   {
     pic: faArrowsUpDownLeftRight,
-    hint: 'Many-to-Many relation (M)',
+    hint: 'Many-to-Many relation',
+    button: 'M',
     action: () => {
       actionStore.setAction('mtm');
     }
   },
   {
     pic: faComment,
-    hint: 'Comment area (C)',
+    hint: 'Comment area',
+    button: 'C',
     action: () => {
       actionStore.setAction('comment');
     }

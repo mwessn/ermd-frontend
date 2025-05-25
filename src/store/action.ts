@@ -1,11 +1,11 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
-import type { userAction } from "@/types/actions.ts";
+import type { UserAction } from "@/types/actions.ts";
 
 export const useActionsStore = defineStore('actions', () => {
-    const currentAction = ref<userAction>(undefined);
+    const currentAction = ref<UserAction>(undefined);
 
-    const setAction = (val: userAction) => {
+    const setAction = (val: UserAction) => {
         currentAction.value = val;
     }
 
