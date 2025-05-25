@@ -38,6 +38,7 @@ import { useActionsStore } from "@/store/action.ts";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
 import { appConfig } from "@/app.config.ts";
 import Tooltip from "@/components/core/Tooltip.vue";
+import { useDesignStore } from "@/store/design.ts";
 
 defineProps({
   visible: {
@@ -47,6 +48,7 @@ defineProps({
 });
 
 const actionStore = useActionsStore();
+const designStore = useDesignStore();
 
 interface MenuItem {
   pic: IconDefinition;
@@ -103,7 +105,8 @@ const functionsMenuMiddleItems: readonly MenuItem[] = [
     pic: faFile,
     hint: 'New project',
     action: () => {
-      //
+      // TODO ask first
+      designStore.createNewProject();
     }
   },
   {

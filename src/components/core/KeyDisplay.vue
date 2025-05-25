@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-accentDarkGray border-2 border-backgroundDark text-accentGray rounded text-sm w-6 h-6">
+  <div class="bg-accentDarkGray border-2 border-backgroundDark text-accentGray rounded text-sm w-6 h-6 flex justify-center items-center">
     {{ text }}
   </div>
 </template>

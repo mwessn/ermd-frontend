@@ -1,5 +1,5 @@
 <template>
-  <div class="absolute top-0 w-full h-12 bg-headerBlack flex justify-between items-center px-4 text-monolithicCyanTsunami">
+  <div class="absolute top-0 w-full h-12 bg-headerBlack flex justify-between items-center px-4 text-monolithicCyanTsunami z-50">
     <div class="cursor-pointer" @click="emit('menuToggle', 'functions')">
       <FontAwesomeIcon :icon="faBars" />
     </div>

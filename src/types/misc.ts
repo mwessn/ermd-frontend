@@ -3,6 +3,8 @@ import type { FieldType } from "@/types/tableField.ts";
 export interface UserSettings {
     // Tables
     defaultPrimaryKey: FieldType;
+    defaultRowType: FieldType;
+    defaultNotNull: boolean;
 
     // Autosave
     autosave: boolean;
@@ -17,6 +19,8 @@ export interface UserSettings {
 
 export const defaultSettings: UserSettings = {
     defaultPrimaryKey: 'bigint',
+    defaultRowType: 'int',
+    defaultNotNull: false,
 
     autosave: true,
     autosaveIntervalMinutes: 5,

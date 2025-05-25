@@ -2,7 +2,7 @@
   <div class="relative group">
     <slot />
 
-    <span class="absolute top-0 left-10 p-2 w-max
+    <div class="absolute bottom-0 left-10 p-2 w-max
      cursor-default select-none
    bg-accentGray text-accentDarkGray rounded-sm
      hidden group-hover:flex gap-2 items-center"
@@ -11,7 +11,7 @@
         {{ $t(text) }}
       </div>
       <KeyDisplay v-if="button" :text="button" />
-    </span>
+    </div>
   </div>
 </template>
 

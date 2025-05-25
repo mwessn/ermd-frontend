@@ -1,61 +1,73 @@
 <template>
   <div
-      class="h-full w-full relative bg-grid"
-      :style="{ cursor: cursorStyle, backgroundPosition: bgPos }"
-      @mousedown="onMouseDown"
-      @mouseup="onMouseUp"
+      class="h-full w-full relative bg-grid overflow-hidden"
+      :style="{ cursor: cursorStyle, backgroundPosition: bgPos, backgroundSize: bgSize }"
+      @mousedown.left="onMouseDown"
+      @contextmenu.prevent="setAction(undefined)"
+      @mouseup.left="onMouseUp"
       @mousemove="onMouseMove"
+      @mouseleave="onMouseUp"
+      @wheel.prevent="onScroll"
   >
-    <div class="p-12 bg-textColor absolute" :style="{ translate: bgPos }"></div>
+    <div class="w-full h-full relative" :style="{ scale: scaleFactor, translate: bgPos }">
+      <div
+          v-for="table in designStore.tables"
+          class="bg-textColor absolute"
+          :key="table.id"
+          :style="{ top: table.posY + 'px', left: table.posX + 'px' }"
+      >
+        <div class="p-12" />
+      </div>
+    </div>
+
+    <div
+        class="absolute bottom-0 left-1/2 m-2 bg-accentGray rounded w-7 h-7 flex items-center justify-center text-accentDarkGray ml-14"
+        @mouseup.left.prevent="centerView(0, 0)"
+    >
+      <Tooltip text="Center view" button="X">
+        <FontAwesomeIcon :icon="faArrowsToDot" />
+      </Tooltip>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useActionsStore } from "@/store/action.ts";
-import { computed, ref } from "vue";
+import { computed } from "vue";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+import { faArrowsToDot } from "@fortawesome/free-solid-svg-icons";
+import Tooltip from "@/components/core/Tooltip.vue";
+import { useDesignCanvas } from "@/components/designer/scripts/useDesignCanvas.ts";
+import { useKeyboardShortcuts } from "@/components/designer/scripts/useKeyboardShortcuts.ts";
+import { useDesignStore } from "@/store/design.ts";
 
 const actionsStore = useActionsStore();
+const designStore = useDesignStore();
 
 const cursorStyle = computed(() => {
   const cursor = isDragging.value ? 'move' : actionsStore.currentAction ?? 'default';
-  return `url(/cursors/${cursor}.cur), auto`;
+  return `url(/cursors/${cursor}.cur) 0 0, auto`;
 });
 
-interface CursorPos {
-  x: number;
-  y: number;
-}
+const baseBgSize = 50;
 
-const isDragging = computed(() => lastClickPos.value && lastClickPos.value != currentMousePos.value);
-const bgPos = computed(() => `${translateOffsetX.value}px ${translateOffsetY.value}px`);
+const bgSize = computed(() => `${baseBgSize * scaleFactor.value}px ${baseBgSize * scaleFactor.value}px`)
 
-const lastClickPos = ref<CursorPos | undefined>(undefined);
-const currentMousePos = ref<CursorPos | undefined>(undefined);
+const {
+  scaleFactor,
 
-const translateOffsetX = ref<number>(0);
-const translateOffsetY = ref<number>(0);
+  isDragging,
+  bgPos,
 
-const onMouseDown = (evt: MouseEvent) => {
-  console.log(evt.x, evt.y);
-  lastClickPos.value = { x: evt.clientX, y: evt.clientY };
-  currentMousePos.value = lastClickPos.value;
-}
+  onMouseDown,
+  onMouseUp,
+  onMouseMove,
+  onScroll,
 
-const onMouseUp = () => {
-  lastClickPos.value = undefined;
-}
+  centerView,
+} = useDesignCanvas();
 
-const onMouseMove = (evt: MouseEvent) => {
-  if (!lastClickPos.value) return;
-
-  const deltaX = evt.clientX - currentMousePos.value!.x;
-  const deltaY = evt.clientY - currentMousePos.value!.y;
-
-  translateOffsetX.value += deltaX;
-  translateOffsetY.value += deltaY;
-
-  currentMousePos.value = { x: evt.clientX, y: evt.clientY };
-}
+const { setAction } = useKeyboardShortcuts(centerView);
 </script>
 
 <style scoped>
