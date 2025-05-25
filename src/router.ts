@@ -1,8 +1,8 @@
-import Main from "@/views/Main.vue";
+import Designer from "@/views/Designer.vue";
 import { createMemoryHistory, createRouter } from "vue-router";
 
 const routes = [
-    { path: '/', component: Main, meta: { title: 'Main' } },
+    { path: '/', component: Designer, meta: { title: 'Designer' } },
 ];
 
 export const router = createRouter({

@@ -3,7 +3,9 @@
     <Mobile />
   </template>
   <template v-else>
-    <router-view />
+    <AppLayout>
+      <router-view />
+    </AppLayout>
   </template>
 </template>
 
@@ -13,6 +15,7 @@ import { useRoute } from "vue-router";
 import { appConfig } from "@/app.config.ts";
 import { useI18n } from "vue-i18n";
 import Mobile from "@/views/Mobile.vue";
+import AppLayout from "@/components/layout/AppLayout.vue";
 
 const i18n = useI18n();
 const route = useRoute();
