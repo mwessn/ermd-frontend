@@ -2,7 +2,7 @@
   <div class="relative group">
     <slot />
 
-    <div class="absolute bottom-0 left-10 p-2 w-max
+    <div class="absolute bottom-0 left-full ml-2 p-2 w-max
      cursor-default select-none
    bg-accentGray text-accentDarkGray rounded-sm
      hidden group-hover:flex gap-2 items-center"

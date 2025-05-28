@@ -29,6 +29,10 @@ export function useDesignCanvas() {
         `${ translateOffsetX.value }px ${ translateOffsetY.value }px`
     );
 
+    const translatePos = computed(() =>
+        `${ translateOffsetX.value }px, ${ translateOffsetY.value }px`
+    );
+
     const onMouseDown = (evt: MouseEvent) => {
         switch (actionStore.currentAction) {
             case undefined: {
@@ -38,9 +42,17 @@ export function useDesignCanvas() {
                 break;
             }
             case 'table': {
-                const offset = 40 / scaleFactor.value; // idk why this happens, but by default tables are created with a significant offset
-                const posX = evt.clientX - translateOffsetX.value - offset;
-                const posY = evt.clientY - translateOffsetY.value - offset;
+                const x = evt.clientX;
+                const y = evt.clientY;
+
+                // console.log('client', evt.clientX, evt.clientY)
+                // console.log('offset', evt.offsetX, evt.offsetY)
+                // console.log('page', evt.pageX, evt.pageY)
+
+                // Apply inverse transformation
+                const posX = x - translateOffsetX.value;
+                const posY = y - translateOffsetY.value;
+
 
                 designStore.addTable(posX, posY);
                 break;
@@ -57,21 +69,20 @@ export function useDesignCanvas() {
     const onMouseMove = (evt: MouseEvent) => {
         if (!lastClickPos.value || !currentMousePos.value) return;
 
-        const deltaX = evt.clientX - currentMousePos.value.x;
-        const deltaY = evt.clientY - currentMousePos.value.y;
-
-        translateOffsetX.value += deltaX;
-        translateOffsetY.value += deltaY;
+        translateOffsetX.value += evt.movementX;
+        translateOffsetY.value += evt.movementY;
 
         currentMousePos.value = { x: evt.clientX, y: evt.clientY };
     };
 
     const onScroll = (evt: WheelEvent) => {
-        const zoomStep = 0.1;
+        // Disabled until better times
 
-        const direction = evt.deltaY < 0 ? 1 : -1;
-
-        scaleFactor.value = clamp(scaleFactor.value + direction * zoomStep, 0.5, 1.5);
+        // const zoomStep = 0.02;
+        //
+        // const direction = evt.deltaY < 0 ? 1 : -1;
+        //
+        // scaleFactor.value = clamp(scaleFactor.value + direction * zoomStep, 0.2, 1.5);
     }
 
     const centerView = (x = 0, y = 0) => {
@@ -88,6 +99,7 @@ export function useDesignCanvas() {
 
         isDragging,
         bgPos,
+        translatePos,
 
         onMouseDown,
         onMouseUp,

@@ -1,6 +1,6 @@
 <template>
   <div
-      class="w-full h-full bg-backgroundDark pt-12"
+      class="full bg-backgroundDark"
   >
     <DesignCanvas />
   </div>

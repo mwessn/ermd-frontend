@@ -1,6 +1,6 @@
 <template>
   <div
-      class="h-full w-full relative bg-grid overflow-hidden"
+      class="full relative bg-grid overflow-hidden"
       :style="{ cursor: cursorStyle, backgroundPosition: bgPos, backgroundSize: bgSize }"
       @mousedown.left="onMouseDown"
       @contextmenu.prevent="setAction(undefined)"
@@ -8,8 +8,9 @@
       @mousemove="onMouseMove"
       @mouseleave="onMouseUp"
       @wheel.prevent="onScroll"
+      ref="canvasContainer"
   >
-    <div class="w-full h-full relative" :style="{ scale: scaleFactor, translate: bgPos }">
+    <div class="full relative" :style="{ transform: `translate(${ translatePos })` }">
       <div
           v-for="table in designStore.tables"
           class="bg-textColor absolute"
@@ -21,11 +22,13 @@
     </div>
 
     <div
-        class="absolute bottom-0 left-1/2 m-2 bg-accentGray rounded w-7 h-7 flex items-center justify-center text-accentDarkGray ml-14"
+        class="absolute bottom-0 left-1/2 m-2 bg-accentGray rounded w-7 h-7  text-accentDarkGray ml-14"
         @mouseup.left.prevent="centerView(0, 0)"
     >
-      <Tooltip text="Center view" button="X">
-        <FontAwesomeIcon :icon="faArrowsToDot" />
+      <Tooltip text="Center view" button="X" class="full">
+        <div class="flex items-center justify-center full">
+          <FontAwesomeIcon :icon="faArrowsToDot" />
+        </div>
       </Tooltip>
     </div>
   </div>
@@ -51,13 +54,14 @@ const cursorStyle = computed(() => {
 
 const baseBgSize = 50;
 
-const bgSize = computed(() => `${baseBgSize * scaleFactor.value}px ${baseBgSize * scaleFactor.value}px`)
+const bgSize = computed(() => `${ baseBgSize * scaleFactor.value }px ${ baseBgSize * scaleFactor.value }px`)
 
 const {
   scaleFactor,
 
   isDragging,
   bgPos,
+  translatePos,
 
   onMouseDown,
   onMouseUp,
@@ -69,7 +73,3 @@ const {
 
 const { setAction } = useKeyboardShortcuts(centerView);
 </script>
-
-<style scoped>
-
-</style>

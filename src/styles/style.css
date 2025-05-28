@@ -53,3 +53,8 @@ Tailwind
           linear-gradient(to right, var(--color-accentDarkGray) 1px, transparent 1px),
           linear-gradient(to bottom, var(--color-accentDarkGray) 1px, transparent 1px);
 }
+
+.full {
+  width: 100%;
+  height: 100%;
+}
