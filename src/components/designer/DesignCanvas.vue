@@ -10,7 +10,7 @@
       @wheel.prevent="onScroll"
       ref="canvasContainer"
   >
-    <div class="full relative" :style="{ transform: `translate(${ translatePos })` }">
+    <div class="full relative origin-top-left" :style="{ scale: scaleFactor, transform: `translate(${ translatePos })` }">
       <div
           v-for="table in designStore.tables"
           class="bg-textColor absolute"

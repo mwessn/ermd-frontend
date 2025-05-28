@@ -13,22 +13,28 @@ export function useDesignCanvas() {
     const actionStore = useActionsStore();
     const designStore = useDesignStore();
 
+    // How much the canvas is dragged from its center
     const translateOffsetX = ref(0);
     const translateOffsetY = ref(0);
 
+    // Canvas zoom
     const scaleFactor = ref<number>(1);
 
+    // Drag detection
     const lastClickPos = ref<CursorPos | undefined>();
     const currentMousePos = ref<CursorPos | undefined>();
+
 
     const isDragging = computed(() =>
         !!lastClickPos.value && lastClickPos.value != currentMousePos.value
     );
 
+    // background-position property
     const bgPos = computed(() =>
         `${ translateOffsetX.value }px ${ translateOffsetY.value }px`
     );
 
+    // transform translate property
     const translatePos = computed(() =>
         `${ translateOffsetX.value }px, ${ translateOffsetY.value }px`
     );
@@ -36,23 +42,16 @@ export function useDesignCanvas() {
     const onMouseDown = (evt: MouseEvent) => {
         switch (actionStore.currentAction) {
             case undefined: {
+                // Start tracking drag
                 const pos = { x: evt.clientX, y: evt.clientY };
                 lastClickPos.value = pos;
                 currentMousePos.value = pos;
                 break;
             }
             case 'table': {
-                const x = evt.clientX;
-                const y = evt.clientY;
-
-                // console.log('client', evt.clientX, evt.clientY)
-                // console.log('offset', evt.offsetX, evt.offsetY)
-                // console.log('page', evt.pageX, evt.pageY)
-
-                // Apply inverse transformation
-                const posX = x - translateOffsetX.value;
-                const posY = y - translateOffsetY.value;
-
+                // Create a table
+                const posX = (evt.clientX) / scaleFactor.value - translateOffsetX.value;
+                const posY = (evt.clientY) / scaleFactor.value - translateOffsetY.value;
 
                 designStore.addTable(posX, posY);
                 break;
@@ -63,12 +62,15 @@ export function useDesignCanvas() {
     };
 
     const onMouseUp = () => {
+        // Stop tracking drag
         lastClickPos.value = undefined;
     };
 
     const onMouseMove = (evt: MouseEvent) => {
+        // If not dragging return
         if (!lastClickPos.value || !currentMousePos.value) return;
 
+        // Else store drag delta
         translateOffsetX.value += evt.movementX;
         translateOffsetY.value += evt.movementY;
 
@@ -76,13 +78,21 @@ export function useDesignCanvas() {
     };
 
     const onScroll = (evt: WheelEvent) => {
-        // Disabled until better times
+        const zoomStep = 0.02;
 
-        // const zoomStep = 0.02;
-        //
-        // const direction = evt.deltaY < 0 ? 1 : -1;
-        //
-        // scaleFactor.value = clamp(scaleFactor.value + direction * zoomStep, 0.2, 1.5);
+        const direction = evt.deltaY < 0 ? 1 : -1;
+
+        // Adjust transform so it zooms to the mouse cursor position
+        const oldScale = scaleFactor.value;
+        const newScale = clamp(oldScale + direction * zoomStep, 0.2, 1.5);
+
+        const rect = (evt.currentTarget as HTMLElement).getBoundingClientRect();
+        const x = evt.clientX - rect.left;
+        const y = evt.clientY - rect.top;
+        translateOffsetX.value -= (x/oldScale - x/newScale);
+        translateOffsetY.value -= (y/oldScale - y/newScale);
+
+        scaleFactor.value = newScale;
     }
 
     const centerView = (x = 0, y = 0) => {
