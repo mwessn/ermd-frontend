@@ -70,11 +70,15 @@ export function useDesignCanvas() {
         // If not dragging return
         if (!lastClickPos.value || !currentMousePos.value) return;
 
-        // Else store drag delta
-        translateOffsetX.value += evt.movementX;
-        translateOffsetY.value += evt.movementY;
-
-        currentMousePos.value = { x: evt.clientX, y: evt.clientY };
+        // If no table selected, drag canvas
+        if (designStore.selectedTable == undefined) {
+            translateOffsetX.value += evt.movementX;
+            translateOffsetY.value += evt.movementY;
+            currentMousePos.value = { x: evt.clientX, y: evt.clientY };
+        } else {
+            // Else move the table
+            designStore.moveSelectedTable(evt.movementX, evt.movementY);
+        }
     };
 
     const onScroll = (evt: WheelEvent) => {
@@ -82,7 +86,7 @@ export function useDesignCanvas() {
 
         const direction = evt.deltaY < 0 ? 1 : -1;
 
-        // Adjust transform so it zooms to the mouse cursor position
+        // Adjust transform so it zooms to the cursor position
         const oldScale = scaleFactor.value;
         const newScale = clamp(oldScale + direction * zoomStep, 0.2, 1.5);
 

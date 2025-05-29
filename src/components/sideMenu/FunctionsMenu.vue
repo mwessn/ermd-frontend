@@ -8,10 +8,13 @@
                :key="itemIndex"
                :text="item.hint"
                :button="item.button"
+               :aria-label="item.hint"
+               tabindex="1"
+               @keyup.enter="execAction(item.action)"
       >
         <div
             class="p-2 hover:opacity-50 text-lycheeIce cursor-pointer relative"
-            @click="item.action"
+            @click="execAction(item.action)"
         >
           <FontAwesomeIcon :icon="item.pic" />
         </div>
@@ -39,6 +42,7 @@ import { faGithub } from "@fortawesome/free-brands-svg-icons";
 import { appConfig } from "@/app.config.ts";
 import Tooltip from "@/components/core/Tooltip.vue";
 import { useDesignStore } from "@/store/design.ts";
+import { resetFocus } from "@/utils/utils.ts";
 
 defineProps({
   visible: {
@@ -55,6 +59,11 @@ interface MenuItem {
   hint: string;
   button?: string;
   action: () => void;
+}
+
+const execAction = (action: () => void) => {
+  action();
+  resetFocus();
 }
 
 const functionsMenuTopItems: readonly MenuItem[] = [

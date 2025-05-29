@@ -1,9 +1,5 @@
 <template>
-  <div
-      class="full bg-backgroundDark"
-  >
-    <DesignCanvas />
-  </div>
+  <DesignCanvas />
 </template>
 
 <script setup lang="ts">

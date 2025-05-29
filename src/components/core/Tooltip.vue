@@ -5,7 +5,7 @@
     <div class="absolute bottom-0 left-full ml-2 p-2 w-max
      cursor-default select-none
    bg-accentGray text-accentDarkGray rounded-sm
-     hidden group-hover:flex gap-2 items-center"
+     hidden group-hover:flex group-focus:flex gap-2 items-center"
     >
       <div>
         {{ $t(text) }}

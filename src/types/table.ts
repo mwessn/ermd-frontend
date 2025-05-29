@@ -7,10 +7,12 @@ export interface TableRow {
     name: string,
     type: FieldType,
     size: string | undefined,
+
     primaryKey: boolean,
     notNull: boolean,
+    unique: boolean,
+    autoIncrement: boolean,
     defaultValue: string | undefined,
-
 }
 
 export const newTableRow: TableRow = {
@@ -18,8 +20,11 @@ export const newTableRow: TableRow = {
     name: "",
     type: defaultSettings.defaultRowType,
     size: getDefaultForType(defaultSettings.defaultRowType),
+
     primaryKey: false,
     notNull: defaultSettings.defaultNotNull,
+    unique: false,
+    autoIncrement: false,
     defaultValue: undefined
 }
 
@@ -34,15 +39,18 @@ export interface Table {
 
 export const newTable: Table = {
     id: generateId('table'),
-    name: "",
+    name: "TableName",
     rows: [
         {
             id: generateId('row'),
             type: defaultSettings.defaultPrimaryKey,
             name: "id",
             size: getDefaultForType(defaultSettings.defaultPrimaryKey),
+
             primaryKey: true,
             notNull: true,
+            unique: true,
+            autoIncrement: false,
             defaultValue: undefined
         }
     ],
