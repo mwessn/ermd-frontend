@@ -2,6 +2,7 @@
   <div
       class="full relative bg-grid overflow-hidden"
       :style="{ cursor: cursorStyle, backgroundPosition: bgPos, backgroundSize: bgSize }"
+      :class="{ 'select-none' : isDragging }"
       @mousedown.left="onMouseDown"
       @contextmenu.prevent="setAction(undefined)"
       @mouseup.left="onMouseUp"

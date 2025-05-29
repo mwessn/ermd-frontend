@@ -74,11 +74,12 @@ export function useDesignCanvas() {
         if (designStore.selectedTable == undefined) {
             translateOffsetX.value += evt.movementX;
             translateOffsetY.value += evt.movementY;
-            currentMousePos.value = { x: evt.clientX, y: evt.clientY };
         } else {
             // Else move the table
-            designStore.moveSelectedTable(evt.movementX, evt.movementY);
+            designStore.moveSelectedTable(evt.movementX / scaleFactor.value, evt.movementY / scaleFactor.value);
         }
+
+        currentMousePos.value = { x: evt.clientX, y: evt.clientY };
     };
 
     const onScroll = (evt: WheelEvent) => {
