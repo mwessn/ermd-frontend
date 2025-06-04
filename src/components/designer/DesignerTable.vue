@@ -17,7 +17,8 @@
         >
       </div>
       <div class="w-full p-4">
-
+        {{ table.posX }},
+        {{ table.posY }}
       </div>
     </div>
 

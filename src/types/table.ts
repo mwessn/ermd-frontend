@@ -1,6 +1,7 @@
 import { type FieldType, getDefaultForType } from "@/types/tableField.ts";
 import { generateId } from "@/utils/utils.ts";
 import { defaultSettings } from "@/types/misc.ts";
+import { appConfig } from "@/app.config.ts"
 
 export interface TableRow {
     id: string,
@@ -39,7 +40,7 @@ export interface Table {
 
 export const newTable: Table = {
     id: generateId('table'),
-    name: "TableName",
+    name: appConfig.defaultTableName,
     rows: [
         {
             id: generateId('row'),

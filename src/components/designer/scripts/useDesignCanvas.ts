@@ -24,6 +24,9 @@ export function useDesignCanvas() {
     const lastClickPos = ref<CursorPos | undefined>();
     const currentMousePos = ref<CursorPos | undefined>();
 
+    // (Buffer variable) initial position of selected table before drag
+    const lastSelectedPos = ref<CursorPos| undefined>(undefined);
+
 
     const isDragging = computed(() =>
         !!lastClickPos.value && lastClickPos.value != currentMousePos.value
@@ -46,6 +49,7 @@ export function useDesignCanvas() {
                 const pos = { x: evt.clientX, y: evt.clientY };
                 lastClickPos.value = pos;
                 currentMousePos.value = pos;
+
                 break;
             }
             case 'table': {
@@ -62,8 +66,16 @@ export function useDesignCanvas() {
     };
 
     const onMouseUp = () => {
-        // Stop tracking drag
-        lastClickPos.value = undefined;
+        if (lastClickPos.value) {
+            // Stop tracking drag
+            lastClickPos.value = undefined;
+
+            // If moved a table, add buffer entry
+            if (lastSelectedPos.value) {
+                designStore.bufferLogTableMove(lastSelectedPos.value);
+                lastSelectedPos.value = undefined;
+            }
+        }
     };
 
     const onMouseMove = (evt: MouseEvent) => {
@@ -76,6 +88,15 @@ export function useDesignCanvas() {
             translateOffsetY.value += evt.movementY;
         } else {
             // Else move the table
+
+            // If just started moving, write initial position to buffer
+            if (!lastSelectedPos.value) {
+                lastSelectedPos.value = {
+                    x: designStore.selectedTable.posX,
+                    y: designStore.selectedTable.posY
+                }
+            }
+
             designStore.moveSelectedTable(evt.movementX / scaleFactor.value, evt.movementY / scaleFactor.value);
         }
 

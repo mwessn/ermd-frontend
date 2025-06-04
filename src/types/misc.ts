@@ -15,6 +15,7 @@ export interface UserSettings {
 
     // Functional
     dragCanvasButton: 'middle' | 'left';
+    undoActionBufferSize: number;
 }
 
 export const defaultSettings: UserSettings = {
@@ -28,4 +29,5 @@ export const defaultSettings: UserSettings = {
     relationLineDisplay: 'ortho',
 
     dragCanvasButton: 'middle',
+    undoActionBufferSize: 20,
 }

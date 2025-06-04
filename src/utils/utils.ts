@@ -1,4 +1,4 @@
-type IdScope = 'row' | 'table' | 'relation' | 'comment';
+type IdScope = 'row' | 'table' | 'relation' | 'commentArea';
 
 export function generateId(scope: IdScope): string {
     let id: string;
