@@ -6,12 +6,13 @@
       @focus="selectTable(table)"
       @focusout="selectTable()"
   >
-    <div class="w-full h-4 bg-accentDarkGray radial-accentGray z-20" />
+<!--    <div class="w-full h-4 bg-accentDarkGray radial-accentGray z-20" />-->
     <div class="z-20 bg-accentGray rounded-b-lg">
       <div class="w-full border-b border-b-accentDarkGray" @mousedown.left.stop>
         <input
             v-model="table.name"
             class="w-full p-2"
+            :class="{ 'bg-red-400': isDuplicate }"
             type="text"
             tabindex="-1"
         >
@@ -30,13 +31,17 @@
 </template>
 
 <script setup lang="ts">
-import type { PropType } from "vue";
+import { type PropType } from "vue";
 import type { Table } from "@/types/table.ts";
 import { useDesignStore } from "@/store/design.ts";
 
 defineProps({
   table: {
     type: Object as PropType<Table>,
+    required: true
+  },
+  isDuplicate: {
+    type: Boolean,
     required: true
   }
 });

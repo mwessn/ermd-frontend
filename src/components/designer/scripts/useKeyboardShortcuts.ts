@@ -16,70 +16,73 @@ export function useKeyboardShortcuts(centerView: () => void) {
     };
 
     const onKeydown = (evt: KeyboardEvent) => {
-        const key = evt.key.toLowerCase();
-        if (!evt.ctrlKey) {
-            switch (key) {
-                case 'escape':
-                    // Esc - reset actions and focus
-                    setAction(undefined);
-                    resetFocus();
-                    break;
-                case 't':
-                    // T = table creation mode
-                    setAction('table');
-                    break;
-                case 'b':
-                    // B - one-to-one relation creation mode
-                    setAction('oto');
-                    break;
-                case 'n':
-                    // N - one-to-many relation creation mode
-                    setAction('otm');
-                    break;
-                case 'm':
-                    // M - many-to-many relation creation mode
-                    setAction('mtm');
-                    break;
-                case 'c':
-                    // C - comment area creation mode
-                    setAction('commentArea');
-                    break;
-                case 'x':
-                    // X - center canvas view
-                    centerView();
-                    break;
-                case 'delete':
-                    // Del - delete selected entity
-                    designStore.deleteSelectedTable();
-                    resetFocus();
-                    break;
-            }
-        } else {
-            if (evt.shiftKey && key == 'z') {
-                // Ctrl + Shift + Z = redo
-                evt.preventDefault();
-                bufferStore.redo();
-                return;
-            } else {
+        // If target is an input, ignore shortcuts
+        if (!(evt.target instanceof HTMLInputElement)) {
+            const key = evt.key.toLowerCase();
+            if (!evt.ctrlKey) {
                 switch (key) {
+                    case 'escape':
+                        // Esc - reset actions and focus
+                        setAction(undefined);
+                        resetFocus();
+                        break;
+                    case 't':
+                        // T = table creation mode
+                        setAction('table');
+                        break;
+                    case 'b':
+                        // B - one-to-one relation creation mode
+                        setAction('oto');
+                        break;
+                    case 'n':
+                        // N - one-to-many relation creation mode
+                        setAction('otm');
+                        break;
+                    case 'm':
+                        // M - many-to-many relation creation mode
+                        setAction('mtm');
+                        break;
                     case 'c':
-                        // Ctrl + C = copy
-                        console.log('copy');
+                        // C - comment area creation mode
+                        setAction('commentArea');
                         break;
-                    case 'v':
-                        // Ctrl + V = paste
-                        console.log('paste');
+                    case 'x':
+                        // X - center canvas view
+                        centerView();
                         break;
-                    case 'z':
-                        // Ctrl + Z = undo
-                        evt.preventDefault();
-                        bufferStore.undo();
+                    case 'delete':
+                        // Del - delete selected entity
+                        designStore.deleteSelectedTable();
+                        resetFocus();
                         break;
-                    case 'y':
-                        // Ctrl + Y = redo
-                        evt.preventDefault();
-                        bufferStore.redo();
-                        break;
+                }
+            } else {
+                if (evt.shiftKey && key == 'z') {
+                    // Ctrl + Shift + Z = redo
+                    evt.preventDefault();
+                    bufferStore.redo();
+                    return;
+                } else {
+                    switch (key) {
+                        case 'c':
+                            // Ctrl + C = copy
+                            console.log('copy');
+                            break;
+                        case 'v':
+                            // Ctrl + V = paste
+                            console.log('paste');
+                            break;
+                        case 'z':
+                            // Ctrl + Z = undo
+                            evt.preventDefault();
+                            bufferStore.undo();
+                            break;
+                        case 'y':
+                            // Ctrl + Y = redo
+                            evt.preventDefault();
+                            bufferStore.redo();
+                            break;
+                    }
                 }
             }
         }

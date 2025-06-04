@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { newTable, type Table } from "@/types/table.ts";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { appConfig } from "@/app.config.ts";
 import { useActionBuffer } from "@/store/actionBuffer.ts";
 import type { CursorPos } from "@/components/designer/scripts/useDesignCanvas.ts";
@@ -14,6 +14,17 @@ export const useDesignStore = defineStore('design', () => {
     const newTableIndex = ref<number>(1);
 
     const selectedTable = ref<Table | undefined>(undefined);
+
+    const duplicateNames = computed(() => {
+        const nameCount = tables.value.reduce((map, table) => {
+            const name = table.name.trim();
+            return map.set(name, (map.get(name) || 0) + 1);
+        }, new Map<string, number>());
+
+        return new Set(
+            [...nameCount].flatMap(([name, count]) => count > 1 ? [name] : [])
+        );
+    });
 
     const addTable = (posX: number, posY: number) => {
         const table = cloneDeep(newTable);
@@ -129,6 +140,8 @@ export const useDesignStore = defineStore('design', () => {
         tables,
         selectedTable,
         newTableIndex, // Must be returned to preserve state
+
+        duplicateNames,
 
         addTable,
 
