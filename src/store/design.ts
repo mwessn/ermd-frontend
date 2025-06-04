@@ -6,6 +6,7 @@ import { useActionBuffer } from "@/store/actionBuffer.ts";
 import type { CursorPos } from "@/components/designer/scripts/useDesignCanvas.ts";
 import { cloneDeep } from "lodash";
 import type { BufferEntity } from "@/types/actionsBuffer.ts";
+import { generateId } from "@/utils/utils.ts";
 
 export const useDesignStore = defineStore('design', () => {
     const bufferStore = useActionBuffer();
@@ -14,6 +15,9 @@ export const useDesignStore = defineStore('design', () => {
     const newTableIndex = ref<number>(1);
 
     const selectedTable = ref<Table | undefined>(undefined);
+
+    // Flag to track whether a table is mounted after manual creation or loaded from localStorage
+    const isManualCreation = ref<boolean>(false);
 
     const duplicateNames = computed(() => {
         const nameCount = tables.value.reduce((map, table) => {
@@ -28,7 +32,8 @@ export const useDesignStore = defineStore('design', () => {
 
     const addTable = (posX: number, posY: number) => {
         const table = cloneDeep(newTable);
-        table.name += newTableIndex.value
+        table.id = generateId('table');
+        table.name += newTableIndex.value;
         table.posX = posX;
         table.posY = posY;
 
@@ -44,6 +49,7 @@ export const useDesignStore = defineStore('design', () => {
         })
 
         newTableIndex.value++;
+        isManualCreation.value = true;
     }
 
     const selectTable = (val: Table | undefined = undefined) => {
@@ -142,6 +148,7 @@ export const useDesignStore = defineStore('design', () => {
         newTableIndex, // Must be returned to preserve state
 
         duplicateNames,
+        isManualCreation,
 
         addTable,
 

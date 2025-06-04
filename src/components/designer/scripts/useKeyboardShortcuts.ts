@@ -57,9 +57,9 @@ export function useKeyboardShortcuts(centerView: () => void) {
                         break;
                 }
             } else {
+                evt.preventDefault();
                 if (evt.shiftKey && key == 'z') {
                     // Ctrl + Shift + Z = redo
-                    evt.preventDefault();
                     bufferStore.redo();
                     return;
                 } else {
@@ -74,13 +74,15 @@ export function useKeyboardShortcuts(centerView: () => void) {
                             break;
                         case 'z':
                             // Ctrl + Z = undo
-                            evt.preventDefault();
                             bufferStore.undo();
                             break;
                         case 'y':
                             // Ctrl + Y = redo
-                            evt.preventDefault();
                             bufferStore.redo();
+                            break;
+                        case 's':
+                            // Ctrl + S = save as JSON
+                            console.log('Save');
                             break;
                     }
                 }

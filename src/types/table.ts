@@ -39,7 +39,7 @@ export interface Table {
 }
 
 export const newTable: Table = {
-    id: generateId('table'),
+    id: "",
     name: appConfig.defaultTableName,
     rows: [
         {

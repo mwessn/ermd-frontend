@@ -60,6 +60,8 @@ export const useActionBuffer = defineStore('actionBuffer', () => {
                             break;
                         }
                         case "delete": {
+                            // Prevent restored table name input focus
+                            designStore.isManualCreation = false;
                             designStore.bufferRestoreTable(entity);
                             break;
                         }
@@ -72,7 +74,6 @@ export const useActionBuffer = defineStore('actionBuffer', () => {
                 }
             }
         });
-
         return reverted;
     };
 
@@ -83,6 +84,8 @@ export const useActionBuffer = defineStore('actionBuffer', () => {
                 case "table": {
                     switch (entry.action) {
                         case "create": {
+                            // Prevent restored table name input focus
+                            designStore.isManualCreation = false;
                             designStore.bufferRestoreTable(entity);
                             break;
                         }

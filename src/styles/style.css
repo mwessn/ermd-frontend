@@ -63,6 +63,10 @@ Tailwind
   background-size: 0.5rem 0.5rem;
 }
 
+.cursor-inherit {
+  cursor: inherit;
+}
+
 .bg-grid {
   background-image:
           linear-gradient(to right, var(--color-accentDarkGray) 1px, transparent 1px),

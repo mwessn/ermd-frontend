@@ -1,23 +1,26 @@
 <template>
   <div
-      class="w-40 absolute z-10 group focus:z-20"
+      class="w-40 absolute z-10 group focus:z-20 focus:outline-0"
       tabindex="-1"
+      ref="tableRef"
       :style="{ top: table.posY + 'px', left: table.posX + 'px' }"
       @focus="selectTable(table)"
       @focusout="selectTable()"
   >
 <!--    <div class="w-full h-4 bg-accentDarkGray radial-accentGray z-20" />-->
     <div class="z-20 bg-accentGray rounded-b-lg">
-      <div class="w-full border-b border-b-accentDarkGray" @mousedown.left.stop>
-        <input
+      <div class="w-full border-b border-b-accentDarkGray">
+        <DoubleClickFocusInput
             v-model="table.name"
-            class="w-full p-2"
-            :class="{ 'bg-red-400': isDuplicate }"
             type="text"
-            tabindex="-1"
-        >
+            class="w-full p-2 bg-monolithicCyanTsunami"
+            :class="{ '!bg-red-400': isDuplicate }"
+            ref="nameInputRef"
+            @mousedown.left="focusTable"
+        />
       </div>
       <div class="w-full p-4">
+        {{ table.id }}
         {{ table.posX }},
         {{ table.posY }}
       </div>
@@ -31,9 +34,13 @@
 </template>
 
 <script setup lang="ts">
-import { type PropType } from "vue";
+import { onMounted, type PropType, useTemplateRef } from "vue";
 import type { Table } from "@/types/table.ts";
 import { useDesignStore } from "@/store/design.ts";
+import DoubleClickFocusInput from "@/components/core/DoubleClickFocusInput.vue";
+import { sleep } from "@/utils/utils.ts";
+
+const { selectTable, isManualCreation } = useDesignStore();
 
 defineProps({
   table: {
@@ -46,5 +53,19 @@ defineProps({
   }
 });
 
-const { selectTable } = useDesignStore();
+const tableRef = useTemplateRef('tableRef');
+
+const focusTable = () => {
+  tableRef.value?.focus();
+}
+
+const nameInputRef = useTemplateRef('nameInputRef');
+
+onMounted(async () => {
+  // When a new table is created manually, focus table name input and select all content
+  if (isManualCreation) {
+    await sleep(50); // Sleep for a short time after mount, otherwise can't focus
+    nameInputRef.value?.focusSelectAll();
+  }
+})
 </script>
