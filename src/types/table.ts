@@ -3,7 +3,7 @@ import { generateId } from "@/utils/utils.ts";
 import { defaultSettings } from "@/types/misc.ts";
 import { appConfig } from "@/app.config.ts"
 
-export interface TableRow {
+export interface TableCol {
     id: string,
     name: string,
     type: FieldType,
@@ -16,46 +16,54 @@ export interface TableRow {
     defaultValue: string | undefined,
 }
 
-export const newTableRow: TableRow = {
-    id: generateId('row'),
-    name: "",
-    type: defaultSettings.defaultRowType,
-    size: getDefaultForType(defaultSettings.defaultRowType),
+export const generateNewTableCol = () => {
+    const col: TableCol = {
+        id: generateId('col'),
+        name: "",
+        type: defaultSettings.defaultRowType,
+        size: getDefaultForType(defaultSettings.defaultRowType),
 
-    primaryKey: false,
-    notNull: defaultSettings.defaultNotNull,
-    unique: false,
-    autoIncrement: false,
-    defaultValue: undefined
+        primaryKey: false,
+        notNull: defaultSettings.defaultNotNull,
+        unique: false,
+        autoIncrement: false,
+        defaultValue: undefined
+    }
+
+    return col;
 }
 
 export interface Table {
     id: string,
     name: string,
-    rows: TableRow[],
+    cols: TableCol[],
 
     posX: number,
     posY: number,
 }
 
-export const newTable: Table = {
-    id: "",
-    name: appConfig.defaultTableName,
-    rows: [
-        {
-            id: generateId('row'),
-            type: defaultSettings.defaultPrimaryKey,
-            name: "id",
-            size: getDefaultForType(defaultSettings.defaultPrimaryKey),
+export const generateNewTable = (index: number = 1, posX: number, posY: number) => {
+    const idCol: TableCol = {
+        id: generateId('col'),
+        name: "id",
+        type: defaultSettings.defaultPrimaryKey,
+        size: getDefaultForType(defaultSettings.defaultPrimaryKey),
 
-            primaryKey: true,
-            notNull: true,
-            unique: true,
-            autoIncrement: false,
-            defaultValue: undefined
-        }
-    ],
+        primaryKey: true,
+        notNull: true,
+        unique: true,
+        autoIncrement: false,
+        defaultValue: undefined
+    };
 
-    posX: 0,
-    posY: 0,
+    const table: Table = {
+        id: generateId('table'),
+        name: appConfig.defaultTableName + index,
+        cols: [idCol],
+
+        posX: posX,
+        posY: posY,
+    }
+
+    return table;
 }

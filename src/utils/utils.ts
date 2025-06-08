@@ -1,4 +1,4 @@
-type IdScope = 'row' | 'table' | 'relation' | 'commentArea';
+type IdScope = 'col' | 'table' | 'relation' | 'commentArea';
 
 export function generateId(scope: IdScope): string {
     let id: string;
@@ -19,4 +19,8 @@ export const resetFocus = () => {
 
 export function sleep(ms: number) {
     return new Promise( resolve => setTimeout(resolve, ms) );
+}
+
+export function notBlankOrEmpty(val: string) {
+    return val.trim().length > 0;
 }

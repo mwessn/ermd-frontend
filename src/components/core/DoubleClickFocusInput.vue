@@ -2,13 +2,15 @@
   <input
       v-model="model"
       :type="type"
-      class="cursor-inherit"
+      class="cursor-inherit p-1 overflow-ellipsis"
       ref="inputRef"
       tabindex="-1"
       @focusout="deselectAll"
       @mousedown.left.prevent
       @mouseup.left.prevent
       @dblclick.left="focusInput"
+      @keyup.enter="emit('enterKey')"
+      @keyup.delete="onDelete"
   >
 </template>
 
@@ -26,7 +28,7 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits(['update:modelValue', 'enterKey', 'deleteKey']);
 
 const model = computed({
   get: () => props.modelValue,
@@ -52,6 +54,13 @@ const focusSelectAll = () => {
   deselectAll();
   focusInput();
   selectAll();
+}
+
+const onDelete = (evt: KeyboardEvent) => {
+  if (evt.shiftKey) {
+    // Emit delete event on Shift + Del
+    emit('deleteKey');
+  }
 }
 
 defineExpose({ focusSelectAll });

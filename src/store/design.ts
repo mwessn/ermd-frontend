@@ -1,12 +1,11 @@
 import { defineStore } from "pinia";
-import { newTable, type Table } from "@/types/table.ts";
+import { generateNewTable, type Table, type TableCol } from "@/types/table.ts";
 import { computed, ref } from "vue";
 import { appConfig } from "@/app.config.ts";
 import { useActionBuffer } from "@/store/actionBuffer.ts";
-import type { CursorPos } from "@/components/designer/scripts/useDesignCanvas.ts";
+import { type CursorPos } from "@/components/designer/scripts/useDesignCanvas.ts";
 import { cloneDeep } from "lodash";
 import type { BufferEntity } from "@/types/actionsBuffer.ts";
-import { generateId } from "@/utils/utils.ts";
 
 export const useDesignStore = defineStore('design', () => {
     const bufferStore = useActionBuffer();
@@ -19,9 +18,9 @@ export const useDesignStore = defineStore('design', () => {
     // Flag to track whether a table is mounted after manual creation or loaded from localStorage
     const isManualCreation = ref<boolean>(false);
 
-    const duplicateNames = computed(() => {
+    const duplicateTableNames = computed(() => {
         const nameCount = tables.value.reduce((map, table) => {
-            const name = table.name.trim();
+            const name = table.name.trim().toLowerCase();
             return map.set(name, (map.get(name) || 0) + 1);
         }, new Map<string, number>());
 
@@ -30,12 +29,10 @@ export const useDesignStore = defineStore('design', () => {
         );
     });
 
+    // Table operations
+
     const addTable = (posX: number, posY: number) => {
-        const table = cloneDeep(newTable);
-        table.id = generateId('table');
-        table.name += newTableIndex.value;
-        table.posX = posX;
-        table.posY = posY;
+        const table = generateNewTable(newTableIndex.value, posX, posY);
 
         tables.value.push(table);
 
@@ -80,6 +77,27 @@ export const useDesignStore = defineStore('design', () => {
             selectedTable.value = undefined;
         }
     }
+
+    // Columns operation
+
+    const addTableCol = (col: TableCol) => {
+        if (selectedTable.value) {
+            selectedTable.value.cols.push(cloneDeep(col));
+            return true;
+        }
+        return false;
+    }
+
+    const deleteTableCol = (col: TableCol) => {
+        if (selectedTable.value) {
+            const index = selectedTable.value.cols.indexOf(col);
+            if (index != -1) {
+                selectedTable.value.cols.splice(index, 1);
+            }
+        }
+    }
+
+    // Misc
 
     const createNewProject = () => {
         tables.value = [];
@@ -147,14 +165,16 @@ export const useDesignStore = defineStore('design', () => {
         selectedTable,
         newTableIndex, // Must be returned to preserve state
 
-        duplicateNames,
+        duplicateTableNames,
         isManualCreation,
 
         addTable,
-
         selectTable,
         moveSelectedTable,
         deleteSelectedTable,
+
+        addTableCol,
+        deleteTableCol,
 
         createNewProject,
 

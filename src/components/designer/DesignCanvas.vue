@@ -18,7 +18,7 @@
           v-for="table in designStore.tables"
           :table="table"
           :key="table.id"
-          :is-duplicate="isTableNameDuplicate(table.name)"
+          :is-name-duplicate="isTableNameDuplicate(table.name)"
       />
     </div>
 
@@ -72,7 +72,7 @@ const baseBgSize = 50;
 
 const bgSize = computed(() => `${ baseBgSize * scaleFactor.value }px ${ baseBgSize * scaleFactor.value }px`);
 
-const isTableNameDuplicate = (name: string) => designStore.duplicateNames.has(name.trim());
+const isTableNameDuplicate = (name: string) => designStore.duplicateTableNames.has(name.trim().toLowerCase());
 
 const onMouseLeave = () => {
   onMouseUp();

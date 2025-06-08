@@ -104,7 +104,9 @@ export function useDesignCanvas() {
     };
 
     const onScroll = (evt: WheelEvent) => {
-        const zoomStep = 0.02;
+        const zoomMultiplier = evt.shiftKey ? 3 : 1;
+
+        const zoomStep = 0.02 * zoomMultiplier;
 
         const direction = evt.deltaY < 0 ? 1 : -1;
 
