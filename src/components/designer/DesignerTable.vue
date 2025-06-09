@@ -13,6 +13,7 @@
       <div class="w-full border-b border-b-accentDarkGray">
         <DoubleClickFocusInput
             v-model="table.name"
+            :id="table.id"
             type="text"
             class="w-full p-2 bg-monolithicCyanTsunami"
             :class="{ '!bg-red-400': isNameDuplicate }"
@@ -40,7 +41,9 @@
             :col="newTableCol"
             ref="newColRef"
             @focus-next="storeNewCol"
+            @focus-out="storeNewCol(false)"
             @mouse-down="focusTable()"
+            non-focusable-row
         />
 
       </div>
@@ -96,7 +99,7 @@ const focusNextInput = (index: number) => {
   }
 }
 
-const storeNewCol = () => {
+const storeNewCol = (focused: boolean = true) => {
   // If name not blank, add a new column
   if (notBlankOrEmpty(newTableCol.value.name)) {
     // Focus table root element to set selectedTable
@@ -104,7 +107,9 @@ const storeNewCol = () => {
     const res = addTableCol(newTableCol.value);
     if (res) {
       newTableCol.value = generateNewTableCol();
-      newColRef.value?.focusColName();
+      if (focused) {
+        newColRef.value?.focusColName();
+      }
     }
   } else {
     // Else finish editing the table;

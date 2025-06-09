@@ -1,16 +1,18 @@
 <template>
   <div
     class="flex w-full not-last:border-b relative group/cols"
-    tabindex="-1"
+    :tabindex="nonFocusableRow ? undefined : -1"
     ref="rowRef"
     @mousedown.left="onMouseDown"
     @keyup.delete.stop="emit('deleteCol');"
   >
     <DoubleClickFocusInput
         v-model="col.name"
+        :id="col.id"
         class="w-1/2 group-last/cols:rounded-bl-xl"
         :class="{ 'border-r' : notBlankOrEmpty(col.name), '!bg-red-400': isColNameDuplicate  }"
         ref="colNameRef"
+        @focusout="emit('focusOut')"
         @enter-key="emit('focusNext')"
         @delete-key="emit('deleteCol');"
     />
@@ -33,10 +35,14 @@ defineProps({
   isColNameDuplicate: {
     type: Boolean,
     default: false
+  },
+  nonFocusableRow: {
+    type: Boolean,
+    default: false
   }
 });
 
-const emit = defineEmits(['focusNext', 'mouseDown', 'deleteCol']);
+const emit = defineEmits(['focusNext', 'mouseDown', 'deleteCol', 'focusOut']);
 
 const rowRef = useTemplateRef('rowRef');
 

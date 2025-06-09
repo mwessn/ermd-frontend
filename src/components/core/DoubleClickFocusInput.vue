@@ -2,25 +2,37 @@
   <input
       v-model="model"
       :type="type"
+      :id="id"
       class="cursor-inherit p-1 overflow-ellipsis"
       ref="inputRef"
+      autocomplete="off"
       tabindex="-1"
-      @focusout="deselectAll"
+
       @mousedown.left.prevent
       @mouseup.left.prevent
       @dblclick.left="focusInput"
+
+      @focus="onFocus"
+      @change="onChange"
+
+      @focusout="deselectAll"
+
       @keyup.enter="emit('enterKey')"
       @keyup.delete="onDelete"
   >
 </template>
 
 <script setup lang="ts">
-import { computed, useTemplateRef } from "vue";
+import { computed, ref, useTemplateRef } from "vue";
 
 const props = defineProps({
   modelValue: {
     type: String,
     required: true
+  },
+  id: {
+    type: String,
+    required: false
   },
   type: {
     type: String,
@@ -34,6 +46,20 @@ const model = computed({
   get: () => props.modelValue,
   set: (val) => emit('update:modelValue', val)
 });
+
+// Previous input value handle
+
+const oldVal = ref<string>(props.modelValue);
+
+const onFocus = () => {
+  oldVal.value = props.modelValue;
+}
+
+const onChange = () => {
+  console.log(oldVal.value, model.value)
+}
+
+// Input focus state handle
 
 const inputRef = useTemplateRef('inputRef');
 

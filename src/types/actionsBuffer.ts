@@ -1,7 +1,7 @@
 import type { Table } from "@/types/table.ts";
 import type { CursorPos } from "@/components/designer/scripts/useDesignCanvas.ts";
 
-type BufferEntityType = "table" | "relation" | "commentArea";
+type BufferEntityType = "table" | "relation" | "commentArea" | "tableCol";
 type BufferActionType = "create" | "delete" | "move";
 type BufferStoreVal = Table | CursorPos | undefined;
 
