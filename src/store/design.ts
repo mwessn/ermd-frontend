@@ -83,6 +83,16 @@ export const useDesignStore = defineStore('design', () => {
     const addTableCol = (col: TableCol) => {
         if (selectedTable.value) {
             selectedTable.value.cols.push(cloneDeep(col));
+
+            bufferStore.addUndoBufferAction({
+                action: 'create',
+                entities: [{
+                    type: "tableCol",
+                    entityId: `${selectedTable.value.id}.${col.id}.${selectedTable.value.cols.length - 1}`,
+                    oldVal: undefined,
+                }]
+            });
+
             return true;
         }
         return false;
@@ -92,6 +102,15 @@ export const useDesignStore = defineStore('design', () => {
         if (selectedTable.value) {
             const index = selectedTable.value.cols.indexOf(col);
             if (index != -1) {
+                bufferStore.addUndoBufferAction({
+                    action: 'delete',
+                    entities: [{
+                        type: "tableCol",
+                        entityId: `${selectedTable.value.id}.${col.id}.${index}`,
+                        oldVal: cloneDeep(col),
+                    }]
+                });
+
                 selectedTable.value.cols.splice(index, 1);
             }
         }
@@ -137,6 +156,50 @@ export const useDesignStore = defineStore('design', () => {
         bufferEntry.oldVal = undefined;
     }
 
+    function bufferDeleteCol(bufferEntry: BufferEntity) {
+        const [tableId, colId] = bufferEntry.entityId.split('.');
+        if (!tableId || !colId) return;
+
+        const table = tables.value.find(it => it.id == tableId);
+        if (table) {
+            const colIndex = table.cols.findIndex(it => it.id == colId);
+
+            if (colIndex != -1) {
+                bufferEntry.oldVal = cloneDeep(table.cols[colIndex]);
+                table.cols.splice(colIndex, 1);
+            }
+        }
+    }
+
+    function bufferRestoreCol(bufferEntry: BufferEntity) {
+        const [tableId, colId, colIndex] = bufferEntry.entityId.split('.');
+        if (!tableId || !colId || !colIndex) return;
+
+
+        const table = tables.value.find(it => it.id == tableId);
+        if (table) {
+            table.cols.splice(parseInt(colIndex), 0, cloneDeep(bufferEntry.oldVal) as TableCol);
+
+            bufferEntry.oldVal = undefined;
+        }
+    }
+
+    function bufferRevertColumnVal(bufferEntry: BufferEntity) {
+        const [tableId, colId] = bufferEntry.entityId.split('.');
+        if (!tableId || !colId) return;
+
+        const table = tables.value.find(it => it.id == tableId);
+        if (table) {
+            const colIndex = table.cols.findIndex(it => it.id == colId);
+
+            if (colIndex != -1) {
+                const buff = cloneDeep(table.cols[colIndex]);
+                table.cols[colIndex] = (bufferEntry.oldVal as TableCol);
+                bufferEntry.oldVal = buff;
+            }
+        }
+    }
+
     function bufferLogTableMove(pos: CursorPos) {
         if (selectedTable.value) {
             bufferStore.addUndoBufferAction({
@@ -145,6 +208,19 @@ export const useDesignStore = defineStore('design', () => {
                     type: "table",
                     entityId: selectedTable.value.id,
                     oldVal: pos,
+                }]
+            });
+        }
+    }
+
+    function bufferLogColChange(col: TableCol, oldVal: TableCol) {
+        if (selectedTable.value) {
+            bufferStore.addUndoBufferAction({
+                action: 'change',
+                entities: [{
+                    type: "tableCol",
+                    entityId: `${selectedTable.value.id}.${col.id}`,
+                    oldVal: oldVal,
                 }]
             });
         }
@@ -182,7 +258,13 @@ export const useDesignStore = defineStore('design', () => {
         bufferDeleteTable,
         bufferSetTablePos,
         bufferRestoreTable,
+
+        bufferDeleteCol,
+        bufferRestoreCol,
+        bufferRevertColumnVal,
+
         bufferLogTableMove,
+        bufferLogColChange,
     }
 }, {
     persist: {

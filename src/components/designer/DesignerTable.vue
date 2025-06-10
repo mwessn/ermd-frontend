@@ -5,7 +5,7 @@
       ref="tableRef"
       :style="{ top: table.posY + 'px', left: table.posX + 'px' }"
       @focus="selectTable(table)"
-      @focusout="selectTable()"
+      @focusout="onFocusOut"
   >
 <!--    Table handle -->
 <!--    <div class="w-full h-4 bg-accentDarkGray radial-accentGray z-20" />-->
@@ -40,7 +40,7 @@
         <TableColRow
             :col="newTableCol"
             ref="newColRef"
-            @focus-next="storeNewCol"
+            @focus-next="storeNewCol()"
             @focus-out="storeNewCol(false)"
             @mouse-down="focusTable()"
             non-focusable-row
@@ -83,6 +83,10 @@ const focusTable = () => {
   tableRef.value?.focus();
 }
 
+const onFocusOut = () => {
+  selectTable();
+}
+
 const newTableCol = ref<TableCol>(generateNewTableCol());
 
 const nameInputRef = useTemplateRef('nameInputRef');
@@ -99,27 +103,50 @@ const focusNextInput = (index: number) => {
   }
 }
 
-const storeNewCol = (focused: boolean = true) => {
-  // If name not blank, add a new column
-  if (notBlankOrEmpty(newTableCol.value.name)) {
-    // Focus table root element to set selectedTable
-    tableRef.value?.focus();
-    const res = addTableCol(newTableCol.value);
-    if (res) {
-      newTableCol.value = generateNewTableCol();
-      if (focused) {
-        newColRef.value?.focusColName();
+const isSavingNewCol = ref<boolean>(false);
+
+const storeNewCol = (refocus: boolean = true) => {
+  // Saving value by pressing enter also un-focuses the input,
+  // which causes this method to trigger twice.
+  // To prevent it, we do an action state check
+  if (!isSavingNewCol.value) {
+    isSavingNewCol.value = true;
+    // If name not blank, add a new column
+    if (notBlankOrEmpty(newTableCol.value.name)) {
+      // Focus table root element to set selectedTable
+      tableRef.value?.focus();
+      const res = addTableCol(newTableCol.value);
+      if (res) {
+        newTableCol.value = generateNewTableCol();
+        if (refocus) {
+          newColRef.value?.focusColName();
+        }
       }
+    } else {
+      // Else finish editing the table;
+      resetFocus();
     }
-  } else {
-    // Else finish editing the table;
-    resetFocus();
+    isSavingNewCol.value = false;
   }
 }
 
-const onDeleteCol = (col: TableCol) => {
+const onDeleteCol = async (col: TableCol) => {
+  const index = props.table.cols.indexOf(col);
   tableRef.value?.focus();
   deleteTableCol(col);
+
+  // Autofocus next row
+  // Wait for rows to get re-rendered
+  await sleep(50);
+  if (index != -1 && columnsRef.value && columnsRef.value.length > 0) {
+    if (index < columnsRef.value.length) {
+      // Focus next row
+      columnsRef.value[index]?.focusRow();
+    } else {
+      // Focus last row
+      columnsRef.value[index - 1]?.focusRow();
+    }
+  }
 }
 
 const duplicateColNames = computed(() => {

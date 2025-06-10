@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { defaultSettings } from "@/types/misc.ts";
 import { ref } from "vue";
-import type { ActionBufferEntry } from "@/types/actionsBuffer.ts";
+import type { ActionBufferEntry, BufferEntity } from "@/types/actionsBuffer.ts";
 import { useDesignStore } from "@/store/design.ts";
 
 export const useActionBuffer = defineStore('actionBuffer', () => {
@@ -50,7 +50,13 @@ export const useActionBuffer = defineStore('actionBuffer', () => {
     }
 
     const revertAction = (entry: ActionBufferEntry): boolean => {
-        let reverted = false;
+        let reverted = true;
+
+        function errorAction(entity: BufferEntity | undefined = undefined) {
+            reverted = false;
+            console.warn('Something went wrong with action buffer:', entry.action, entity ? entity.type : entry);
+        }
+
         entry.entities.forEach((entity) => {
             switch (entity.type) {
                 case "table": {
@@ -69,8 +75,36 @@ export const useActionBuffer = defineStore('actionBuffer', () => {
                             designStore.bufferSetTablePos(entity);
                             break;
                         }
+                        default: {
+                            errorAction(entity);
+                            break;
+                        }
                     }
-                    reverted = true;
+                    break;
+                }
+                case "tableCol": {
+                    switch (entry.action) {
+                        case "create": {
+                            designStore.bufferDeleteCol(entity);
+                            break;
+                        }
+                        case "delete": {
+                            designStore.bufferRestoreCol(entity);
+                            break
+                        }
+                        case "change": {
+                            designStore.bufferRevertColumnVal(entity);
+                            break;
+                        }
+                        default: {
+                            errorAction(entity);
+                            break;
+                        }
+                    }
+                    break;
+                }
+                default: {
+                    errorAction()
                 }
             }
         });
@@ -78,7 +112,13 @@ export const useActionBuffer = defineStore('actionBuffer', () => {
     };
 
     const restoreAction = (entry: ActionBufferEntry): boolean => {
-        let restored = false;
+        let restored = true;
+
+        function errorAction(entity: BufferEntity | undefined = undefined) {
+            restored = false;
+            console.warn('Something went wrong with action buffer:', entry.action, entity ? entity.type : entry);
+        }
+
         entry.entities.forEach((entity) => {
             switch (entity.type) {
                 case "table": {
@@ -97,8 +137,35 @@ export const useActionBuffer = defineStore('actionBuffer', () => {
                             designStore.bufferSetTablePos(entity);
                             break;
                         }
+                        default: {
+                            errorAction(entity);
+                        }
                     }
-                    restored = true;
+                    break;
+                }
+                case "tableCol": {
+                    switch (entry.action) {
+                        case "create": {
+                            designStore.bufferRestoreCol(entity);
+                            break;
+                        }
+                        case "delete": {
+                            designStore.bufferDeleteCol(entity);
+                            break
+                        }
+                        case "change": {
+                            designStore.bufferRevertColumnVal(entity);
+                            break;
+                        }
+                        default: {
+                            errorAction(entity);
+                            break;
+                        }
+                    }
+                    break;
+                }
+                default: {
+                    errorAction()
                 }
             }
         })

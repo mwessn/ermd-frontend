@@ -33,8 +33,14 @@ import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import {
   faArrowRight,
-  faArrowsSplitUpAndLeft,
-  faArrowsUpDownLeftRight, faCircleInfo, faComment, faFile, faFileArrowDown, faFileArrowUp,
+  faArrowsUpDownLeftRight,
+  faChevronCircleRight,
+  faChevronRight, faCircleArrowRight,
+  faCircleInfo,
+  faComment,
+  faFile,
+  faFileArrowDown,
+  faFileArrowUp,
   faTable
 } from "@fortawesome/free-solid-svg-icons";
 import { useActionsStore } from "@/store/action.ts";
@@ -77,18 +83,34 @@ const functionsMenuTopItems: readonly MenuItem[] = [
   },
   {
     pic: faArrowRight,
-    hint: 'One-to-One relation',
+    hint: 'Non-identifying One-to-One relation',
     button: 'B',
     action: () => {
-      actionStore.setAction('oto');
+      actionStore.setAction('noto');
     }
   },
   {
-    pic: faArrowsSplitUpAndLeft,
-    hint: 'One-to-Many relation',
+    pic: faCircleArrowRight,
+    hint: 'Identifying One-to-One relation',
+    button: 'G',
+    action: () => {
+      actionStore.setAction('ioto');
+    }
+  },
+  {
+    pic: faChevronRight,
+    hint: 'Non-identifying One-to-Many relation',
     button: 'N',
     action: () => {
-      actionStore.setAction('otm');
+      actionStore.setAction('notm');
+    }
+  },
+  {
+    pic: faChevronCircleRight,
+    hint: 'Identifying One-to-Many relation',
+    button: 'H',
+    action: () => {
+      actionStore.setAction('iotm');
     }
   },
   {
@@ -104,7 +126,7 @@ const functionsMenuTopItems: readonly MenuItem[] = [
     hint: 'Comment area',
     button: 'C',
     action: () => {
-      actionStore.setAction('comment');
+      actionStore.setAction('commentArea');
     }
   },
 ];

@@ -30,13 +30,21 @@ export function useKeyboardShortcuts(centerView: () => void) {
                         // T = table creation mode
                         setAction('table');
                         break;
-                    case 'b':
-                        // B - one-to-one relation creation mode
-                        setAction('oto');
+                    case 'g':
+                        // B - Non-identifying one-to-one relation creation mode
+                        setAction('noto');
                         break;
-                    case 'n':
-                        // N - one-to-many relation creation mode
-                        setAction('otm');
+                    case 'b':
+                        // B - Identifying one-to-one relation creation mode
+                        setAction('ioto');
+                        break;
+                    case 'h':
+                        // N - Non-identifying one-to-many relation creation mode
+                        setAction('notm');
+                        break;
+                    case 'h':
+                        // N - Identifying one-to-many relation creation mode
+                        setAction('iotm');
                         break;
                     case 'm':
                         // M - many-to-many relation creation mode

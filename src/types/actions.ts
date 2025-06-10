@@ -1,7 +1,9 @@
 export type UserAction =
     'table' | // Create new table
-    'oto' | // Create One-to-One relation
-    'otm' | // Create One-to-Many relation
+    'noto' | // Create non-identifying One-to-One relation
+    'ioto' | // Create identifying One-to-One relation
+    'notm' | // Create non-identifying One-to-Many relation
+    'iotm' | // Create identifying One-to-Many relation
     'mtm' | // Create Many-to-Many relation
     'commentArea' | // Create comment area
     undefined;

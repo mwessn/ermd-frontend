@@ -40,7 +40,7 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['update:modelValue', 'enterKey', 'deleteKey']);
+const emit = defineEmits(['update:modelValue', 'enterKey', 'deleteKey', 'valueChange']);
 
 const model = computed({
   get: () => props.modelValue,
@@ -56,7 +56,7 @@ const onFocus = () => {
 }
 
 const onChange = () => {
-  console.log(oldVal.value, model.value)
+  emit('valueChange', oldVal.value, model.value);
 }
 
 // Input focus state handle

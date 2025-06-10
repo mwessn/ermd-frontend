@@ -4,17 +4,20 @@
     :tabindex="nonFocusableRow ? undefined : -1"
     ref="rowRef"
     @mousedown.left="onMouseDown"
+    @keyup.enter="onRowEnterKey"
     @keyup.delete.stop="emit('deleteCol');"
   >
     <DoubleClickFocusInput
         v-model="col.name"
-        :id="col.id"
+        :name="`colName-${col.id}`"
         class="w-1/2 group-last/cols:rounded-bl-xl"
         :class="{ 'border-r' : notBlankOrEmpty(col.name), '!bg-red-400': isColNameDuplicate  }"
         ref="colNameRef"
         @focusout="emit('focusOut')"
         @enter-key="emit('focusNext')"
         @delete-key="emit('deleteCol');"
+
+        @value-change="onColNameChange"
     />
     <div class="w-1/2">
     </div>
@@ -26,8 +29,12 @@ import { type PropType, useTemplateRef } from "vue";
 import type { TableCol } from "@/types/table.ts";
 import DoubleClickFocusInput from "@/components/core/DoubleClickFocusInput.vue";
 import { notBlankOrEmpty } from "@/utils/utils.ts";
+import { useDesignStore } from "@/store/design.ts";
+import { cloneDeep } from "lodash";
 
-defineProps({
+const { bufferLogColChange } = useDesignStore();
+
+const props = defineProps({
   col: {
     type: Object as PropType<TableCol>,
     required: true
@@ -57,7 +64,26 @@ const focusColName = () => {
   colNameRef.value?.focusSelectAll();
 }
 
-defineExpose({ focusColName });
+const focusRow = () => {
+  rowRef.value?.focus();
+}
+
+const onRowEnterKey = (evt: InputEvent) => {
+  if (!(evt.target instanceof HTMLInputElement)) {
+    focusColName();
+  }
+}
+
+const onColNameChange = (oldVal: string) => {
+  const oldColVal = cloneDeep(props.col);
+  oldColVal.name = oldVal;
+
+  // Focus table to be able to add log entry
+  emit('mouseDown');
+  bufferLogColChange(props.col, oldColVal);
+}
+
+defineExpose({ focusColName, focusRow });
 
 </script>
 
