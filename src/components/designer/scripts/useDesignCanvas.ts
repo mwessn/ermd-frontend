@@ -42,7 +42,7 @@ export function useDesignCanvas() {
         `${ translateOffsetX.value }px, ${ translateOffsetY.value }px`
     );
 
-    const onMouseDown = (evt: MouseEvent) => {
+    const onMouseDown = async (evt: MouseEvent) => {
         switch (actionStore.currentAction) {
             case undefined: {
                 // Start tracking drag
@@ -58,11 +58,21 @@ export function useDesignCanvas() {
                 const posY = (evt.clientY) / scaleFactor.value - translateOffsetY.value;
 
                 designStore.addTable(posX, posY);
+                actionStore.setAction(undefined);
+                break;
+            }
+            case 'ioto':
+            case 'noto':
+            case 'iotm':
+            case 'notm':
+            case 'mtm': {
+                designStore.createRelationship(actionStore.currentAction);
+                break;
+            }
+            case 'commentArea': {
                 break;
             }
         }
-
-        actionStore.setAction(undefined);
     };
 
     const onMouseUp = () => {

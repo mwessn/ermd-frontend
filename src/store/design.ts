@@ -6,9 +6,12 @@ import { useActionBuffer } from "@/store/actionBuffer.ts";
 import { type CursorPos } from "@/components/designer/scripts/useDesignCanvas.ts";
 import { cloneDeep } from "lodash";
 import type { BufferEntity } from "@/types/actionsBuffer.ts";
+import type { RelationshipType } from "@/types/relationships.ts";
+import { useActionsStore } from "@/store/action.ts";
 
 export const useDesignStore = defineStore('design', () => {
     const bufferStore = useActionBuffer();
+    const actionStore = useActionsStore();
 
     const tables = ref<Table[]>([]);
     const newTableIndex = ref<number>(1);
@@ -112,6 +115,29 @@ export const useDesignStore = defineStore('design', () => {
                 });
 
                 selectedTable.value.cols.splice(index, 1);
+            }
+        }
+    }
+
+    // Relationships
+
+    const relationFirstTableId = ref<string | undefined>(undefined);
+
+    const resetRelationshipCreation = () => {
+        relationFirstTableId.value = undefined;
+    }
+
+    const createRelationship = (type: RelationshipType) => {
+        if (selectedTable.value) {
+            if (!relationFirstTableId.value) {
+                // If first table not selected, select and exit
+                relationFirstTableId.value = cloneDeep(selectedTable.value.id);
+                console.log(relationFirstTableId.value);
+                return;
+            } else {
+                // If fist table already selected, create a relationship between it and the current
+                console.log(relationFirstTableId.value, selectedTable.value.id);
+                actionStore.resetAction();
             }
         }
     }
@@ -251,6 +277,9 @@ export const useDesignStore = defineStore('design', () => {
 
         addTableCol,
         deleteTableCol,
+
+        resetRelationshipCreation,
+        createRelationship,
 
         createNewProject,
 

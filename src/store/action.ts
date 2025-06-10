@@ -1,8 +1,11 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import type { UserAction } from "@/types/actions.ts";
+import { useDesignStore } from "@/store/design.ts";
 
 export const useActionsStore = defineStore('actions', () => {
+
+    const { resetRelationshipCreation } = useDesignStore();
 
     const currentAction = ref<UserAction>(undefined);
     const canSetAction = ref<boolean>(true);
@@ -10,7 +13,13 @@ export const useActionsStore = defineStore('actions', () => {
     const setAction = (val: UserAction) => {
         if (canSetAction) {
             currentAction.value = val;
+            resetRelationshipCreation();
         }
+    }
+
+    const resetAction = () => {
+        currentAction.value = undefined;
+        resetRelationshipCreation();
     }
 
     const allowAction = (allow: boolean = true) => {
@@ -21,6 +30,7 @@ export const useActionsStore = defineStore('actions', () => {
         currentAction,
 
         setAction,
+        resetAction,
         allowAction,
     }
 });
