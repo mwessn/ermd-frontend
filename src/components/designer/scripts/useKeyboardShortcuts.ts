@@ -31,7 +31,7 @@ export function useKeyboardShortcuts(centerView: () => void) {
                         setAction('table');
                         break;
                     case 'g':
-                        // B - Non-identifying one-to-one relation creation mode
+                        // G - Non-identifying one-to-one relation creation mode
                         setAction('noto');
                         break;
                     case 'b':
@@ -39,10 +39,10 @@ export function useKeyboardShortcuts(centerView: () => void) {
                         setAction('ioto');
                         break;
                     case 'h':
-                        // N - Non-identifying one-to-many relation creation mode
+                        // H - Non-identifying one-to-many relation creation mode
                         setAction('notm');
                         break;
-                    case 'h':
+                    case 'n':
                         // N - Identifying one-to-many relation creation mode
                         setAction('iotm');
                         break;
