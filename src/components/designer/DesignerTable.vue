@@ -13,7 +13,7 @@
       <div class="w-full border-b border-b-accentDarkGray">
         <DoubleClickFocusInput
             v-model="table.name"
-            :id="table.id"
+            :id="`name-${table.id}`"
             type="text"
             class="w-full p-2 bg-monolithicCyanTsunami"
             :class="{ '!bg-red-400': isNameDuplicate }"
@@ -40,7 +40,7 @@
         <TableColRow
             :col="newTableCol"
             ref="newColRef"
-            @focus-next="storeNewCol()"
+            @focus-next="storeNewCol"
             @focus-out="storeNewCol(false)"
             @mouse-down="focusTable()"
             non-focusable-row
@@ -57,11 +57,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, type PropType, ref, useTemplateRef } from "vue";
+import { computed, nextTick, onMounted, type PropType, ref, useTemplateRef } from "vue";
 import { generateNewTableCol, type Table, type TableCol } from "@/types/table.ts";
 import { useDesignStore } from "@/store/design.ts";
 import DoubleClickFocusInput from "@/components/core/DoubleClickFocusInput.vue";
-import { notBlankOrEmpty, resetFocus, sleep } from "@/utils/utils.ts";
+import { notBlankOrEmpty, resetFocus } from "@/utils/utils.ts";
 import TableColRow from "@/components/designer/table/TableColRow.vue";
 
 const { selectTable, isManualCreation, addTableCol, deleteTableCol } = useDesignStore();
@@ -113,14 +113,16 @@ const storeNewCol = (refocus: boolean = true) => {
     isSavingNewCol.value = true;
     // If name not blank, add a new column
     if (notBlankOrEmpty(newTableCol.value.name)) {
-      // Focus table root element to set selectedTable
-      tableRef.value?.focus();
+      // Force select table to be able to save
+      selectTable(props.table);
       const res = addTableCol(newTableCol.value);
       if (res) {
         newTableCol.value = generateNewTableCol();
         if (refocus) {
           newColRef.value?.focusColName();
         }
+        // Reset selection
+        selectTable();
       }
     } else {
       // Else finish editing the table;
@@ -137,7 +139,7 @@ const onDeleteCol = async (col: TableCol) => {
 
   // Autofocus next row
   // Wait for rows to get re-rendered
-  await sleep(50);
+  await nextTick();
   if (index != -1 && columnsRef.value && columnsRef.value.length > 0) {
     if (index < columnsRef.value.length) {
       // Focus next row
@@ -163,7 +165,7 @@ const duplicateColNames = computed(() => {
 onMounted(async () => {
   // When a new table is created manually, focus table name input and select all content
   if (isManualCreation) {
-    await sleep(50); // Sleep for a short time after mount, otherwise won't focus
+    await nextTick(); // Sleep for a short time after mount, otherwise won't focus
     nameInputRef.value?.focusSelectAll();
   }
 });

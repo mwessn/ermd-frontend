@@ -1,20 +1,26 @@
 import { defineStore } from "pinia";
-import { generateNewTable, type Table, type TableCol } from "@/types/table.ts";
+import { generateNewForeignKey, generateNewTable, type Table, type TableCol } from "@/types/table.ts";
 import { computed, ref } from "vue";
 import { appConfig } from "@/app.config.ts";
 import { useActionBuffer } from "@/store/actionBuffer.ts";
 import { type CursorPos } from "@/components/designer/scripts/useDesignCanvas.ts";
 import { cloneDeep } from "lodash";
 import type { BufferEntity } from "@/types/actionsBuffer.ts";
-import type { RelationshipType } from "@/types/relationships.ts";
+import type { DatabaseRelationship, RelationshipType } from "@/types/relationships.ts";
 import { useActionsStore } from "@/store/action.ts";
+import { useSettingsStore } from "@/store/settings.ts";
+import { createNewRelationship } from "@/types/relationships.ts";
 
 export const useDesignStore = defineStore('design', () => {
     const bufferStore = useActionBuffer();
     const actionStore = useActionsStore();
 
+    const { currentSettings, defaultPrimaryKey, defaultPrimarySize } = useSettingsStore();
+
     const tables = ref<Table[]>([]);
     const newTableIndex = ref<number>(1);
+
+    const relations = ref<DatabaseRelationship[]>([]);
 
     const selectedTable = ref<Table | undefined>(undefined);
 
@@ -35,7 +41,13 @@ export const useDesignStore = defineStore('design', () => {
     // Table operations
 
     const addTable = (posX: number, posY: number) => {
-        const table = generateNewTable(newTableIndex.value, posX, posY);
+        const table = generateNewTable(
+            currentSettings.defaultTableName,
+            newTableIndex.value,
+            posX, posY,
+            defaultPrimaryKey,
+            defaultPrimarySize,
+        );
 
         tables.value.push(table);
 
@@ -132,11 +144,75 @@ export const useDesignStore = defineStore('design', () => {
             if (!relationFirstTableId.value) {
                 // If first table not selected, select and exit
                 relationFirstTableId.value = cloneDeep(selectedTable.value.id);
-                console.log(relationFirstTableId.value);
                 return;
             } else {
+                if (relationFirstTableId.value == selectedTable.value.id) {
+                  return;
+                }
                 // If fist table already selected, create a relationship between it and the current
-                console.log(relationFirstTableId.value, selectedTable.value.id);
+                if (type != "mtm") {
+                    const firstTable = tables.value.find(it => it.id == relationFirstTableId.value);
+                    const currentPrimary = selectedTable.value.cols.find(it => it.primaryKey);
+
+                    if (firstTable && currentPrimary) {
+
+                        // Check if relation between tables already exists
+                        const existingRel = relations.value.find(it => it.firstTableId == firstTable.id && it.secondTableId == selectedTable.value?.id);
+
+                        if (existingRel) {
+                            if (existingRel.type != type) {
+                                bufferStore.addUndoBufferAction({
+                                    action: 'change',
+                                    entities: [{
+                                        type: "relation",
+                                        entityId: existingRel.id,
+                                        oldVal: cloneDeep(existingRel),
+                                    }]
+                                });
+
+                                existingRel.type = type;
+                            }
+
+                            return;
+                        }
+
+
+                        const foreignKey = generateNewForeignKey(
+                            selectedTable.value,
+                            ['ioto', 'noto'].includes(type),
+                            ['ioto', 'iotm'].includes(type)
+                        )!;
+
+                        firstTable.cols.push(cloneDeep(foreignKey));
+
+                        const rel = cloneDeep(createNewRelationship(
+                            foreignKey.id,
+                            firstTable.id,
+
+                            currentPrimary.id,
+                            selectedTable.value.id,
+                            type
+                        ));
+
+                        relations.value.push(rel);
+
+                        bufferStore.addUndoBufferAction({
+                            action: 'create',
+                            entities: [{
+                                type: "tableCol",
+                                entityId: `${firstTable.id}.${foreignKey.id}.${selectedTable.value.cols.length - 1}`,
+                                oldVal: undefined,
+                            }, {
+                                type: "relation",
+                                entityId: rel.id,
+                                oldVal: undefined,
+                            }]
+                        });
+                    }
+                } else {
+
+                }
+
                 actionStore.resetAction();
             }
         }
@@ -147,6 +223,8 @@ export const useDesignStore = defineStore('design', () => {
     const createNewProject = () => {
         tables.value = [];
         newTableIndex.value = 1;
+
+        relations.value = [];
 
         bufferStore.clearState();
     }
@@ -267,6 +345,8 @@ export const useDesignStore = defineStore('design', () => {
         selectedTable,
         newTableIndex, // Must be returned to preserve state
 
+        relations,
+
         duplicateTableNames,
         isManualCreation,
 
@@ -302,7 +382,7 @@ export const useDesignStore = defineStore('design', () => {
         // Import from JSON should be consistent between versions.
         key: `__ermd_${ appConfig.appVersion }__design`,
         pick: [
-            'tables', 'newTableIndex'
+            'tables', 'newTableIndex', 'relations'
         ],
     }
 });

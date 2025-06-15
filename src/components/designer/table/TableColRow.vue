@@ -10,7 +10,7 @@
     <DoubleClickFocusInput
         v-model="col.name"
         :name="`colName-${col.id}`"
-        class="w-1/2 group-last/cols:rounded-bl-xl"
+        class="w-1/2 group-last/cols:rounded-bl-xl "
         :class="{ 'border-r' : notBlankOrEmpty(col.name), '!bg-red-400': isColNameDuplicate  }"
         ref="colNameRef"
         @focusout="emit('focusOut')"
@@ -21,6 +21,12 @@
     />
     <div class="w-1/2">
     </div>
+
+    <div v-if="col.foreignKey || col.primaryKey" class="absolute full flex items-center justify-between z-0 pointer-events-none">
+      <div :id="`anchor-${col.id}-l`" />
+      <div :id="`anchor-${col.id}-r`" />
+    </div>
+
   </div>
 </template>
 

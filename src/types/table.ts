@@ -1,36 +1,62 @@
-import { type FieldType, getDefaultForType } from "@/types/tableField.ts";
-import { generateId } from "@/utils/utils.ts";
+import { generateId, unpluralize } from "@/utils/utils.ts";
 import { defaultSettings } from "@/types/misc.ts";
-import { appConfig } from "@/app.config.ts"
+import { appConfig } from "@/app.config.ts";
+
+const defaultColType = appConfig.defaultColumnType;
+const defaultColModifier = appConfig.defaultColumnModifier;
 
 export interface TableCol {
     id: string,
     name: string,
-    type: FieldType,
-    size: string | undefined,
+    type: string,
+    modifier: number[] | undefined,
 
     primaryKey: boolean,
+    foreignKey: boolean,
     notNull: boolean,
     unique: boolean,
     autoIncrement: boolean,
     defaultValue: string | undefined,
 }
 
-export const generateNewTableCol = () => {
-    const col: TableCol = {
+export const generateNewTableCol = (): TableCol => {
+    return {
         id: generateId('col'),
         name: "",
-        type: defaultSettings.defaultRowType,
-        size: getDefaultForType(defaultSettings.defaultRowType),
+        type: defaultColType,
+        modifier: defaultColModifier,
 
         primaryKey: false,
+        foreignKey: false,
         notNull: defaultSettings.defaultNotNull,
         unique: false,
         autoIncrement: false,
         defaultValue: undefined
     }
+}
 
-    return col;
+export const generateNewForeignKey = (otherTable: Table, fkUnique: boolean = false, fkNotNull: boolean = false): TableCol | undefined => {
+    const otherPrimary = otherTable.cols.find(it => it.primaryKey);
+
+    if (otherPrimary) {
+        const col = generateNewTableCol();
+
+        // TODO this must be customizable in settings
+        col.name = `${unpluralize(otherTable.name)}_id`;
+
+        col.foreignKey = true;
+
+        col.type = otherPrimary.type;
+        col.modifier = otherPrimary.modifier;
+
+        // Identifying and MtM FK must be not null
+        col.notNull = fkNotNull;
+
+        // OtO FK must be unique
+        col.unique = fkUnique;
+
+        return col;
+    }
 }
 
 export interface Table {
@@ -42,14 +68,22 @@ export interface Table {
     posY: number,
 }
 
-export const generateNewTable = (index: number = 1, posX: number, posY: number) => {
+export const generateNewTable = (
+    name: string,
+    index: number = 1,
+    posX: number,
+    posY: number,
+    primaryType: string,
+    primaryModifier: number[] | undefined
+) => {
     const idCol: TableCol = {
         id: generateId('col'),
         name: "id",
-        type: defaultSettings.defaultPrimaryKey,
-        size: getDefaultForType(defaultSettings.defaultPrimaryKey),
+        type: primaryType,
+        modifier: primaryModifier,
 
         primaryKey: true,
+        foreignKey: false,
         notNull: true,
         unique: true,
         autoIncrement: false,
@@ -58,7 +92,7 @@ export const generateNewTable = (index: number = 1, posX: number, posY: number) 
 
     const table: Table = {
         id: generateId('table'),
-        name: appConfig.defaultTableName + index,
+        name: name + index,
         cols: [idCol],
 
         posX: posX,

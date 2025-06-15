@@ -54,8 +54,8 @@ export function useDesignCanvas() {
             }
             case 'table': {
                 // Create a table
-                const posX = (evt.clientX) / scaleFactor.value - translateOffsetX.value;
-                const posY = (evt.clientY) / scaleFactor.value - translateOffsetY.value;
+                const posX = evt.clientX / scaleFactor.value - translateOffsetX.value;
+                const posY = evt.clientY / scaleFactor.value - translateOffsetY.value;
 
                 designStore.addTable(posX, posY);
                 actionStore.setAction(undefined);

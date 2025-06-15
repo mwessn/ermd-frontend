@@ -17,7 +17,7 @@
 
       @focusout="deselectAll"
 
-      @keyup.enter="emit('enterKey')"
+      @keydown.enter.prevent="emit('enterKey')"
       @keyup.delete="onDelete"
   >
 </template>

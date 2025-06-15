@@ -1,17 +1,17 @@
-import type { FieldType } from "@/types/tableField.ts";
+import type { DatabaseEngine } from "@/types/TableColumnTypes/tableField.ts";
 
 export interface UserSettings {
+    databaseEngine: DatabaseEngine;
+
     // Tables
-    defaultPrimaryKey: FieldType;
-    defaultRowType: FieldType;
+    defaultPrimaryKey: string;
+    defaultRowType: string;
     defaultNotNull: boolean;
+    defaultTableName: string,
 
-    // Autosave
-    autosave: boolean;
-    autosaveIntervalMinutes: number;
-
-    // Visual
-    relationLineDisplay: 'ortho' | 'direct';
+    // Relationships
+    generateMtMPrimaryKey: boolean;
+    mtmPrimaryKeyType: string;
 
     // Functional
     dragCanvasButton: 'middle' | 'left';
@@ -19,14 +19,15 @@ export interface UserSettings {
 }
 
 export const defaultSettings: UserSettings = {
-    defaultPrimaryKey: 'bigint',
+    databaseEngine: 'postgres',
+
+    defaultPrimaryKey: 'uuid',
     defaultRowType: 'int',
     defaultNotNull: false,
+    defaultTableName: "NewTable",
 
-    autosave: true,
-    autosaveIntervalMinutes: 5,
-
-    relationLineDisplay: 'ortho',
+    generateMtMPrimaryKey: false,
+    mtmPrimaryKeyType: 'bigint',
 
     dragCanvasButton: 'middle',
     undoActionBufferSize: 20,

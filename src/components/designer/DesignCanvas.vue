@@ -18,8 +18,23 @@
           v-for="table in designStore.tables"
           :table="table"
           :key="table.id"
+          :id="`table-${table.id}`"
           :is-name-duplicate="isTableNameDuplicate(table.name)"
       />
+
+      <svg
+          ref="relationshipsRef"
+          class="fixed top-0 left-0 full z-0 origin-top-left"
+          overflow="visible"
+      >
+        <DesignerRelation
+            v-for="relation in designStore.relations"
+            :relation="relation"
+            :scale-factor="scaleFactor"
+            :offset-x="translateOffsetX"
+            :offset-y="translateOffsetY"
+        />
+      </svg>
     </div>
 
     <div
@@ -59,9 +74,13 @@ import { useKeyboardShortcuts } from "@/components/designer/scripts/useKeyboardS
 import { useDesignStore } from "@/store/design.ts";
 import DesignerTable from "@/components/designer/DesignerTable.vue";
 import { resetFocus } from "@/utils/utils.ts";
+import { useSettingsStore } from "@/store/settings.ts";
+import DesignerRelation from "@/components/designer/DesignerRelation.vue";
 
 const actionsStore = useActionsStore();
 const designStore = useDesignStore();
+
+const settingsStore = useSettingsStore();
 
 const cursorStyle = computed(() => {
   const cursor = isDragging.value ? 'move' : actionsStore.currentAction ?? 'default';
@@ -81,6 +100,8 @@ const onMouseLeave = () => {
 
 const {
   scaleFactor,
+  translateOffsetX,
+  translateOffsetY,
 
   isDragging,
   bgPos,
