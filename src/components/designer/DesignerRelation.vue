@@ -10,6 +10,7 @@
       tabindex="-1"
       @mousedown="console.log('mouse')"
       @focus="console.log('focus')"
+      @mousever="console.log('hover')"
   />
   <circle
     :r="circleRadius"
@@ -91,13 +92,16 @@ const calculateLineCoordinates = () => {
     const anchor1 = document.getElementById(`anchor-${ props.relation.firstTableColId }-${ firstLeftOfSecond ? 'r' : 'l' }`);
     const anchor2 = document.getElementById(`anchor-${ props.relation.secondTableColId }-${ firstLeftOfSecond ? 'l' : 'r' }`);
 
+    // Little offset to prevent line corners from sticking out
+    const offsetPx = 5;
+
     if (anchor1 && anchor2) {
       const firstPos = anchor1.getBoundingClientRect();
       x1.value = firstPos.x / props.scaleFactor - props.offsetX;
       y1.value = firstPos.y / props.scaleFactor - props.offsetY;
 
       const secondPos = anchor2.getBoundingClientRect();
-      x2.value = secondPos.x / props.scaleFactor - props.offsetX;
+      x2.value = secondPos.x / props.scaleFactor - props.offsetX + (firstLeftOfSecond ? offsetPx : -offsetPx);
       y2.value = secondPos.y / props.scaleFactor - props.offsetY;
     }
   }
@@ -110,7 +114,10 @@ watch(
         secondTable.value.posX,
         secondTable.value.posY
     ],
-    calculateLineCoordinates,
+    async () => {
+      await nextTick();
+      calculateLineCoordinates();
+    },
     { deep: true }
 );
 

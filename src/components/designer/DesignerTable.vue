@@ -61,7 +61,7 @@ import { computed, nextTick, onMounted, type PropType, ref, useTemplateRef } fro
 import { generateNewTableCol, type Table, type TableCol } from "@/types/table.ts";
 import { useDesignStore } from "@/store/design.ts";
 import DoubleClickFocusInput from "@/components/core/DoubleClickFocusInput.vue";
-import { notBlankOrEmpty, resetFocus } from "@/utils/utils.ts";
+import { notBlankOrEmpty, resetFocus, sleep } from "@/utils/utils.ts";
 import TableColRow from "@/components/designer/table/TableColRow.vue";
 
 const { selectTable, isManualCreation, addTableCol, deleteTableCol } = useDesignStore();
@@ -165,7 +165,9 @@ const duplicateColNames = computed(() => {
 onMounted(async () => {
   // When a new table is created manually, focus table name input and select all content
   if (isManualCreation) {
-    await nextTick(); // Sleep for a short time after mount, otherwise won't focus
+    // Sleep for a short time after mount, otherwise won't focus
+    // nextTick() is not enough
+    await sleep(50);
     nameInputRef.value?.focusSelectAll();
   }
 });

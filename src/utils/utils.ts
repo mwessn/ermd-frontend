@@ -32,6 +32,7 @@ export function notBlankOrEmpty(val: string) {
  * Handles irregular plurals and maintains case sensitivity.
  */
 export function unpluralize(word: string): string {
+    // Assume words shorter than 3 chars are not pluralized
     if (!word || word.length <= 3) return word;
 
     const lowerWord = word.toLowerCase();
