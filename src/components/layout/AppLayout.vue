@@ -5,6 +5,8 @@
 
   <FunctionsMenu :visible="functionsMenuVisible" />
 
+  <SettingsMenu :visible="settingsMenuVisible" />
+
   <slot />
 </div>
 </template>
@@ -13,9 +15,15 @@
 import PageHeader from "@/components/layout/PageHeader.vue";
 import { ref } from "vue";
 import FunctionsMenu from "@/components/sideMenu/FunctionsMenu.vue";
+import SettingsMenu from "@/components/sideMenu/SettingsMenu.vue";
+import { useDesignStore } from "@/store/design.ts";
+
+const { tables } = useDesignStore();
+
+const isFirstLaunch = tables.length == 0;
 
 const functionsMenuVisible = ref<boolean>(true);
-const settingsMenuVisible = ref<boolean>(true);
+const settingsMenuVisible = ref<boolean>(isFirstLaunch);
 
 const toggleMenu = (val: 'functions' | 'settings') => {
   switch (val) {

@@ -35,11 +35,9 @@
 import { computed, type PropType, useTemplateRef } from "vue";
 import type { TableCol } from "@/types/table.ts";
 import DoubleClickFocusInput from "@/components/core/DoubleClickFocusInput.vue";
-import { notBlankOrEmpty } from "@/utils/utils.ts";
 import { useDesignStore } from "@/store/design.ts";
 import { cloneDeep } from "lodash";
-import type { CssStyleClass } from "@fortawesome/fontawesome-svg-core";
-import { RESERVED_SQL_KEYWORDS, SQL_IDENTIFIER_REGEX } from "@/types/misc.ts";
+import { SQL_IDENTIFIER_REGEX } from "@/types/misc.ts";
 
 const { bufferLogColChange } = useDesignStore();
 

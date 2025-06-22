@@ -3,7 +3,10 @@ export const appConfig = {
     appName: 'ERMD',
     appGitHub: 'https://github.com/mwessn/ermd-frontend',
 
-    // Doesn't matter enough to put it in settings
+    // Cap to prevent performance issues
+    maxActionBufferSize: 600,
+
+    // Not important enough to put it in settings
     defaultColumnType: 'INT',
     defaultColumnModifier: [8],
 }

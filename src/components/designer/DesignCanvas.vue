@@ -4,22 +4,14 @@
       :style="{ cursor: cursorStyle, backgroundPosition: bgPos, backgroundSize: bgSize }"
       :class="{ 'select-none' : isDragging }"
       @mousedown.left="onMouseDown"
+      @mousedown.middle="onMiddleMouseDown"
       @contextmenu.prevent="setAction(undefined)"
       @mouseup.left="onMouseUp"
+      @mouseup.middle="onMiddleMouseUp"
       @mousemove="onMouseMove"
       @mouseleave="onMouseLeave"
       @wheel.prevent="onScroll"
   >
-    <div class="absolute right-0 top-0 w-2/5 z-50 bg-accentGray">
-      {{ useActionBuffer().undoBuffer.map(it => {
-     return it.entities.map(ent => {
-         return {
-             action: ent.action,
-           entity: ent.type
-         }
-     })
-    }) }}
-    </div>
     <div
         class="full relative origin-top-left"
         :style="{ scale: scaleFactor, transform: `translate(${ translatePos })` }"
@@ -86,7 +78,6 @@ import { useDesignStore } from "@/store/design.ts";
 import DesignerTable from "@/components/designer/DesignerTable.vue";
 import { resetFocus } from "@/utils/utils.ts";
 import DesignerRelation from "@/components/designer/DesignerRelation.vue";
-import { useActionBuffer } from "../../store/actionBuffer.ts";
 
 const actionsStore = useActionsStore();
 const designStore = useDesignStore();
@@ -120,6 +111,9 @@ const {
   onMouseUp,
   onMouseMove,
   onScroll,
+
+  onMiddleMouseDown,
+  onMiddleMouseUp,
 
   centerView,
 } = useDesignCanvas();

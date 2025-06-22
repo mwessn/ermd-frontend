@@ -1,7 +1,6 @@
 import { defineStore, storeToRefs } from "pinia";
 import { generateNewForeignKey, generateNewTable, type Table, type TableCol } from "@/types/table.ts";
 import { computed, ref } from "vue";
-import { appConfig } from "@/app.config.ts";
 import { useActionBuffer } from "@/store/actionBuffer.ts";
 import { type CursorPos } from "@/components/designer/scripts/useDesignCanvas.ts";
 import { cloneDeep } from "lodash";
@@ -16,7 +15,13 @@ export const useDesignStore = defineStore('design', () => {
     const bufferStore = useActionBuffer();
     const actionStore = useActionsStore();
 
-    const { currentSettings, defaultPrimaryKey, defaultPrimarySize, defaultTableName } = storeToRefs(useSettingsStore());
+    const {
+        currentSettings,
+        defaultPrimaryKey,
+        defaultTableName,
+    } = storeToRefs(useSettingsStore());
+
+    const { getModifierForType } = useSettingsStore();
 
     const tables = ref<Table[]>([]);
     const newTableIndex = ref<number>(1);
@@ -41,13 +46,13 @@ export const useDesignStore = defineStore('design', () => {
 
     // Table operations
 
-    const addTable = (posX: number, posY: number, generatePrimary: boolean = true, saveBuffer: boolean = true) => {
+    const addTable = (posX: number, posY: number, generatePrimary: boolean = true, saveBuffer: boolean = true, primaryType: string = defaultPrimaryKey.value) => {
         const table = generateNewTable(
             defaultTableName.value,
             newTableIndex.value,
             posX, posY,
-            defaultPrimaryKey.value,
-            defaultPrimarySize.value,
+            primaryType,
+            getModifierForType(primaryType),
             generatePrimary,
         );
 
@@ -247,8 +252,9 @@ export const useDesignStore = defineStore('design', () => {
                             const pivotTableEntry = addTable(
                                 halfwayX,
                                 halfwayY,
+                                currentSettings.value.generateMtMPrimaryKey,
                                 false,
-                                false
+                                currentSettings.value.mtmPrimaryKeyType,
                             );
 
                             const pivotTable = tables.value.find(it => it.id == pivotTableEntry[0].entityId)!;
@@ -629,10 +635,7 @@ export const useDesignStore = defineStore('design', () => {
     }
 }, {
     persist: {
-        // Disregard states from previous versions
-        // In case there were breaking changes.
-        // Import from JSON should be consistent between versions.
-        key: `__ermd_${ appConfig.appVersion }__design`,
+        key: `__ermd_design`,
         pick: [
             'tables', 'newTableIndex', 'relations'
         ],

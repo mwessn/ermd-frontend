@@ -17,8 +17,6 @@ export const useActionBuffer = defineStore('actionBuffer', () => {
         redoBuffer.value = [];
         undoBuffer.value.push({ ...action });
 
-        action.entities.forEach(ent => console.log(`${ent.action} ${ent.type}`));
-
         if (undoBuffer.value.length > maxBufferSize) {
             undoBuffer.value.shift();
         }

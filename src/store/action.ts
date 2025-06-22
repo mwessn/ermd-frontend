@@ -5,7 +5,7 @@ import { useDesignStore } from "@/store/design.ts";
 
 export const useActionsStore = defineStore('actions', () => {
 
-    const { resetRelationshipCreation } = useDesignStore();
+    const designStore = useDesignStore();
 
     const currentAction = ref<UserAction>(undefined);
     const canSetAction = ref<boolean>(true);
@@ -13,13 +13,13 @@ export const useActionsStore = defineStore('actions', () => {
     const setAction = (val: UserAction) => {
         if (canSetAction) {
             currentAction.value = val;
-            resetRelationshipCreation();
+            designStore.resetRelationshipCreation();
         }
     }
 
     const resetAction = () => {
         currentAction.value = undefined;
-        resetRelationshipCreation();
+        designStore.resetRelationshipCreation();
     }
 
     const allowAction = (allow: boolean = true) => {

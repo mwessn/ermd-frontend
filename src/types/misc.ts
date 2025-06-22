@@ -6,7 +6,6 @@ export interface UserSettings {
 
     // Tables
     defaultPrimaryKey: string;
-    defaultRowType: string;
     defaultNotNull: boolean;
 
     // Relationships
@@ -23,13 +22,12 @@ export const defaultSettings: UserSettings = {
     namingConvention: 'camel',
 
     defaultPrimaryKey: 'uuid',
-    defaultRowType: 'int',
     defaultNotNull: false,
 
     generateMtMPrimaryKey: false,
     mtmPrimaryKeyType: 'bigint',
 
-    dragCanvasButton: 'middle',
+    dragCanvasButton: 'left',
     undoActionBufferSize: 20,
 }
 

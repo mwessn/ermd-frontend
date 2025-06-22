@@ -3,6 +3,8 @@ import { ref, computed } from 'vue';
 import { useActionsStore } from "@/store/action.ts";
 import { useDesignStore } from "@/store/design.ts";
 import { clamp } from "@/utils/utils.ts";
+import { storeToRefs } from "pinia";
+import { useSettingsStore } from "@/store/settings.ts";
 
 export interface CursorPos {
     x: number;
@@ -12,6 +14,8 @@ export interface CursorPos {
 export function useDesignCanvas() {
     const actionStore = useActionsStore();
     const designStore = useDesignStore();
+
+    const { currentSettings } = storeToRefs(useSettingsStore());
 
     // How much the canvas is dragged from its center
     const translateOffsetX = ref(0);
@@ -42,13 +46,19 @@ export function useDesignCanvas() {
         `${ translateOffsetX.value }px, ${ translateOffsetY.value }px`
     );
 
+    const startTracking = (evt: MouseEvent) => {
+        // Start tracking drag
+        const pos = { x: evt.clientX, y: evt.clientY };
+        lastClickPos.value = pos;
+        currentMousePos.value = pos;
+    }
+
     const onMouseDown = async (evt: MouseEvent) => {
         switch (actionStore.currentAction) {
             case undefined: {
-                // Start tracking drag
-                const pos = { x: evt.clientX, y: evt.clientY };
-                lastClickPos.value = pos;
-                currentMousePos.value = pos;
+                if (currentSettings.value.dragCanvasButton == 'left') {
+                    startTracking(evt);
+                }
 
                 break;
             }
@@ -75,10 +85,17 @@ export function useDesignCanvas() {
         }
     };
 
+    const stopTracking = () => {
+
+        // Stop tracking drag
+        lastClickPos.value = undefined;
+    }
+
     const onMouseUp = () => {
         if (lastClickPos.value) {
-            // Stop tracking drag
-            lastClickPos.value = undefined;
+            if (currentSettings.value.dragCanvasButton == 'left') {
+                stopTracking();
+            }
 
             // If moved a table, add buffer entry
             if (lastSelectedPos.value) {
@@ -87,6 +104,18 @@ export function useDesignCanvas() {
             }
         }
     };
+
+    const onMiddleMouseDown = (evt: MouseEvent) => {
+        if (currentSettings.value.dragCanvasButton == 'middle') {
+            startTracking(evt);
+        }
+    }
+
+    const onMiddleMouseUp = () => {
+        if (currentSettings.value.dragCanvasButton == 'middle' && lastClickPos.value) {
+            stopTracking();
+        }
+    }
 
     const onMouseMove = (evt: MouseEvent) => {
         // If not dragging return
@@ -153,6 +182,9 @@ export function useDesignCanvas() {
         onMouseUp,
         onMouseMove,
         onScroll,
+
+        onMiddleMouseDown,
+        onMiddleMouseUp,
 
         centerView,
     };
