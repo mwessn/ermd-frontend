@@ -17,6 +17,8 @@ export const useActionBuffer = defineStore('actionBuffer', () => {
         redoBuffer.value = [];
         undoBuffer.value.push({ ...action });
 
+        action.entities.forEach(ent => console.log(`${ent.action} ${ent.type}`));
+
         if (undoBuffer.value.length > maxBufferSize) {
             undoBuffer.value.shift();
         }
@@ -54,13 +56,14 @@ export const useActionBuffer = defineStore('actionBuffer', () => {
 
         function errorAction(entity: BufferEntity | undefined = undefined) {
             reverted = false;
-            console.warn('Something went wrong with action buffer:', entry.action, entity ? entity.type : entry);
+            console.warn('Something went wrong with action buffer:', entity?.action, entity ? entity.type : entry);
         }
 
-        entry.entities.forEach((entity) => {
+        // For complex operations like relationship creation/deletion we must have actions order reversed
+        entry.entities.slice().reverse().forEach((entity) => {
             switch (entity.type) {
                 case "table": {
-                    switch (entry.action) {
+                    switch (entity.action) {
                         case "create": {
                             designStore.bufferDeleteTable(entity);
                             break;
@@ -75,6 +78,10 @@ export const useActionBuffer = defineStore('actionBuffer', () => {
                             designStore.bufferSetTablePos(entity);
                             break;
                         }
+                        case "change": {
+                            designStore.bufferSetTableVal(entity);
+                            break;
+                        }
                         default: {
                             errorAction(entity);
                             break;
@@ -83,7 +90,7 @@ export const useActionBuffer = defineStore('actionBuffer', () => {
                     break;
                 }
                 case "tableCol": {
-                    switch (entry.action) {
+                    switch (entity.action) {
                         case "create": {
                             designStore.bufferDeleteCol(entity);
                             break;
@@ -103,8 +110,29 @@ export const useActionBuffer = defineStore('actionBuffer', () => {
                     }
                     break;
                 }
+                case "relation": {
+                    switch (entity.action) {
+                        case "create": {
+                            designStore.bufferDeleteRelation(entity);
+                            break;
+                        }
+                        case "delete": {
+                            designStore.bufferRestoreRelation(entity);
+                            break
+                        }
+                        case "change": {
+                            designStore.bufferChangeRelation(entity);
+                            break;
+                        }
+                        default: {
+                            errorAction(entity);
+                            break;
+                        }
+                    }
+                    break;
+                }
                 default: {
-                    errorAction()
+                    errorAction();
                 }
             }
         });
@@ -116,13 +144,13 @@ export const useActionBuffer = defineStore('actionBuffer', () => {
 
         function errorAction(entity: BufferEntity | undefined = undefined) {
             restored = false;
-            console.warn('Something went wrong with action buffer:', entry.action, entity ? entity.type : entry);
+            console.warn('Something went wrong with action buffer:', entity?.action, entity ? entity.type : entry);
         }
 
         entry.entities.forEach((entity) => {
             switch (entity.type) {
                 case "table": {
-                    switch (entry.action) {
+                    switch (entity.action) {
                         case "create": {
                             // Prevent restored table name input focus
                             designStore.isManualCreation = false;
@@ -137,6 +165,10 @@ export const useActionBuffer = defineStore('actionBuffer', () => {
                             designStore.bufferSetTablePos(entity);
                             break;
                         }
+                        case "change": {
+                            designStore.bufferSetTableVal(entity);
+                            break;
+                        }
                         default: {
                             errorAction(entity);
                         }
@@ -144,7 +176,7 @@ export const useActionBuffer = defineStore('actionBuffer', () => {
                     break;
                 }
                 case "tableCol": {
-                    switch (entry.action) {
+                    switch (entity.action) {
                         case "create": {
                             designStore.bufferRestoreCol(entity);
                             break;
@@ -164,14 +196,34 @@ export const useActionBuffer = defineStore('actionBuffer', () => {
                     }
                     break;
                 }
+                case "relation": {
+                    switch (entity.action) {
+                        case "create": {
+                            designStore.bufferRestoreRelation(entity);
+                            break;
+                        }
+                        case "delete": {
+                            designStore.bufferDeleteRelation(entity);
+                            break
+                        }
+                        case "change": {
+                            designStore.bufferChangeRelation(entity);
+                            break;
+                        }
+                        default: {
+                            errorAction(entity);
+                            break;
+                        }
+                    }
+                    break;
+                }
                 default: {
-                    errorAction()
+                    errorAction();
                 }
             }
         })
 
         return restored;
-
     }
 
     return {
@@ -179,5 +231,7 @@ export const useActionBuffer = defineStore('actionBuffer', () => {
         undo,
         redo,
         clearState,
+
+        undoBuffer
     };
 })

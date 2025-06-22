@@ -35,14 +35,15 @@ export const generateNewTableCol = (): TableCol => {
     }
 }
 
-export const generateNewForeignKey = (otherTable: Table, fkUnique: boolean = false, fkNotNull: boolean = false): TableCol | undefined => {
+export const generateNewForeignKey = (otherTable: Table, fkUnique: boolean = false, fkNotNull: boolean = false, namingCon: 'snake' | 'camel'): TableCol | undefined => {
     const otherPrimary = otherTable.cols.find(it => it.primaryKey);
 
     if (otherPrimary) {
         const col = generateNewTableCol();
 
         // TODO this must be customizable in settings
-        col.name = `${unpluralize(otherTable.name)}_id`;
+        const postfix = namingCon == 'snake' ? '_id' : 'Id';
+        col.name = `${unpluralize(otherTable.name)}${postfix}`;
 
         col.foreignKey = true;
 
@@ -74,26 +75,31 @@ export const generateNewTable = (
     posX: number,
     posY: number,
     primaryType: string,
-    primaryModifier: number[] | undefined
+    primaryModifier: number[] | undefined,
+    generatePrimary: boolean = true
 ) => {
-    const idCol: TableCol = {
-        id: generateId('col'),
-        name: "id",
-        type: primaryType,
-        modifier: primaryModifier,
+    let idCol: TableCol | undefined = undefined;
 
-        primaryKey: true,
-        foreignKey: false,
-        notNull: true,
-        unique: true,
-        autoIncrement: false,
-        defaultValue: undefined
-    };
+    if (generatePrimary) {
+        idCol = {
+            id: generateId('col'),
+            name: "id",
+            type: primaryType,
+            modifier: primaryModifier,
+
+            primaryKey: true,
+            foreignKey: false,
+            notNull: true,
+            unique: true,
+            autoIncrement: false,
+            defaultValue: undefined
+        };
+    }
 
     const table: Table = {
         id: generateId('table'),
         name: name + index,
-        cols: [idCol],
+        cols: idCol ? [idCol] : [],
 
         posX: posX,
         posY: posY,

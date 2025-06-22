@@ -3,6 +3,7 @@
       v-model="model"
       :type="type"
       :id="id"
+      :maxlength="length"
       class="cursor-inherit p-1 overflow-ellipsis"
       ref="inputRef"
       autocomplete="off"
@@ -37,6 +38,10 @@ const props = defineProps({
   type: {
     type: String,
     default: 'text'
+  },
+  length: {
+    type: Number,
+    default: 63,
   }
 });
 

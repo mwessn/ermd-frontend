@@ -1,31 +1,39 @@
 <template type="svg">
-  <line
-      ref="lineRef"
-      :stroke-width="lineWidth"
-      :stroke="lineColor"
-      :x1="x1"
-      :y1="y1"
-      :x2="x2"
-      :y2="y2"
-      tabindex="-1"
-      @mousedown="console.log('mouse')"
-      @focus="console.log('focus')"
-      @mousever="console.log('hover')"
-  />
-  <circle
-    :r="circleRadius"
-    :cx="x1"
-    :cy="y1"
-    :fill="lineColor"
-  />
+  <g>
+    <line
+        ref="lineRef"
+        stroke-linecap="round"
+        :stroke-width="lineWidth"
+        :stroke="lineColor"
+        :stroke-dasharray="lineDash"
+        stroke-opacity="50%"
+        :x1="x1 - x1offset"
+        :y1="y1"
+        :x2="x2"
+        :y2="y2"
+    />
+    <polyline
+        v-if="isManyRelationship"
+        :points="trianglePoints"
+        :fill="lineColor"
+    />
+    <circle
+        v-else
+        :r="circleRadius"
+        :cx="x1"
+        :cy="y1"
+        :fill="lineColor"
+    />
+  </g>
 </template>
 
 <script setup lang="ts">
 import { computed, nextTick, onMounted, type PropType, ref, useTemplateRef, watch } from "vue";
-import type { DatabaseRelationship } from "@/types/relationships.ts";
+import type { DatabaseRelationship, RelationshipType } from "@/types/relationships.ts";
 import { useDesignStore } from "@/store/design.ts";
 import type { Table } from "@/types/table.ts";
 import { clamp } from "@/utils/utils.ts";
+import { storeToRefs } from "pinia";
 
 const props = defineProps({
   relation: {
@@ -46,6 +54,19 @@ const props = defineProps({
   }
 });
 
+const nonIdentifyingTypes: RelationshipType[] = [
+    'notm',
+    'noto'
+];
+
+const manyRelationshipTypes: RelationshipType[] = [
+    'notm',
+    'iotm',
+    'mtm'
+];
+
+const isManyRelationship = computed(() => manyRelationshipTypes.includes(props.relation.type));
+
 const baseCircleSize = 6;
 const circleSizeMultiplier = 1.4;
 const maxCircleSize = 16;
@@ -55,6 +76,17 @@ const circleRadius = computed(() => clamp(
     baseCircleSize + baseCircleSize * circleSizeMultiplier * (1 - props.scaleFactor),
     baseCircleSize,
     maxCircleSize)
+);
+
+const baseTriangleRadius = 12;
+const triangleRadiusMultiplier = 1.8;
+const maxTriangleRadius = 26;
+
+// Increase circle size on zooming out
+const triangleRadius = computed(() => clamp(
+    baseTriangleRadius + baseTriangleRadius * triangleRadiusMultiplier * (1 - props.scaleFactor),
+    baseTriangleRadius,
+    maxTriangleRadius)
 );
 
 const baseLineWidth = 3;
@@ -68,28 +100,61 @@ const lineWidth = computed(() => clamp(
     maxLineWidth)
 );
 
-const { tables } = useDesignStore();
+// Make the line come out of the triangle tip / circle center
+const x1offset = computed(() =>
+    (isManyRelationship.value ? triangleRadius.value : circleRadius.value) *
+    (anchor1side.value == 'r' ? -1 : 1)
+);
+
+// Non-identifying are dashed
+const lineDash = computed(() => nonIdentifyingTypes.includes(props.relation.type) ? '35,10' : undefined);
+
+const { tables, selectedTable } = storeToRefs(useDesignStore());
 
 const lineRef = useTemplateRef('lineRef');
 
-const lineColor = computed(() => ['noto', 'notm'].includes(props.relation.type) ? 'var(--color-lycheeIce)' : 'var(--color-monolithicCyanTsunami)');
+const lineColor = computed(() => selectedTable.value && props.relation.firstTableId == selectedTable.value.id ?
+    'var(--color-monolithicCyanTsunami)' :
+    'var(--color-lycheeIce)'
+);
 
-const firstTable = ref<Table>(tables.find(it => it.id == props.relation.firstTableId)!)
-const secondTable = ref<Table>(tables.find(it => it.id == props.relation.secondTableId)!)
+const firstTable = ref<Table>(tables.value.find(it => it.id == props.relation.firstTableId)!)
+const secondTable = ref<Table>(tables.value.find(it => it.id == props.relation.secondTableId)!)
 
 const x1 = ref<number>(0);
 const y1 = ref<number>(0);
 const x2 = ref<number>(0);
 const y2 = ref<number>(0);
 
+const trianglePoints = computed(() => {
+  if (isManyRelationship.value) {
+    const points = [];
+    const baseAngle = anchor1side.value == 'r' ? 0 : Math.PI; // 0° or 180°
+    for (let i = 0; i < 3; i++) {
+      const angle = baseAngle + (i * 2 * Math.PI / 3); // each 120° apart
+      const px = x1.value + triangleRadius.value * Math.cos(angle);
+      const py = y1.value + triangleRadius.value * Math.sin(angle);
+      points.push(`${px},${py}`);
+    }
+
+    return points.join(" ");
+  } else {
+    return undefined;
+  }
+});
+
+const anchor1side = ref<'r' | 'l'>('r');
+
 const calculateLineCoordinates = () => {
   const firstTableDOM = document.getElementById(`table-${ props.relation.firstTableId }`);
   const secondTableDOM = document.getElementById(`table-${ props.relation.secondTableId }`);
 
   if (firstTableDOM && secondTableDOM) {
-    const firstLeftOfSecond = firstTableDOM.getBoundingClientRect().x <= secondTableDOM.getBoundingClientRect().x
+    const firstLeftOfSecond = firstTableDOM.getBoundingClientRect().x <= secondTableDOM.getBoundingClientRect().x;
 
-    const anchor1 = document.getElementById(`anchor-${ props.relation.firstTableColId }-${ firstLeftOfSecond ? 'r' : 'l' }`);
+    anchor1side.value = firstLeftOfSecond ? 'r' : 'l';
+
+    const anchor1 = document.getElementById(`anchor-${ props.relation.firstTableColId }-${ anchor1side.value }`);
     const anchor2 = document.getElementById(`anchor-${ props.relation.secondTableColId }-${ firstLeftOfSecond ? 'l' : 'r' }`);
 
     // Little offset to prevent line corners from sticking out

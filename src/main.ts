@@ -9,6 +9,7 @@ import { router } from "@/router.ts";
 import i18n from "@/utils/i18n.ts";
 
 import { appConfig } from "@/app.config.ts";
+import { useDesignStore } from "@/store/design.ts";
 
 // Clear outdated design states if any exist
 const storeSuffix = '__design';
@@ -25,6 +26,11 @@ const pinia = createPinia();
 pinia.use(piniaPluginPersistedstate)
 
 const app = createApp(App);
+
+app.config.errorHandler = (err, instance, info) => {
+    console.warn('Something terrible has happened', err, info)
+    useDesignStore().createNewProject();
+}
 
 app.use(router);
 app.use(i18n);

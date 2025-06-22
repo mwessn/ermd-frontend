@@ -10,6 +10,7 @@ export type RelationshipType =
 export interface DatabaseRelationship {
     id: string;
     // In Oto and OtM relationship first table is the one that gets the foreign key
+    // In MtM first table is pivot table
     firstTableColId: string;
     firstTableId: string;
 

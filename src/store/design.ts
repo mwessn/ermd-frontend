@@ -1,21 +1,22 @@
-import { defineStore } from "pinia";
+import { defineStore, storeToRefs } from "pinia";
 import { generateNewForeignKey, generateNewTable, type Table, type TableCol } from "@/types/table.ts";
 import { computed, ref } from "vue";
 import { appConfig } from "@/app.config.ts";
 import { useActionBuffer } from "@/store/actionBuffer.ts";
 import { type CursorPos } from "@/components/designer/scripts/useDesignCanvas.ts";
 import { cloneDeep } from "lodash";
-import type { BufferEntity } from "@/types/actionsBuffer.ts";
+import type { ActionBufferEntry, BufferEntity } from "@/types/actionsBuffer.ts";
 import type { DatabaseRelationship, RelationshipType } from "@/types/relationships.ts";
 import { useActionsStore } from "@/store/action.ts";
 import { useSettingsStore } from "@/store/settings.ts";
 import { createNewRelationship } from "@/types/relationships.ts";
+import { unpluralize } from "@/utils/utils.ts";
 
 export const useDesignStore = defineStore('design', () => {
     const bufferStore = useActionBuffer();
     const actionStore = useActionsStore();
 
-    const { currentSettings, defaultPrimaryKey, defaultPrimarySize } = useSettingsStore();
+    const { currentSettings, defaultPrimaryKey, defaultPrimarySize, defaultTableName } = storeToRefs(useSettingsStore());
 
     const tables = ref<Table[]>([]);
     const newTableIndex = ref<number>(1);
@@ -40,28 +41,35 @@ export const useDesignStore = defineStore('design', () => {
 
     // Table operations
 
-    const addTable = (posX: number, posY: number) => {
+    const addTable = (posX: number, posY: number, generatePrimary: boolean = true, saveBuffer: boolean = true) => {
         const table = generateNewTable(
-            currentSettings.defaultTableName,
+            defaultTableName.value,
             newTableIndex.value,
             posX, posY,
-            defaultPrimaryKey,
-            defaultPrimarySize,
+            defaultPrimaryKey.value,
+            defaultPrimarySize.value,
+            generatePrimary,
         );
 
         tables.value.push(table);
 
-        bufferStore.addUndoBufferAction({
-            action: 'create',
+        const bufferAction: ActionBufferEntry = {
             entities: [{
+                action: 'create',
                 type: 'table',
                 entityId: table.id,
                 oldVal: undefined,
             }]
-        })
+        }
+
+        if (saveBuffer) {
+            bufferStore.addUndoBufferAction(bufferAction);
+        }
 
         newTableIndex.value++;
         isManualCreation.value = true;
+
+        return bufferAction.entities;
     }
 
     const selectTable = (val: Table | undefined = undefined) => {
@@ -77,17 +85,21 @@ export const useDesignStore = defineStore('design', () => {
 
     const deleteSelectedTable = () => {
         if (selectedTable.value) {
-            // 'Delete' buffer entry should only be added in this method
-            bufferStore.addUndoBufferAction({
+            const deleteTableEntity: BufferEntity = {
                 action: 'delete',
-                entities: [{
-                    type: "table",
-                    entityId: selectedTable.value.id,
-                    oldVal: cloneDeep(selectedTable.value),
-                }]
-            });
+                type: "table",
+                entityId: selectedTable.value.id,
+                oldVal: cloneDeep(selectedTable.value),
+            }
 
-            deleteTable(selectedTable.value);
+            const additionalDeleteEntities = deleteTable(selectedTable.value);
+
+            bufferStore.addUndoBufferAction({
+                entities: [
+                    deleteTableEntity, // Table delete must be undone first
+                    ...additionalDeleteEntities
+                ]
+            });
 
             selectedTable.value = undefined;
         }
@@ -100,8 +112,8 @@ export const useDesignStore = defineStore('design', () => {
             selectedTable.value.cols.push(cloneDeep(col));
 
             bufferStore.addUndoBufferAction({
-                action: 'create',
                 entities: [{
+                    action: 'create',
                     type: "tableCol",
                     entityId: `${selectedTable.value.id}.${col.id}.${selectedTable.value.cols.length - 1}`,
                     oldVal: undefined,
@@ -117,13 +129,24 @@ export const useDesignStore = defineStore('design', () => {
         if (selectedTable.value) {
             const index = selectedTable.value.cols.indexOf(col);
             if (index != -1) {
-                bufferStore.addUndoBufferAction({
-                    action: 'delete',
-                    entities: [{
+
+                const bufferEntries: BufferEntity[] = [
+                    {
+                        action: 'delete',
                         type: "tableCol",
                         entityId: `${selectedTable.value.id}.${col.id}.${index}`,
                         oldVal: cloneDeep(col),
-                    }]
+                    }
+                ];
+
+                const existingRelations = relations.value.filter(it => it.firstTableColId == col.id);
+
+                existingRelations.forEach(rel =>
+                    bufferEntries.push(...deleteRelationship(rel, false))
+                );
+
+                bufferStore.addUndoBufferAction({
+                    entities: bufferEntries
                 });
 
                 selectedTable.value.cols.splice(index, 1);
@@ -143,31 +166,44 @@ export const useDesignStore = defineStore('design', () => {
         if (selectedTable.value) {
             if (!relationFirstTableId.value) {
                 // If first table not selected, select and exit
-                relationFirstTableId.value = cloneDeep(selectedTable.value.id);
+
+                let hasPK = true
+                if (type == 'mtm') {
+                    // Check if selected table has primaryId column
+                    hasPK = selectedTable.value.cols.find(it => it.primaryKey) == null;
+                }
+
+                if (hasPK) {
+                    relationFirstTableId.value = cloneDeep(selectedTable.value.id);
+                }
                 return;
             } else {
+                // If fist table already selected, create a relationship between it and the current
+
+                // Check if selected table is not the same
                 if (relationFirstTableId.value == selectedTable.value.id) {
                   return;
                 }
-                // If fist table already selected, create a relationship between it and the current
-                if (type != "mtm") {
-                    const firstTable = tables.value.find(it => it.id == relationFirstTableId.value);
-                    const currentPrimary = selectedTable.value.cols.find(it => it.primaryKey);
 
-                    if (firstTable && currentPrimary) {
+                // Get first table
+                const firstTable = tables.value.find(it => it.id == relationFirstTableId.value);
 
+                if (firstTable) {
+                    if (type != "mtm") {
                         // Check if relation between tables already exists
-                        const existingRel = relations.value.find(it => it.firstTableId == firstTable.id && it.secondTableId == selectedTable.value?.id);
+                        const existingRel = relations.value.find(it =>
+                            (it.firstTableId == firstTable.id && it.secondTableId == selectedTable.value?.id)
+                        );
 
                         if (existingRel) {
-                            if (existingRel.type != type) {
+                            if (existingRel.type != type && existingRel.type != 'mtm') {
                                 bufferStore.addUndoBufferAction({
-                                    action: 'change',
-                                    entities: [{
+                                    entities: [ {
+                                        action: 'change',
                                         type: "relation",
                                         entityId: existingRel.id,
                                         oldVal: cloneDeep(existingRel),
-                                    }]
+                                    } ]
                                 });
 
                                 existingRel.type = type;
@@ -176,41 +212,90 @@ export const useDesignStore = defineStore('design', () => {
                             return;
                         }
 
+                        const bufferEntries: BufferEntity[] = [];
 
-                        const foreignKey = generateNewForeignKey(
-                            selectedTable.value,
-                            ['ioto', 'noto'].includes(type),
-                            ['ioto', 'iotm'].includes(type)
-                        )!;
+                        const existingMtM = mtmRelationExists(firstTable, selectedTable.value)
 
-                        firstTable.cols.push(cloneDeep(foreignKey));
+                        if (existingMtM) {
+                            const pivot = tables.value.find(it => it.id == existingMtM.firstTableId)!;
+                            bufferEntries.push(
+                                ...deleteTable(pivot),
+                                // deleteTable() doesn't add buffer entry for table deletion so we must add it manually
+                                {
+                                    action: 'delete',
+                                    type: 'table',
+                                    entityId: pivot.id,
+                                    oldVal: cloneDeep(pivot),
+                                },
+                            );
+                        }
 
-                        const rel = cloneDeep(createNewRelationship(
-                            foreignKey.id,
-                            firstTable.id,
-
-                            currentPrimary.id,
-                            selectedTable.value.id,
-                            type
-                        ));
-
-                        relations.value.push(rel);
+                        bufferEntries.push(
+                            ...createSimpleRelation(firstTable, selectedTable.value, type)
+                        );
 
                         bufferStore.addUndoBufferAction({
-                            action: 'create',
-                            entities: [{
-                                type: "tableCol",
-                                entityId: `${firstTable.id}.${foreignKey.id}.${selectedTable.value.cols.length - 1}`,
-                                oldVal: undefined,
-                            }, {
-                                type: "relation",
-                                entityId: rel.id,
-                                oldVal: undefined,
-                            }]
+                            entities: bufferEntries
+                        });
+                    } else {
+                        // Helper to create MtM relation
+                        function createMtMRelation() {
+                            const halfwayX = (firstTable!.posX + selectedTable.value!.posX) / 2;
+                            const halfwayY = (firstTable!.posY + selectedTable.value!.posY) / 2;
+
+
+                            const pivotTableEntry = addTable(
+                                halfwayX,
+                                halfwayY,
+                                false,
+                                false
+                            );
+
+                            const pivotTable = tables.value.find(it => it.id == pivotTableEntry[0].entityId)!;
+
+                            const nameJoin = currentSettings.value.namingConvention == 'snake' ?
+                                '_has_' :
+                                'Has';
+
+                            pivotTable.name = `${unpluralize(firstTable!.name)}${nameJoin}${selectedTable.value?.name}`;
+
+                            const firstBufferEntry = createSimpleRelation(pivotTable, firstTable!, 'mtm');
+                            const secondBufferEntry = createSimpleRelation(pivotTable, selectedTable.value!, 'mtm');
+
+                            return [
+                                ...pivotTableEntry,
+                                ...firstBufferEntry,
+                                ...secondBufferEntry
+                            ]
+                        }
+
+                        // Check if MtM between given tables already exist
+                        if (mtmRelationExists(firstTable, selectedTable.value)) {
+                            return;
+                        }
+
+                        // Check if a simple relation between tables already exists
+                        const existingRel = relations.value.find(it =>
+                            (it.firstTableId == firstTable.id && it.secondTableId == selectedTable.value?.id) ||
+                            (it.secondTableId == firstTable.id && it.firstTableId == selectedTable.value?.id)
+                        );
+
+                        const bufferEntries: BufferEntity[] = [];
+
+                        if (existingRel) {
+                           bufferEntries.push(
+                               ...deleteRelationship(existingRel, true)
+                           );
+                        }
+
+                        bufferEntries.push(
+                            ...createMtMRelation()
+                        );
+
+                        bufferStore.addUndoBufferAction({
+                            entities: bufferEntries
                         });
                     }
-                } else {
-
                 }
 
                 actionStore.resetAction();
@@ -236,8 +321,15 @@ export const useDesignStore = defineStore('design', () => {
         if (table) {
             // Store copy to buffer and delete the table
             bufferEntry.oldVal = cloneDeep(table);
+
+            // Relationships to the table should not exist at this point
             deleteTable(table);
         }
+    }
+
+    function bufferRestoreTable(bufferEntry: BufferEntity) {
+        tables.value.push(cloneDeep(bufferEntry.oldVal as Table));
+        bufferEntry.oldVal = undefined;
     }
 
     function bufferSetTablePos(bufferEntry: BufferEntity) {
@@ -255,9 +347,15 @@ export const useDesignStore = defineStore('design', () => {
         }
     }
 
-    function bufferRestoreTable(bufferEntry: BufferEntity) {
-        tables.value.push(cloneDeep(bufferEntry.oldVal as Table));
-        bufferEntry.oldVal = undefined;
+    function bufferSetTableVal(bufferEntry: BufferEntity) {
+        const tableIndex = tables.value.findIndex(it => it.id == bufferEntry.entityId);
+        if (tableIndex != -1) {
+            const oldVal = cloneDeep(tables.value[tableIndex]);
+
+            tables.value[tableIndex] = cloneDeep(bufferEntry.oldVal as Table);
+
+            bufferEntry.oldVal = oldVal;
+        }
     }
 
     function bufferDeleteCol(bufferEntry: BufferEntity) {
@@ -304,11 +402,34 @@ export const useDesignStore = defineStore('design', () => {
         }
     }
 
+    function bufferDeleteRelation(bufferEntry: BufferEntity) {
+        const relation = relations.value.find(it => it.id == bufferEntry.entityId);
+        if (relation) {
+            bufferEntry.oldVal = cloneDeep(relation);
+            const index = relations.value.indexOf(relation);
+            relations.value.splice(index, 1);
+        }
+    }
+
+    function bufferRestoreRelation(bufferEntry: BufferEntity) {
+        relations.value.push(cloneDeep(bufferEntry.oldVal as DatabaseRelationship));
+        bufferEntry.oldVal = undefined;
+    }
+
+    function bufferChangeRelation(bufferEntry: BufferEntity) {
+        const relationIndex = relations.value.findIndex(it => it.id == bufferEntry.entityId);
+        if (relationIndex != -1) {
+            const oldVal = cloneDeep(relations.value[relationIndex]);
+            relations.value[relationIndex] = bufferEntry.oldVal as DatabaseRelationship;
+            bufferEntry.oldVal = oldVal;
+        }
+    }
+
     function bufferLogTableMove(pos: CursorPos) {
         if (selectedTable.value) {
             bufferStore.addUndoBufferAction({
-                action: 'move',
                 entities: [{
+                    action: 'move',
                     type: "table",
                     entityId: selectedTable.value.id,
                     oldVal: pos,
@@ -320,8 +441,8 @@ export const useDesignStore = defineStore('design', () => {
     function bufferLogColChange(col: TableCol, oldVal: TableCol) {
         if (selectedTable.value) {
             bufferStore.addUndoBufferAction({
-                action: 'change',
                 entities: [{
+                    action: 'change',
                     type: "tableCol",
                     entityId: `${selectedTable.value.id}.${col.id}`,
                     oldVal: oldVal,
@@ -330,14 +451,139 @@ export const useDesignStore = defineStore('design', () => {
         }
     }
 
+    function bufferLogTableChange(oldVal: Table) {
+        if (selectedTable.value) {
+            bufferStore.addUndoBufferAction({
+                entities: [{
+                    action: 'change',
+                    type: "table",
+                    entityId: `${selectedTable.value.id}`,
+                    oldVal: oldVal,
+                }]
+            });
+        }
+    }
+
     // Helpers
+
+    // Helper to create non-mtm relation
+    function createSimpleRelation(firstTable: Table, secondTable: Table, type: RelationshipType): BufferEntity[] {
+        const foreignKey = generateNewForeignKey(
+            secondTable,
+            [ 'ioto', 'noto' ].includes(type),
+            [ 'ioto', 'iotm' ].includes(type),
+            currentSettings.value.namingConvention
+        )!;
+
+        const secondPrimary = secondTable.cols.find(it => it.primaryKey);
+
+        if (!secondPrimary) {
+            console.error("Second table has no primary key", secondTable);
+
+            actionStore.resetAction();
+
+            return [];
+        }
+
+        firstTable.cols.push(cloneDeep(foreignKey));
+
+        const rel = cloneDeep(createNewRelationship(
+            foreignKey.id,
+            firstTable.id,
+
+            secondPrimary.id,
+            secondTable.id,
+            type
+        ));
+
+        relations.value.push(rel);
+
+        return [{
+            action: 'create',
+            type: "tableCol",
+            entityId: `${ firstTable.id }.${ foreignKey.id }.${ secondTable.cols.length}`,
+            oldVal: undefined,
+        }, {
+            action: 'create',
+            type: "relation",
+            entityId: rel.id,
+            oldVal: undefined,
+        }] as BufferEntity[]
+    }
+
+    function deleteRelationship(relation: DatabaseRelationship, deleteColumn: boolean = false) {
+        const bufferEntries: BufferEntity[] = [];
+        const firstTable = tables.value.find(it => it.id == relation.firstTableId);
+
+        if (firstTable) {
+            const oldFKIndex = firstTable.cols.findIndex(it => it.id == relation.firstTableColId);
+
+            if (oldFKIndex != -1) {
+                const oldFK = firstTable.cols[oldFKIndex];
+
+                if (deleteColumn) {
+                    bufferEntries.push({
+                        action: 'delete',
+                        type: 'tableCol',
+                        entityId: `${firstTable.id}.${oldFK.id}.${oldFKIndex}`,
+                        oldVal: cloneDeep(oldFK),
+                    });
+
+                    firstTable.cols.splice(oldFKIndex, 1);
+                }
+
+                bufferEntries.push({
+                    action: 'delete',
+                    type: 'relation',
+                    entityId: relation.id,
+                    oldVal: cloneDeep(relation)
+                });
+
+                const relationId = relations.value.indexOf(relation);
+
+                relations.value.splice(relationId, 1);
+
+            }
+        }
+
+        return bufferEntries;
+    }
+
+    function mtmRelationExists(first: Table, second: Table): DatabaseRelationship | undefined {
+        const mtmRels = relations.value.filter(it => it.type == 'mtm' && it.secondTableId == first.id);
+
+        return mtmRels.find(relation => {
+            const pivot = tables.value.find(table => table.id === relation.firstTableId);
+            if (!pivot) return false;
+
+            return relations.value.some(it =>
+                it.type === 'mtm' &&
+                it.firstTableId === pivot.id &&
+                it.secondTableId === second.id
+            );
+        });
+    }
 
     function deleteTable(table: Table) {
         const index = tables.value.indexOf(table);
-        // Sanity check
+
         if (index != -1) {
+            const bufferEntities: BufferEntity[] = [];
+
+            const existingRelations = relations.value.filter(it =>
+                it.firstTableId == table.id || it.secondTableId == table.id
+            );
+
+            existingRelations.forEach( it =>
+                bufferEntities.push(...deleteRelationship(it, false))
+            );
+
             tables.value.splice(index, 1);
+
+            return bufferEntities;
         }
+
+        return [];
     }
 
     return {
@@ -365,15 +611,21 @@ export const useDesignStore = defineStore('design', () => {
 
         // Buffer actions
         bufferDeleteTable,
-        bufferSetTablePos,
         bufferRestoreTable,
+        bufferSetTablePos,
+        bufferSetTableVal,
 
         bufferDeleteCol,
         bufferRestoreCol,
         bufferRevertColumnVal,
 
+        bufferDeleteRelation,
+        bufferRestoreRelation,
+        bufferChangeRelation,
+
         bufferLogTableMove,
         bufferLogColChange,
+        bufferLogTableChange,
     }
 }, {
     persist: {

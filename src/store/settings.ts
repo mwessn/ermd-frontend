@@ -19,6 +19,8 @@ export const useSettingsStore = defineStore('settings', () => {
 
     const currentSettings = ref<UserSettings>(cloneDeep(defaultSettings));
 
+    const defaultTableName = computed(() => currentSettings.value.namingConvention == 'snake' ? 'new_table_' : 'NewTable');
+
     const engineColumnTypes: Record<DatabaseEngine, Record<string, ColumnType>> = {
         mysql: mysqlTypes,
         mssql: mysqlTypes,
@@ -47,6 +49,7 @@ export const useSettingsStore = defineStore('settings', () => {
 
     return {
         currentSettings,
+        defaultTableName,
         criticalError,
 
         columnTypeNames,

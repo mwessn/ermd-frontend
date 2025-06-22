@@ -10,6 +10,16 @@
       @mouseleave="onMouseLeave"
       @wheel.prevent="onScroll"
   >
+    <div class="absolute right-0 top-0 w-2/5 z-50 bg-accentGray">
+      {{ useActionBuffer().undoBuffer.map(it => {
+     return it.entities.map(ent => {
+         return {
+             action: ent.action,
+           entity: ent.type
+         }
+     })
+    }) }}
+    </div>
     <div
         class="full relative origin-top-left"
         :style="{ scale: scaleFactor, transform: `translate(${ translatePos })` }"
@@ -29,6 +39,7 @@
       >
         <DesignerRelation
             v-for="relation in designStore.relations"
+            :key="relation.id"
             :relation="relation"
             :scale-factor="scaleFactor"
             :offset-x="translateOffsetX"
@@ -74,13 +85,11 @@ import { useKeyboardShortcuts } from "@/components/designer/scripts/useKeyboardS
 import { useDesignStore } from "@/store/design.ts";
 import DesignerTable from "@/components/designer/DesignerTable.vue";
 import { resetFocus } from "@/utils/utils.ts";
-import { useSettingsStore } from "@/store/settings.ts";
 import DesignerRelation from "@/components/designer/DesignerRelation.vue";
+import { useActionBuffer } from "../../store/actionBuffer.ts";
 
 const actionsStore = useActionsStore();
 const designStore = useDesignStore();
-
-const settingsStore = useSettingsStore();
 
 const cursorStyle = computed(() => {
   const cursor = isDragging.value ? 'move' : actionsStore.currentAction ?? 'default';

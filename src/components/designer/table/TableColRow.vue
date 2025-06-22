@@ -11,11 +11,12 @@
         v-model="col.name"
         :name="`colName-${col.id}`"
         class="w-1/2 group-last/cols:rounded-bl-xl "
-        :class="{ 'border-r' : notBlankOrEmpty(col.name), '!bg-red-400': isColNameDuplicate  }"
+        :class="[{ 'border-r' : !nonFocusableRow }, highlightColumnClass]"
         ref="colNameRef"
         @focusout="emit('focusOut')"
         @enter-key="emit('focusNext')"
         @delete-key="emit('deleteCol');"
+        @keyup.delete.stop
 
         @value-change="onColNameChange"
     />
@@ -31,12 +32,14 @@
 </template>
 
 <script setup lang="ts">
-import { type PropType, useTemplateRef } from "vue";
+import { computed, type PropType, useTemplateRef } from "vue";
 import type { TableCol } from "@/types/table.ts";
 import DoubleClickFocusInput from "@/components/core/DoubleClickFocusInput.vue";
 import { notBlankOrEmpty } from "@/utils/utils.ts";
 import { useDesignStore } from "@/store/design.ts";
 import { cloneDeep } from "lodash";
+import type { CssStyleClass } from "@fortawesome/fontawesome-svg-core";
+import { RESERVED_SQL_KEYWORDS, SQL_IDENTIFIER_REGEX } from "@/types/misc.ts";
 
 const { bufferLogColChange } = useDesignStore();
 
@@ -81,13 +84,25 @@ const onRowEnterKey = (evt: InputEvent) => {
 }
 
 const onColNameChange = (oldVal: string) => {
-  const oldColVal = cloneDeep(props.col);
-  oldColVal.name = oldVal;
+  if (!props.nonFocusableRow) {
+    const oldColVal = cloneDeep(props.col);
+    oldColVal.name = oldVal;
 
-  // Focus table to be able to add log entry
-  emit('mouseDown');
-  bufferLogColChange(props.col, oldColVal);
+    // Focus table to be able to add log entry
+    emit('mouseDown');
+    bufferLogColChange(props.col, oldColVal);
+  }
 }
+
+const highlightColumnClass = computed(() => {
+  if (props.isColNameDuplicate) { return '!bg-yellow-400' }
+  if (
+      !SQL_IDENTIFIER_REGEX.test(props.col.name) &&
+      (!props.nonFocusableRow || props.col.name.length > 0)
+  ) { return '!bg-red-400' }
+
+  return '';
+})
 
 defineExpose({ focusColName, focusRow });
 

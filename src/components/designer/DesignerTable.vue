@@ -16,10 +16,12 @@
             :id="`name-${table.id}`"
             type="text"
             class="w-full p-2 bg-monolithicCyanTsunami"
-            :class="{ '!bg-red-400': isNameDuplicate }"
+            :class="[highlightNameClass]"
             ref="nameInputRef"
+
             @mousedown.left="focusTable"
             @enter-key="focusNextInput(0)"
+            @value-change="onTableNameChange"
         />
       </div>
       <div class="w-full min-h-4">
@@ -63,8 +65,10 @@ import { useDesignStore } from "@/store/design.ts";
 import DoubleClickFocusInput from "@/components/core/DoubleClickFocusInput.vue";
 import { notBlankOrEmpty, resetFocus, sleep } from "@/utils/utils.ts";
 import TableColRow from "@/components/designer/table/TableColRow.vue";
+import { cloneDeep } from "lodash";
+import { SQL_IDENTIFIER_REGEX } from "@/types/misc.ts";
 
-const { selectTable, isManualCreation, addTableCol, deleteTableCol } = useDesignStore();
+const { selectTable, isManualCreation, addTableCol, deleteTableCol, bufferLogTableChange } = useDesignStore();
 
 const props = defineProps({
   table: {
@@ -76,6 +80,15 @@ const props = defineProps({
     required: true
   }
 });
+
+const highlightNameClass = computed(() => {
+  if (props.isNameDuplicate) { return '!bg-yellow-400' }
+  if (
+      !SQL_IDENTIFIER_REGEX.test(props.table.name)
+  ) { return '!bg-red-400' }
+
+  return '';
+})
 
 const tableRef = useTemplateRef('tableRef');
 
@@ -126,6 +139,7 @@ const storeNewCol = (refocus: boolean = true) => {
       }
     } else {
       // Else finish editing the table;
+      newTableCol.value.name = "";
       resetFocus();
     }
     isSavingNewCol.value = false;
@@ -149,6 +163,14 @@ const onDeleteCol = async (col: TableCol) => {
       columnsRef.value[index - 1]?.focusRow();
     }
   }
+}
+
+const onTableNameChange = (oldVal: string) => {
+  const table = cloneDeep(props.table);
+  table.name = oldVal;
+
+  selectTable(props.table);
+  bufferLogTableChange(table);
 }
 
 const duplicateColNames = computed(() => {
