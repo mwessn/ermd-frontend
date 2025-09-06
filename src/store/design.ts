@@ -175,10 +175,10 @@ export const useDesignStore = defineStore('design', () => {
                 let hasPK = true
                 if (type == 'mtm') {
                     // Check if selected table has primaryId column
-                    hasPK = selectedTable.value.cols.find(it => it.primaryKey) == null;
+                    hasPK = selectedTable.value.cols.find(col => col.primaryKey) == undefined;
                 }
 
-                if (hasPK) {
+                if (hasPK != undefined) {
                     relationFirstTableId.value = cloneDeep(selectedTable.value.id);
                 }
                 return;

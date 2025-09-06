@@ -21,11 +21,11 @@ export const defaultSettings: UserSettings = {
     databaseEngine: 'postgres',
     namingConvention: 'camel',
 
-    defaultPrimaryKey: 'uuid',
+    defaultPrimaryKey: 'BIGINT',
     defaultNotNull: false,
 
     generateMtMPrimaryKey: false,
-    mtmPrimaryKeyType: 'bigint',
+    mtmPrimaryKeyType: 'BIGINT',
 
     dragCanvasButton: 'left',
     undoActionBufferSize: 20,

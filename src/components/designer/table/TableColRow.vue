@@ -10,7 +10,7 @@
     <DoubleClickFocusInput
         v-model="col.name"
         :name="`colName-${col.id}`"
-        class="w-1/2 group-last/cols:rounded-bl-xl "
+        class="w-full group-last/cols:rounded-bl-xl "
         :class="[{ 'border-r' : !nonFocusableRow }, highlightColumnClass]"
         ref="colNameRef"
         @focusout="emit('focusOut')"
@@ -20,7 +20,8 @@
 
         @value-change="onColNameChange"
     />
-    <div class="w-1/2">
+    <div v-if="!nonFocusableRow" class="min-w-1/2">
+      <ColTypeSelect v-model="col.type" :col-id="col.id" />
     </div>
 
     <div v-if="col.foreignKey || col.primaryKey" class="absolute full flex items-center justify-between z-0 pointer-events-none">
@@ -38,6 +39,7 @@ import DoubleClickFocusInput from "@/components/core/DoubleClickFocusInput.vue";
 import { useDesignStore } from "@/store/design.ts";
 import { cloneDeep } from "lodash";
 import { SQL_IDENTIFIER_REGEX } from "@/types/misc.ts";
+import ColTypeSelect from "@/components/designer/table/ColTypeSelect.vue";
 
 const { bufferLogColChange } = useDesignStore();
 

@@ -19,6 +19,11 @@ export const resetFocus = () => {
     document.body.removeAttribute("tabindex");
 }
 
+export const focusElement = (elId: string) => {
+    const el = document.getElementById(elId);
+    el?.focus();
+}
+
 export function sleep(ms: number) {
     return new Promise( resolve => setTimeout(resolve, ms) );
 }

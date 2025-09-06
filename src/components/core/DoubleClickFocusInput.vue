@@ -28,7 +28,7 @@ import { computed, ref, useTemplateRef } from "vue";
 
 const props = defineProps({
   modelValue: {
-    type: String,
+    type: [String, Number],
     required: true
   },
   id: {
@@ -54,7 +54,7 @@ const model = computed({
 
 // Previous input value handle
 
-const oldVal = ref<string>(props.modelValue);
+const oldVal = ref<string | number>(props.modelValue);
 
 const onFocus = () => {
   oldVal.value = props.modelValue;
