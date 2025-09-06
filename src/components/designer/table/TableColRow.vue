@@ -21,7 +21,11 @@
         @value-change="onColNameChange"
     />
     <div v-if="!nonFocusableRow" class="min-w-1/2">
-      <ColTypeSelect v-model="col.type" :col-id="col.id" />
+      <ColTypeSelect
+          v-model="col.type" :col-id="col.id"
+          @keydown.delete.stop
+          @keyup.delete.stop
+      />
     </div>
 
     <div v-if="col.foreignKey || col.primaryKey" class="absolute full flex items-center justify-between z-0 pointer-events-none">

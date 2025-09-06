@@ -27,9 +27,9 @@
 
     <div
       v-if="dropdownVisible && inputValue.length"
-      class="w-full absolute b-1 l-0 p-2
+      class="w-full absolute b-1 l-0 p-2 min-w-max
        bg-accentGray border rounded-b shadow-lg
-       max-h-36 overflow-visible overflow-y-scroll z-99"
+       max-h-36 overflow-x-visible overflow-y-scroll z-99"
 
       @focusout.stop
 

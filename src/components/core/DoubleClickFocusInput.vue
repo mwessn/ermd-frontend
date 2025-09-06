@@ -88,7 +88,8 @@ const focusSelectAll = () => {
 }
 
 const onDelete = (evt: KeyboardEvent) => {
-  if (evt.shiftKey) {
+  console.log(evt.key)
+  if (evt.shiftKey && evt.key == 'Delete') {
     // Emit delete event on Shift + Del
     emit('deleteKey');
   }
