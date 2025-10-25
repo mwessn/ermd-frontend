@@ -5,8 +5,4 @@ export const appConfig = {
 
     // Cap to prevent performance issues
     maxActionBufferSize: 600,
-
-    // Not important enough to put it in settings
-    defaultColumnType: 'INT',
-    defaultColumnModifier: [8],
 }

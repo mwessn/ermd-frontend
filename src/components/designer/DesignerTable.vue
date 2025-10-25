@@ -67,6 +67,9 @@ import { notBlankOrEmpty, resetFocus, sleep } from "@/utils/utils.ts";
 import TableColRow from "@/components/designer/table/TableColRow.vue";
 import { cloneDeep } from "lodash";
 import { SQL_IDENTIFIER_REGEX } from "@/types/misc.ts";
+import { useSettingsStore } from "@/store/settings.ts";
+import { storeToRefs } from "pinia";
+import { defaultPrimaryTypes } from "@/types/TableColumnTypes/tableField.ts";
 
 const { selectTable, isManualCreation, addTableCol, deleteTableCol, bufferLogTableChange } = useDesignStore();
 
@@ -80,6 +83,8 @@ const props = defineProps({
     required: true
   }
 });
+
+const { currentSettings } = storeToRefs(useSettingsStore());
 
 const highlightNameClass = computed(() => {
   if (props.isNameDuplicate) { return '!bg-yellow-400' }
@@ -100,7 +105,9 @@ const onFocusOut = () => {
   selectTable();
 }
 
-const newTableCol = ref<TableCol>(generateNewTableCol());
+const newTableCol = ref<TableCol>(generateNewTableCol(
+    defaultPrimaryTypes[currentSettings.value.databaseEngine]
+));
 
 const nameInputRef = useTemplateRef('nameInputRef');
 
@@ -130,7 +137,9 @@ const storeNewCol = (refocus: boolean = true) => {
       selectTable(props.table);
       const res = addTableCol(newTableCol.value);
       if (res) {
-        newTableCol.value = generateNewTableCol();
+        newTableCol.value = generateNewTableCol(
+            defaultPrimaryTypes[currentSettings.value.databaseEngine]
+        );
         if (refocus) {
           newColRef.value?.focusColName();
         }

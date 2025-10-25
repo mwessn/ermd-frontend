@@ -61,17 +61,18 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, useTemplateRef, watch } from "vue";
+import { computed, type PropType, ref, useTemplateRef, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { useSettingsStore } from "@/store/settings.ts";
 import { cloneDeep } from "lodash";
 import { clamp } from "@/utils/utils.ts";
+import type { ColumnType } from "@/types/TableColumnTypes/tableField.ts";
+
+const model = defineModel({
+  type: Object as PropType<ColumnType>
+});
 
 const props = defineProps({
-  modelValue: {
-    type: String,
-    required: true
-  },
   colId: {
     type: String,
     required: true
@@ -83,6 +84,8 @@ const props = defineProps({
 });
 
 const inputRef = useTemplateRef('inputRef');
+
+const { columnTypeNames, currentDatabaseColumnTypes } = storeToRefs(useSettingsStore());
 
 const selectAll = () => {
   inputRef.value?.select();
@@ -102,9 +105,9 @@ const focusSelectAll = () => {
   dropdownVisible.value = true;
 }
 
-const inputValue = ref<string>(cloneDeep(props.modelValue));
-
-const { columnTypeNames } = storeToRefs(useSettingsStore());
+const inputValue = ref<string>(
+    getTypeNameFromValue(model.value)
+);
 
 const matchedNames = computed(() =>
     columnTypeNames.value.filter(it =>
@@ -142,31 +145,28 @@ const selectPrevOption = () => {
 
 const dropdownVisible = ref<boolean>(false);
 
-const emit = defineEmits(['update:modelValue']);
 
 function onFocusOut(event: FocusEvent) {
   if (!event.relatedTarget || !props.rootDiv.contains(event.relatedTarget as Node)) {
     dropdownVisible.value = false;
-    inputValue.value = cloneDeep(props.modelValue);
+    inputValue.value = getTypeNameFromValue(model.value);
   }
 }
 
-const selectType = (_name: string | undefined = undefined) => {
-  const name = _name ?
-      _name :
-      matchedNames.value[selectedOption.value ?? 0];
+const selectType = (_name?: string) => {
+  const name = _name ?? matchedNames.value[selectedOption.value ?? 0];
+  const selected = currentDatabaseColumnTypes.value[name];
 
-  if (columnTypeNames.value.includes(name)) {
-    emit('update:modelValue', name);
-
+  if (selected) {
+    model.value = cloneDeep(selected);
+    inputValue.value = name;
     selectedOption.value = undefined;
-
     dropdownVisible.value = false;
   } else {
     dropdownVisible.value = false;
-    inputValue.value = cloneDeep(props.modelValue);
+    inputValue.value = getTypeNameFromValue(model.value);
   }
-}
+};
 
 const onEnter = () => {
   selectType();
@@ -177,8 +177,16 @@ const onOptionClick = (index: number) => {
   selectType()
 }
 
-watch(() => props.modelValue, () => {
-  inputValue.value = props.modelValue;
+function getTypeNameFromValue(value?: ColumnType) {
+  if (!value) return '';
+  // Find matching key in record
+  const [name] = Object.entries(currentDatabaseColumnTypes.value)
+      .find(([_, col]) => col.primitive === value.primitive) ?? [''];
+  return name;
+}
+
+watch(() => model.value, () => {
+  inputValue.value = getTypeNameFromValue(model.value);
 });
 
 </script>

@@ -3,7 +3,7 @@ import { computed, ref } from "vue";
 import type { UserSettings } from "@/types/misc.ts";
 import { defaultSettings } from "@/types/misc.ts";
 import { cloneDeep } from "lodash";
-import type { ColumnType, DatabaseEngine } from "@/types/TableColumnTypes/tableField.ts";
+import { type ColumnType, type DatabaseEngine, getDefaultModifierParams } from "@/types/TableColumnTypes/tableField.ts";
 import { mysqlTypes } from "@/types/TableColumnTypes/mysqlTypes.ts";
 
 interface ErrorDetails {
@@ -28,9 +28,13 @@ export const useSettingsStore = defineStore('settings', () => {
         sqlite: mysqlTypes,
     }
 
-    const currentDatabaseColumnTypes = ref<Record<string, ColumnType>>(engineColumnTypes[currentSettings.value.databaseEngine]);
+    const currentDatabaseColumnTypes = computed((): Record<string, ColumnType> =>
+        engineColumnTypes[currentSettings.value.databaseEngine]
+    );
 
-    const columnTypeNames = computed(() => Object.keys(currentDatabaseColumnTypes.value));
+    const columnTypeNames = computed(() => Object.keys(
+        currentDatabaseColumnTypes.value)
+    );
 
     const primaryKeyTypes = computed(() => {
         return Object.entries(currentDatabaseColumnTypes.value)
@@ -38,27 +42,20 @@ export const useSettingsStore = defineStore('settings', () => {
             .map(([typeName]) => typeName);
     });
 
-    const defaultPrimaryKey = computed(() => currentSettings.value.defaultPrimaryKey);
-    const defaultPrimarySize = computed(() => getModifierForType(currentSettings.value.defaultPrimaryKey));
-
-    const getModifierForType = (type: string) => {
-        if (type in columnTypeNames.value) {
-            return currentDatabaseColumnTypes.value[type].modifier
-        }
-    }
+    const defaultPrimaryKey = computed(() => currentSettings.value.defaultPrimaryType);
+    const defaultPrimarySize = computed(() => getDefaultModifierParams(currentSettings.value.defaultPrimaryType));
 
     return {
         currentSettings,
         defaultTableName,
         criticalError,
 
+        currentDatabaseColumnTypes,
         columnTypeNames,
         primaryKeyTypes,
 
         defaultPrimaryKey,
         defaultPrimarySize,
-
-        getModifierForType,
     }
 }, {
     persist: {

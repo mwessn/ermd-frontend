@@ -1,15 +1,11 @@
 import { generateId, unpluralize } from "@/utils/utils.ts";
-import { defaultSettings } from "@/types/misc.ts";
-import { appConfig } from "@/app.config.ts";
-
-const defaultColType = appConfig.defaultColumnType;
-const defaultColModifier = appConfig.defaultColumnModifier;
+import { type ColumnType, getDefaultModifierParams } from "@/types/TableColumnTypes/tableField.ts";
 
 export interface TableCol {
     id: string,
     name: string,
-    type: string,
-    modifier: number[] | string[] | undefined,
+    type: ColumnType,
+    modifierValues: number[] | string[] | undefined,
 
     primaryKey: boolean,
     foreignKey: boolean,
@@ -19,16 +15,32 @@ export interface TableCol {
     defaultValue: string | undefined,
 }
 
-export const generateNewTableCol = (): TableCol => {
+// Flag checkers
+
+export function colCanBeNullable(col: TableCol) {
+    return !col.primaryKey;
+}
+
+export function colCanAutoIncrement(col: TableCol) {
+    return col.type.flags.canAutoIncrement;
+}
+
+export function colCanBePrimary(col: TableCol) {
+    return col.type.flags.canBePrimaryKey;
+}
+
+//
+
+export const generateNewTableCol = (colType: ColumnType): TableCol => {
     return {
         id: generateId('col'),
         name: "",
-        type: defaultColType,
-        modifier: defaultColModifier,
+        type: colType,
+        modifierValues: getDefaultModifierParams(colType),
 
         primaryKey: false,
         foreignKey: false,
-        notNull: defaultSettings.defaultNotNull,
+        notNull: false,
         unique: false,
         autoIncrement: false,
         defaultValue: undefined
@@ -39,7 +51,9 @@ export const generateNewForeignKey = (otherTable: Table, fkUnique: boolean = fal
     const otherPrimary = otherTable.cols.find(it => it.primaryKey);
 
     if (otherPrimary) {
-        const col = generateNewTableCol();
+        const col = generateNewTableCol(
+            otherPrimary.type
+        );
 
         // TODO this must be customizable in settings
         const postfix = namingCon == 'snake' ? '_id' : 'Id';
@@ -48,7 +62,7 @@ export const generateNewForeignKey = (otherTable: Table, fkUnique: boolean = fal
         col.foreignKey = true;
 
         col.type = otherPrimary.type;
-        col.modifier = otherPrimary.modifier;
+        col.modifierValues = otherPrimary.modifierValues;
 
         // Identifying and MtM FK must be not null
         col.notNull = fkNotNull;
@@ -74,8 +88,7 @@ export const generateNewTable = (
     index: number = 1,
     posX: number,
     posY: number,
-    primaryType: string,
-    primaryModifier: number[] | undefined,
+    primaryType: ColumnType,
     generatePrimary: boolean = true
 ) => {
     let idCol: TableCol | undefined = undefined;
@@ -85,7 +98,7 @@ export const generateNewTable = (
             id: generateId('col'),
             name: "id",
             type: primaryType,
-            modifier: primaryModifier,
+            modifierValues: getDefaultModifierParams(primaryType),
 
             primaryKey: true,
             foreignKey: false,

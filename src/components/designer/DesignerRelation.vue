@@ -28,7 +28,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, type PropType, ref, useTemplateRef, watch } from "vue";
+import { computed, nextTick, onMounted, type PropType, ref, watch } from "vue";
 import type { DatabaseRelationship, RelationshipType } from "@/types/relationships.ts";
 import { useDesignStore } from "@/store/design.ts";
 import type { Table } from "@/types/table.ts";
@@ -110,8 +110,6 @@ const x1offset = computed(() =>
 const lineDash = computed(() => nonIdentifyingTypes.includes(props.relation.type) ? '35,10' : undefined);
 
 const { tables, selectedTable } = storeToRefs(useDesignStore());
-
-const lineRef = useTemplateRef('lineRef');
 
 const lineColor = computed(() => selectedTable.value && props.relation.firstTableId == selectedTable.value.id ?
     'var(--color-monolithicCyanTsunami)' :

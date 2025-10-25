@@ -1,3 +1,5 @@
+import { mysqlTypes } from "@/types/TableColumnTypes/mysqlTypes.ts";
+
 const PRIMITIVE_TYPES = [
     'int', 'decimal', 'float', 'bit',
     'char', 'string', 'binary',
@@ -26,6 +28,15 @@ export interface ColumnType {
     readonly alias: Record<DatabaseEngine, string | undefined>
 }
 
+export function getDefaultModifierParams(col: ColumnType) {
+    if (!col.modifier) { return undefined }
+    return col.modifier.map(it =>
+        typeof it.defaultValue == 'number' ?
+            it.defaultValue :
+            undefined
+    ).filter(Boolean) as number[];
+}
+
 interface ColumnTypeFlags {
     readonly canBePrimaryKey: boolean;
     readonly canAutoIncrement: boolean;
@@ -40,4 +51,11 @@ interface ColumnTypeFlags {
     // Minimum and maximum value for applicable columns
     readonly minValue: number | bigint | undefined;
     readonly maxValue: number | bigint | undefined;
+}
+
+export const defaultPrimaryTypes: Record<DatabaseEngine, ColumnType> = {
+    mysql: mysqlTypes['INT'],
+    postgres: mysqlTypes['INT'],
+    mssql: mysqlTypes['INT'],
+    sqlite: mysqlTypes['INT']
 }

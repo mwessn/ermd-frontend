@@ -1,16 +1,15 @@
-import type { DatabaseEngine } from "@/types/TableColumnTypes/tableField.ts";
+import { type ColumnType, type DatabaseEngine, defaultPrimaryTypes } from "@/types/TableColumnTypes/tableField.ts";
 
 export interface UserSettings {
     databaseEngine: DatabaseEngine;
     namingConvention: 'snake' | 'camel';
 
     // Tables
-    defaultPrimaryKey: string;
-    defaultNotNull: boolean;
+    defaultPrimaryType: ColumnType;
 
     // Relationships
     generateMtMPrimaryKey: boolean;
-    mtmPrimaryKeyType: string;
+    mtmPrimaryKeyType: ColumnType;
 
     // Functional
     dragCanvasButton: 'middle' | 'left';
@@ -22,11 +21,10 @@ export const defaultSettings: UserSettings = {
     databaseEngine: 'postgres',
     namingConvention: 'camel',
 
-    defaultPrimaryKey: 'BIGINT',
-    defaultNotNull: false,
+    defaultPrimaryType: defaultPrimaryTypes['postgres'],
 
     generateMtMPrimaryKey: false,
-    mtmPrimaryKeyType: 'BIGINT',
+    mtmPrimaryKeyType: defaultPrimaryTypes['postgres'],
 
     dragCanvasButton: 'left',
     undoActionBufferSize: 20,

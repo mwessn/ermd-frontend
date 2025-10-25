@@ -10,6 +10,7 @@ import { useActionsStore } from "@/store/action.ts";
 import { useSettingsStore } from "@/store/settings.ts";
 import { createNewRelationship } from "@/types/relationships.ts";
 import { unpluralize } from "@/utils/utils.ts";
+import type { ColumnType } from "@/types/TableColumnTypes/tableField.ts";
 
 export const useDesignStore = defineStore('design', () => {
     const bufferStore = useActionBuffer();
@@ -20,8 +21,6 @@ export const useDesignStore = defineStore('design', () => {
         defaultPrimaryKey,
         defaultTableName,
     } = storeToRefs(useSettingsStore());
-
-    const { getModifierForType } = useSettingsStore();
 
     const tables = ref<Table[]>([]);
     const newTableIndex = ref<number>(1);
@@ -46,13 +45,12 @@ export const useDesignStore = defineStore('design', () => {
 
     // Table operations
 
-    const addTable = (posX: number, posY: number, generatePrimary: boolean = true, saveBuffer: boolean = true, primaryType: string = defaultPrimaryKey.value) => {
+    const addTable = (posX: number, posY: number, generatePrimary: boolean = true, saveBuffer: boolean = true, primaryType: ColumnType = defaultPrimaryKey.value) => {
         const table = generateNewTable(
             defaultTableName.value,
             newTableIndex.value,
             posX, posY,
             primaryType,
-            getModifierForType(primaryType),
             generatePrimary,
         );
 
