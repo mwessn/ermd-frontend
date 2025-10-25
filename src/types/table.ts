@@ -9,7 +9,7 @@ export interface TableCol {
     id: string,
     name: string,
     type: string,
-    modifier: number[] | undefined,
+    modifier: number[] | string[] | undefined,
 
     primaryKey: boolean,
     foreignKey: boolean,

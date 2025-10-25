@@ -22,7 +22,9 @@
     />
     <div v-if="!nonFocusableRow" class="min-w-1/2">
       <ColTypeSelect
+          v-if="rowRef"
           v-model="col.type" :col-id="col.id"
+          :root-div="rowRef!"
           @keydown.delete.stop
           @keyup.delete.stop
       />

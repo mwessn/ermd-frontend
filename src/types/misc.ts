@@ -15,6 +15,7 @@ export interface UserSettings {
     // Functional
     dragCanvasButton: 'middle' | 'left';
     undoActionBufferSize: number;
+    snapToGrid: boolean;
 }
 
 export const defaultSettings: UserSettings = {
@@ -29,6 +30,8 @@ export const defaultSettings: UserSettings = {
 
     dragCanvasButton: 'left',
     undoActionBufferSize: 20,
+    snapToGrid: false,
+
 }
 
 export const SQL_IDENTIFIER_REGEX = /^[a-zA-Z_][a-zA-Z0-9_]*$/;

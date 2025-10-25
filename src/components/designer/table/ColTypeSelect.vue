@@ -1,8 +1,6 @@
 <template>
   <div
       class="w-full relative"
-      ref="rootDiv"
-      tabindex="-1"
   >
     <input
         v-model="inputValue"
@@ -12,42 +10,48 @@
         autocomplete="off"
         tabindex="-1"
 
+
         @mousedown.left.prevent
         @mouseup.left.prevent
         @dblclick.left="focusSelectAll"
+        @focus="focusSelectAll"
 
-        @input="selectNextOption"
+        @input="selectTypeOption(0)"
         @keyup.down="selectNextOption"
         @keyup.up="selectPrevOption"
 
-        @keyup.enter="selectType()"
+        @keyup.enter="onEnter"
 
         @focusout="onFocusOut"
     >
 
     <div
-      v-if="dropdownVisible && inputValue.length"
+      v-if="dropdownVisible"
       class="w-full absolute b-1 l-0 p-2 min-w-max
        bg-accentGray border rounded-b shadow-lg
-       max-h-36 overflow-x-visible overflow-y-scroll z-99"
+       max-h-36 overflow-x-visible overflow-y-scroll z-999"
+
+      ref="rootDiv"
+      tabindex="-1"
 
       @focusout.stop
+      @click.stop
 
       @keydown.up.prevent
       @keydown.down.prevent
     >
       <div
           v-for="(name, index) in matchedNames"
-          class="w-full bg-accentGray overflow-x-clip z-50 rounded p-1 overscroll-x-none"
+          class="w-full bg-accentGray overflow-x-clip z-999 rounded p-1 overscroll-x-none"
 
           :class="{ 'border border-secondaryAccentGray' : selectedOption == index }"
 
           :key="`${colId}-${index}`"
           :id="`${colId}-${index}`"
 
-          @keyup.enter="selectType(name)"
+          @focusout.stop
 
-          @click="selectType(name)"
+          @click="onOptionClick(index)"
       >
         {{ name }}
       </div>
@@ -61,6 +65,7 @@ import { computed, ref, useTemplateRef, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { useSettingsStore } from "@/store/settings.ts";
 import { cloneDeep } from "lodash";
+import { clamp } from "@/utils/utils.ts";
 
 const props = defineProps({
   modelValue: {
@@ -69,6 +74,10 @@ const props = defineProps({
   },
   colId: {
     type: String,
+    required: true
+  },
+  rootDiv: {
+    type: HTMLDivElement,
     required: true
   }
 });
@@ -105,18 +114,18 @@ const matchedNames = computed(() =>
 
 const selectedOption = ref<number | undefined>(undefined);
 
-const selectTypeOption = (index: number) => {
-  if (index >= 0 && index < matchedNames.value.length) {
-    selectedOption.value = index;
+const selectTypeOption = (_index: number) => {
+  const index = clamp(_index, 0, matchedNames.value.length - 1);
 
-    const el = document.getElementById(`${props.colId}-${index}`);
+  selectedOption.value = index;
 
-    el?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'nearest',
-      inline: 'nearest'
-    });
-  }
+  const el = document.getElementById(`${props.colId}-${index}`);
+
+  el?.scrollIntoView({
+    behavior: 'smooth',
+    block: 'nearest',
+    inline: 'nearest'
+  });
 }
 
 const selectNextOption = () => {
@@ -133,12 +142,10 @@ const selectPrevOption = () => {
 
 const dropdownVisible = ref<boolean>(false);
 
-const rootDiv = useTemplateRef('rootDiv');
-
 const emit = defineEmits(['update:modelValue']);
 
 function onFocusOut(event: FocusEvent) {
-  if (rootDiv.value && !rootDiv.value.contains(event.relatedTarget as Node)) {
+  if (!event.relatedTarget || !props.rootDiv.contains(event.relatedTarget as Node)) {
     dropdownVisible.value = false;
     inputValue.value = cloneDeep(props.modelValue);
   }
@@ -152,8 +159,22 @@ const selectType = (_name: string | undefined = undefined) => {
   if (columnTypeNames.value.includes(name)) {
     emit('update:modelValue', name);
 
+    selectedOption.value = undefined;
+
     dropdownVisible.value = false;
+  } else {
+    dropdownVisible.value = false;
+    inputValue.value = cloneDeep(props.modelValue);
   }
+}
+
+const onEnter = () => {
+  selectType();
+}
+
+const onOptionClick = (index: number) => {
+  selectTypeOption(index);
+  selectType()
 }
 
 watch(() => props.modelValue, () => {

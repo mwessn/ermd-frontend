@@ -81,10 +81,16 @@ export const useDesignStore = defineStore('design', () => {
         selectedTable.value = val;
     }
 
+    const snapToGrid = (value: number, gridSize: number = 10) => {
+        return Math.round(value / gridSize) * gridSize;
+    };
+
     const moveSelectedTable = (deltaX: number, deltaY: number) => {
         if (selectedTable.value) {
-            selectedTable.value.posX += deltaX;
-            selectedTable.value.posY += deltaY;
+            const gridSize = currentSettings.value.snapToGrid ? 5 : 1;
+
+            selectedTable.value.posX = snapToGrid(selectedTable.value.posX + deltaX, gridSize);
+            selectedTable.value.posY = snapToGrid(selectedTable.value.posY + deltaY, gridSize);
         }
     }
 
