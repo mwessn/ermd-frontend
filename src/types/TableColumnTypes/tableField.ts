@@ -11,7 +11,7 @@ export type PrimitiveColumnType = typeof PRIMITIVE_TYPES[number];
 export type DatabaseEngine = 'mysql' | 'postgres' | 'mssql' | 'sqlite';
 
 export interface ColumnTypeModifier {
-    readonly defaultValue: number | string[];
+    readonly defaultValue: number | string;
     readonly hint: string;
 
     readonly minValue: number | undefined;
@@ -31,11 +31,10 @@ export interface ColumnType {
 
 export function getDefaultModifierParams(col: ColumnType) {
     if (!col.modifier) { return undefined }
+
     return col.modifier.map(it =>
-        typeof it.defaultValue == 'number' ?
-            it.defaultValue :
-            undefined
-    ).filter(Boolean) as number[];
+        it.defaultValue
+    );
 }
 
 interface ColumnTypeFlags {

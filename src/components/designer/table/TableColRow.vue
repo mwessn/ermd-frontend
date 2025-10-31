@@ -29,7 +29,7 @@
     <div v-if="showColType" class="min-w-1/2">
       <ColTypeSelect
           v-if="rowRef"
-          v-model="col.type"
+          :col="col"
           ref="colTypeRef"
 
           :col-id="col.id"
@@ -62,6 +62,7 @@ import { cloneDeep } from "lodash";
 import { SQL_IDENTIFIER_REGEX } from "@/types/misc.ts";
 import ColTypeSelect from "@/components/designer/table/ColTypeSelect.vue";
 import { resetFocus } from "@/utils/utils.ts";
+import { type ColumnType, getDefaultModifierParams } from "@/types/TableColumnTypes/tableField.ts";
 
 const { bufferLogColChange } = useDesignStore();
 
@@ -84,6 +85,10 @@ const showColType = ref<boolean>(!props.nonFocusableRow);
 
 watch(() => props.col, () => {
   showColType.value = !props.nonFocusableRow;
+});
+
+watch(() => props.col.type, (newType: ColumnType) => {
+  props.col.modifierValues = getDefaultModifierParams(newType);
 });
 
 const emit = defineEmits(['focusNext', 'mouseDown', 'deleteCol', 'focusOut']);

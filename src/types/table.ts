@@ -5,7 +5,7 @@ export interface TableCol {
     id: string,
     name: string,
     type: ColumnType,
-    modifierValues: number[] | string[] | undefined,
+    modifierValues: (number | string)[] | undefined,
 
     primaryKey: boolean,
     foreignKey: boolean,

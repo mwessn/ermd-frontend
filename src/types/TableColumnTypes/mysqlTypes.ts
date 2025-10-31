@@ -685,10 +685,7 @@ export const mysqlTypes: Record<string, ColumnType> = {
         displayName: 'ENUM',
         primitive: 'string',
         modifier: [{
-            // Array of strings for the user to enter.
-            // Used just to indicate the expected input type,
-            // not actually mutated.
-            defaultValue: [],
+            defaultValue: '',
             hint: 'Allowed values',
             minValue: undefined,
             maxValue: 65535
@@ -712,10 +709,7 @@ export const mysqlTypes: Record<string, ColumnType> = {
         displayName: 'SET',
         primitive: 'list',
         modifier: [{
-            // Array of strings for the user to enter.
-            // Used just to indicate the expected input type,
-            // not actually mutated.
-            defaultValue: [],
+            defaultValue: '',
             hint: 'Possible values',
             minValue: undefined,
             maxValue: 64
