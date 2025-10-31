@@ -1,6 +1,6 @@
 <template>
   <div
-      class="w-48 absolute z-10 group/table focus:z-20 focus:outline-0"
+      class="w-64 absolute z-10 group/table focus:z-20 focus:outline-0"
       tabindex="-1"
       ref="tableRef"
       :style="{ top: table.posY + 'px', left: table.posX + 'px' }"

@@ -32,9 +32,9 @@ export const useSettingsStore = defineStore('settings', () => {
         engineColumnTypes[currentSettings.value.databaseEngine]
     );
 
-    const columnTypeNames = computed(() => Object.keys(
-        currentDatabaseColumnTypes.value)
-    );
+    const columnTypeNames = computed(() => Object.values(
+        currentDatabaseColumnTypes.value
+    ).map(it => it.displayName));
 
     const primaryKeyTypes = computed(() => {
         return Object.entries(currentDatabaseColumnTypes.value)

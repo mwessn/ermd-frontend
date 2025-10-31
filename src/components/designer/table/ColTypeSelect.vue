@@ -1,6 +1,7 @@
 <template>
   <div
       class="w-full relative"
+      tabindex="-1"
   >
     <input
         v-model="inputValue"
@@ -20,7 +21,7 @@
         @keyup.down="selectNextOption"
         @keyup.up="selectPrevOption"
 
-        @keyup.enter="onEnter"
+        @keydown.enter="onEnter"
 
         @focusout="onFocusOut"
     >
@@ -51,7 +52,7 @@
 
           @focusout.stop
 
-          @click="onOptionClick(index)"
+          @mouseup.left="onOptionClick(index)"
       >
         {{ name }}
       </div>
@@ -69,7 +70,8 @@ import { clamp } from "@/utils/utils.ts";
 import type { ColumnType } from "@/types/TableColumnTypes/tableField.ts";
 
 const model = defineModel({
-  type: Object as PropType<ColumnType>
+  type: Object as PropType<ColumnType>,
+  required: true
 });
 
 const props = defineProps({
@@ -82,6 +84,8 @@ const props = defineProps({
     required: true
   }
 });
+
+const emit = defineEmits(['onEnterKey']);
 
 const inputRef = useTemplateRef('inputRef');
 
@@ -106,18 +110,33 @@ const focusSelectAll = () => {
 }
 
 const inputValue = ref<string>(
-    getTypeNameFromValue(model.value)
+    model.value.displayName
 );
 
-const matchedNames = computed(() =>
-    columnTypeNames.value.filter(it =>
-        it.toLowerCase().includes(inputValue.value.toLowerCase())
-    )
-);
+const matchedNames = computed(() => {
+  const search = inputValue.value.toLowerCase();
+
+  return columnTypeNames.value
+      .filter(name => name.toLowerCase().includes(search))
+      .sort((a, b) => {
+        const A = a.toLowerCase(), B = b.toLowerCase();
+
+        const exactA = A === search, exactB = B === search;
+        if (exactA !== exactB) return exactA ? -1 : 1;
+
+        const startsA = A.startsWith(search), startsB = B.startsWith(search);
+        if (startsA !== startsB) return startsA ? -1 : 1;
+
+        return 0;
+      });
+});
+
 
 const selectedOption = ref<number | undefined>(undefined);
 
 const selectTypeOption = (_index: number) => {
+  dropdownVisible.value = true;
+  
   const index = clamp(_index, 0, matchedNames.value.length - 1);
 
   selectedOption.value = index;
@@ -149,7 +168,7 @@ const dropdownVisible = ref<boolean>(false);
 function onFocusOut(event: FocusEvent) {
   if (!event.relatedTarget || !props.rootDiv.contains(event.relatedTarget as Node)) {
     dropdownVisible.value = false;
-    inputValue.value = getTypeNameFromValue(model.value);
+    inputValue.value = model.value.displayName;
   }
 }
 
@@ -164,12 +183,13 @@ const selectType = (_name?: string) => {
     dropdownVisible.value = false;
   } else {
     dropdownVisible.value = false;
-    inputValue.value = getTypeNameFromValue(model.value);
+    inputValue.value = model.value.displayName;
   }
 };
 
 const onEnter = () => {
   selectType();
+  emit('onEnterKey');
 }
 
 const onOptionClick = (index: number) => {
@@ -177,16 +197,14 @@ const onOptionClick = (index: number) => {
   selectType()
 }
 
-function getTypeNameFromValue(value?: ColumnType) {
-  if (!value) return '';
-  // Find matching key in record
-  const [name] = Object.entries(currentDatabaseColumnTypes.value)
-      .find(([_, col]) => col.primitive === value.primitive) ?? [''];
-  return name;
+watch(() => model.value, () => {
+  inputValue.value = model.value.displayName;
+});
+
+function focus() {
+  inputRef.value?.focus();
 }
 
-watch(() => model.value, () => {
-  inputValue.value = getTypeNameFromValue(model.value);
-});
+defineExpose({ focus });
 
 </script>

@@ -3,6 +3,7 @@ import type { ColumnType } from "@/types/TableColumnTypes/tableField.ts";
 export const mysqlTypes: Record<string, ColumnType> = {
     // ===== Numeric Types =====
     TINYINT: {
+        displayName: 'TINYINT',
         primitive: 'int',
         modifier: undefined, // Display width is deprecated
         flags: {
@@ -20,7 +21,8 @@ export const mysqlTypes: Record<string, ColumnType> = {
             sqlite: 'INTEGER'
         }
     },
-    'UNSIGNED TINYINT': {
+    UNSIGNED_TINYINT: {
+        displayName: 'UNSIGNED TINYINT',
         primitive: 'int',
         modifier: undefined, // Display width is deprecated
         flags: {
@@ -39,6 +41,7 @@ export const mysqlTypes: Record<string, ColumnType> = {
         }
     },
     SMALLINT: {
+        displayName: 'SMALLINT',
         primitive: 'int',
         modifier: undefined, // Display width is deprecated
         flags: {
@@ -56,7 +59,8 @@ export const mysqlTypes: Record<string, ColumnType> = {
             sqlite: 'INTEGER'
         }
     },
-    'UNSIGNED SMALLINT': {
+    UNSIGNED_SMALLINT: {
+        displayName: 'UNSIGNED SMALLINT',
         primitive: 'int',
         modifier: undefined, // Display width is deprecated
         flags: {
@@ -75,6 +79,7 @@ export const mysqlTypes: Record<string, ColumnType> = {
         }
     },
     MEDIUMINT: {
+        displayName: 'MEDIUMINT',
         primitive: 'int',
         modifier: undefined, // Display width is deprecated
         flags: {
@@ -92,7 +97,8 @@ export const mysqlTypes: Record<string, ColumnType> = {
             sqlite: 'INTEGER'
         }
     },
-    'UNSIGNED MEDIUMINT': {
+    UNSIGNED_MEDIUMINT: {
+        displayName: 'UNSIGNED MEDIUMINT',
         primitive: 'int',
         modifier: undefined, // Display width is deprecated
         flags: {
@@ -111,6 +117,7 @@ export const mysqlTypes: Record<string, ColumnType> = {
         }
     },
     INT: {
+        displayName: 'INT',
         primitive: 'int',
         modifier: undefined, // Display width is deprecated
         flags: {
@@ -128,7 +135,8 @@ export const mysqlTypes: Record<string, ColumnType> = {
             sqlite: 'INTEGER'
         }
     },
-    'UNSIGNED INT': {
+    UNSIGNED_INT: {
+        displayName: 'UNSIGNED INT',
         primitive: 'int',
         modifier: undefined, // Display width is deprecated
         flags: {
@@ -147,6 +155,7 @@ export const mysqlTypes: Record<string, ColumnType> = {
         }
     },
     BIGINT: {
+        displayName: 'BIGINT',
         primitive: 'int',
         modifier: undefined, // Display width is deprecated
         flags: {
@@ -164,7 +173,8 @@ export const mysqlTypes: Record<string, ColumnType> = {
             sqlite: 'INTEGER'
         }
     },
-    'UNSIGNED BIGINT': {
+    UNSIGNED_BIGINT: {
+        displayName: 'UNSIGNED BIGINT',
         primitive: 'int',
         modifier: undefined, // Display width is deprecated
         flags: {
@@ -183,6 +193,7 @@ export const mysqlTypes: Record<string, ColumnType> = {
         }
     },
     DECIMAL: {
+        displayName: 'DECIMAL',
         primitive: 'decimal',
         modifier: [{
             defaultValue: 10,
@@ -211,6 +222,7 @@ export const mysqlTypes: Record<string, ColumnType> = {
         }
     },
     FLOAT: {
+        displayName: 'FLOAT',
         primitive: 'float',
         modifier: [{
             defaultValue: 12,
@@ -234,6 +246,7 @@ export const mysqlTypes: Record<string, ColumnType> = {
         }
     },
     DOUBLE: {
+        displayName: 'DOUBLE',
         primitive: 'float',
         modifier: [{
             defaultValue: 10,
@@ -262,6 +275,7 @@ export const mysqlTypes: Record<string, ColumnType> = {
         }
     },
     BIT: {
+        displayName: 'BIT',
         primitive: 'bit',
         modifier: [{
             defaultValue: 1,
@@ -287,6 +301,7 @@ export const mysqlTypes: Record<string, ColumnType> = {
 
     // ===== String Types =====
     CHAR: {
+        displayName: 'CHAR',
         primitive: 'string',
         modifier: [{
             defaultValue: 1,
@@ -310,6 +325,7 @@ export const mysqlTypes: Record<string, ColumnType> = {
         }
     },
     VARCHAR: {
+        displayName: 'VARCHAR',
         primitive: 'string',
         modifier: [{
             defaultValue: 255,
@@ -333,6 +349,7 @@ export const mysqlTypes: Record<string, ColumnType> = {
         }
     },
     TINYTEXT: {
+        displayName: 'TINYTEXT',
         primitive: 'string',
         modifier: undefined,
         flags: {
@@ -351,6 +368,7 @@ export const mysqlTypes: Record<string, ColumnType> = {
         }
     },
     TEXT: {
+        displayName: 'TEXT',
         primitive: 'string',
         modifier: [{
             defaultValue: 255,
@@ -375,6 +393,7 @@ export const mysqlTypes: Record<string, ColumnType> = {
         }
     },
     MEDIUMTEXT: {
+        displayName: 'MEDIUMTEXT',
         primitive: 'string',
         modifier: undefined,
         flags: {
@@ -393,6 +412,7 @@ export const mysqlTypes: Record<string, ColumnType> = {
         }
     },
     LONGTEXT: {
+        displayName: 'LONGTEXT',
         primitive: 'string',
         modifier: undefined,
         flags: {
@@ -411,6 +431,7 @@ export const mysqlTypes: Record<string, ColumnType> = {
         }
     },
     BINARY: {
+        displayName: 'BINARY',
         primitive: 'binary',
         modifier: [{
             defaultValue: 1,
@@ -435,6 +456,7 @@ export const mysqlTypes: Record<string, ColumnType> = {
         }
     },
     VARBINARY: {
+        displayName: 'VARBINARY',
         primitive: 'binary',
         modifier: [{
             defaultValue: 255,
@@ -458,6 +480,7 @@ export const mysqlTypes: Record<string, ColumnType> = {
         }
     },
     TINYBLOB: {
+        displayName: 'TINYBLOB',
         primitive: 'binary',
         modifier: undefined,
         flags: {
@@ -476,6 +499,7 @@ export const mysqlTypes: Record<string, ColumnType> = {
         }
     },
     BLOB: {
+        displayName: 'BLOB',
         primitive: 'binary',
         modifier: [{
             defaultValue: 255,
@@ -500,6 +524,7 @@ export const mysqlTypes: Record<string, ColumnType> = {
         }
     },
     MEDIUMBLOB: {
+        displayName: 'MEDIUMBLOB',
         primitive: 'binary',
         modifier: undefined,
         flags: {
@@ -518,6 +543,7 @@ export const mysqlTypes: Record<string, ColumnType> = {
         }
     },
     LONGBLOB: {
+        displayName: 'LONGBLOB',
         primitive: 'binary',
         modifier: undefined,
         flags: {
@@ -538,6 +564,7 @@ export const mysqlTypes: Record<string, ColumnType> = {
 
     // ===== Date/Time Types =====
     DATE: {
+        displayName: 'DATE',
         primitive: 'date',
         modifier: undefined,
         flags: {
@@ -556,6 +583,7 @@ export const mysqlTypes: Record<string, ColumnType> = {
         }
     },
     TIME: {
+        displayName: 'TIME',
         primitive: 'time',
         modifier: [{
             defaultValue: 0,
@@ -580,6 +608,7 @@ export const mysqlTypes: Record<string, ColumnType> = {
         }
     },
     DATETIME: {
+        displayName: 'DATETIME',
         primitive: 'datetime',
         modifier: [{
             defaultValue: 0,
@@ -604,6 +633,7 @@ export const mysqlTypes: Record<string, ColumnType> = {
         }
     },
     TIMESTAMP: {
+        displayName: 'TIMESTAMP',
         primitive: 'timestamp',
         modifier: [{
             defaultValue: 0,
@@ -628,6 +658,7 @@ export const mysqlTypes: Record<string, ColumnType> = {
         }
     },
     YEAR: {
+        displayName: 'YEAR',
         primitive: 'int',
         modifier: undefined, // Always 4
         flags: {
@@ -651,6 +682,7 @@ export const mysqlTypes: Record<string, ColumnType> = {
         custom type aliases with
     */
     ENUM: {
+        displayName: 'ENUM',
         primitive: 'string',
         modifier: [{
             // Array of strings for the user to enter.
@@ -677,6 +709,7 @@ export const mysqlTypes: Record<string, ColumnType> = {
         }
     },
     SET: {
+        displayName: 'SET',
         primitive: 'list',
         modifier: [{
             // Array of strings for the user to enter.
@@ -703,6 +736,7 @@ export const mysqlTypes: Record<string, ColumnType> = {
         }
     },
     JSON: {
+        displayName: 'JSON',
         primitive: 'json',
         modifier: undefined,
         flags: {

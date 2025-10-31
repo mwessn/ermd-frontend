@@ -21,6 +21,7 @@ export interface ColumnTypeModifier {
 }
 
 export interface ColumnType {
+    readonly displayName: string;
     readonly primitive: PrimitiveColumnType;
     readonly modifier: ColumnTypeModifier[] | undefined;
     readonly flags: ColumnTypeFlags;
