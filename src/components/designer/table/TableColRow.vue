@@ -5,6 +5,9 @@
 
     :tabindex="nonFocusableRow ? undefined : -1"
 
+    @focus="showColumnProps = true"
+    @focusout="onFocusOut"
+
     @mousedown.left="onMouseDown"
     @keyup.enter="onRowEnterKey"
     @keyup.delete.stop="emit('deleteCol');"
@@ -20,13 +23,15 @@
 
         :title="col.name"
 
+        @focus="showColumnProps = true"
+
         @enter-key="focusColType"
         @delete-key="emit('deleteCol');"
         @keyup.delete.stop
 
         @value-change="onColNameChange"
     />
-    <div v-if="showColType" class="min-w-1/2">
+    <div v-if="showColType" class="min-w-1/2 flex items-center pr-2">
       <ColTypeSelect
           v-if="rowRef"
           :col="col"
@@ -35,12 +40,24 @@
           :col-id="col.id"
           :root-div="rowRef!"
 
-          @on-enter-key="emit('focusNext')"
+          @on-enter-key="onFocusNext"
 
           @keydown.delete.stop
           @keyup.delete.stop
       />
+      <div>
+        <FontAwesomeIcon
+            class="cursor-pointer"
+            :icon="showColumnProps ? faChevronLeft : faChevronRight"
+            @click="showColumnProps = !showColumnProps"
+        />
+      </div>
     </div>
+
+    <ColumnProperties
+        v-if="showColumnProps && showColType"
+        :col="col"
+    />
 
     <div
         v-if="col.foreignKey || col.primaryKey"
@@ -55,7 +72,7 @@
 
 <script setup lang="ts">
 import { computed, nextTick, type PropType, ref, useTemplateRef, watch } from "vue";
-import type { TableCol } from "@/types/table.ts";
+import { colCanAutoIncrement, colCanBePrimary, type TableCol } from "@/types/table.ts";
 import DoubleClickFocusInput from "@/components/core/DoubleClickFocusInput.vue";
 import { useDesignStore } from "@/store/design.ts";
 import { cloneDeep } from "lodash";
@@ -63,6 +80,9 @@ import { SQL_IDENTIFIER_REGEX } from "@/types/misc.ts";
 import ColTypeSelect from "@/components/designer/table/ColTypeSelect.vue";
 import { resetFocus } from "@/utils/utils.ts";
 import { type ColumnType, getDefaultModifierParams } from "@/types/TableColumnTypes/tableField.ts";
+import ColumnProperties from "@/components/designer/table/ColumnProperties.vue";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+import { faChevronLeft, faChevronRight } from "@fortawesome/free-solid-svg-icons";
 
 const { bufferLogColChange } = useDesignStore();
 
@@ -83,12 +103,24 @@ const props = defineProps({
 
 const showColType = ref<boolean>(!props.nonFocusableRow);
 
-watch(() => props.col, () => {
+watch(() => props.col.id, () => {
   showColType.value = !props.nonFocusableRow;
 });
 
 watch(() => props.col.type, (newType: ColumnType) => {
   props.col.modifierValues = getDefaultModifierParams(newType);
+  if (props.col.primaryKey) {
+    props.col.primaryKey = colCanBePrimary(props.col);
+  }
+  if (props.col.autoIncrement) {
+    props.col.autoIncrement = colCanAutoIncrement(props.col);
+  }
+});
+
+watch(() => props.col.primaryKey, (newVal: boolean) => {
+  if (newVal) {
+    props.col.notNull = true;
+  }
 });
 
 const emit = defineEmits(['focusNext', 'mouseDown', 'deleteCol', 'focusOut']);
@@ -96,6 +128,8 @@ const emit = defineEmits(['focusNext', 'mouseDown', 'deleteCol', 'focusOut']);
 const rowRef = useTemplateRef('rowRef');
 
 const colTypeRef = useTemplateRef('colTypeRef');
+
+const showColumnProps = ref<boolean>(false);
 
 const onMouseDown = () => {
   emit('mouseDown');
@@ -131,6 +165,10 @@ const onRowEnterKey = (evt: InputEvent) => {
   }
 }
 
+const onFocusNext = () => {
+  emit('focusNext');
+}
+
 const onColNameChange = (oldVal: string) => {
   if (!props.nonFocusableRow) {
     const oldColVal = cloneDeep(props.col);
@@ -139,6 +177,12 @@ const onColNameChange = (oldVal: string) => {
     // Focus table to be able to add log entry
     emit('mouseDown');
     bufferLogColChange(props.col, oldColVal);
+  }
+}
+
+function onFocusOut(event: FocusEvent) {
+  if (!event.relatedTarget || !rowRef.value?.contains(event.relatedTarget as Node)) {
+    showColumnProps.value = false;
   }
 }
 

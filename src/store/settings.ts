@@ -28,18 +28,16 @@ export const useSettingsStore = defineStore('settings', () => {
         sqlite: mysqlTypes,
     }
 
-    const currentDatabaseColumnTypes = computed((): Record<string, ColumnType> =>
-        engineColumnTypes[currentSettings.value.databaseEngine]
+    const currentDatabaseColumnTypes = computed((): ColumnType[] =>
+        Object.values(engineColumnTypes[currentSettings.value.databaseEngine])
     );
 
-    const columnTypeNames = computed(() => Object.values(
-        currentDatabaseColumnTypes.value
-    ).map(it => it.displayName));
+    const columnTypeNames = computed(() => currentDatabaseColumnTypes.value
+        .map(it => it.displayName));
 
     const primaryKeyTypes = computed(() => {
-        return Object.entries(currentDatabaseColumnTypes.value)
-            .filter(([_, columnType]) => columnType.flags.canBePrimaryKey)
-            .map(([typeName]) => typeName);
+        return currentDatabaseColumnTypes.value
+            .filter(it => it.flags.canBePrimaryKey);
     });
 
     const defaultPrimaryKey = computed(() => currentSettings.value.defaultPrimaryType);

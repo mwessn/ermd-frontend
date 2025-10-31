@@ -30,68 +30,6 @@
     >
 
     <div
-        class="absolute left-full bottom-0 bg-accentGray text-sm rounded-r-lg rounded-tl-lg"
-    >
-      <div v-if="col.type.modifier && col.modifierValues" class="flex justify-center border-b border-b-accentDarkGray">
-        <div
-            v-for="(mod, index) in col.type.modifier"
-            class="p-1 w-full max-w-36 not-last:border-r border-r-accentDarkGray text-center"
-        >
-          <p>
-            {{ $t(mod.hint) }}
-          </p>
-          <div class="border-b border-b-accentDarkGray my-1" />
-          <input
-              class="w-full text-center"
-              v-model="col.modifierValues[index]"
-
-              placeholder="null"
-
-              :min="mod.minValue"
-              :max="mod.maxValue"
-
-              :name="mod.hint"
-
-              :title="mod.hint"
-          >
-        </div>
-      </div>
-
-      <div class="flex text-center">
-        <ColPropertyCheckbox
-            v-model="col.primaryKey"
-            label="PK"
-            :disabled="!colCanBePrimary(col)"
-        />
-        <ColPropertyCheckbox
-            v-model="col.notNull"
-            label="NN"
-            :disabled="!colCanBeNullable(col)"
-        />
-        <ColPropertyCheckbox
-            v-model="col.unique"
-            label="U"
-        />
-        <ColPropertyCheckbox
-            v-model="col.autoIncrement"
-            label="AI"
-            :disabled="colCanAutoIncrement(col)"
-        />
-
-        <div class="p-2 border-l border-l-accentDarkGray grid gap-2">
-          <p class="wrap-break-word">{{ $t('Default') }}</p>
-          <input
-              v-model="col.defaultValue"
-              placeholder="null"
-              class="self-end border-b text-center"
-              type="text"
-              name="column default value"
-          >
-        </div>
-      </div>
-  </div>
-
-    <div
       v-if="dropdownVisible"
       class="w-full absolute b-1 l-0 p-2 min-w-max
        bg-accentGray border rounded-b shadow-lg
@@ -132,8 +70,7 @@ import { storeToRefs } from "pinia";
 import { useSettingsStore } from "@/store/settings.ts";
 import { cloneDeep } from "lodash";
 import { clamp } from "@/utils/utils.ts";
-import { colCanAutoIncrement, colCanBeNullable, colCanBePrimary, type TableCol } from "@/types/table.ts";
-import ColPropertyCheckbox from "@/components/designer/table/ColPropertyCheckbox.vue";
+import { type TableCol } from "@/types/table.ts";
 
 const props = defineProps({
   col: {
@@ -146,7 +83,7 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['onEnterKey']);
+const emit = defineEmits(['onEnterKey', 'focus']);
 
 const inputRef = useTemplateRef('inputRef');
 
@@ -162,6 +99,8 @@ const deselectAll = () => {
 }
 
 const focusSelectAll = () => {
+  emit('focus');
+
   deselectAll();
   selectAll();
 
@@ -235,7 +174,8 @@ function onFocusOut(event: FocusEvent) {
 
 const selectType = (_name?: string) => {
   const name = _name ?? matchedNames.value[selectedOption.value ?? 0];
-  const selected = currentDatabaseColumnTypes.value[name];
+  const selected = currentDatabaseColumnTypes.value
+      .find(it => it.displayName == name);
 
   if (selected) {
     props.col.type = cloneDeep(selected);
@@ -249,8 +189,11 @@ const selectType = (_name?: string) => {
 };
 
 const onEnter = () => {
-  selectType();
-  emit('onEnterKey');
+  if (!dropdownVisible.value) {
+    emit('onEnterKey');
+  } else {
+    selectType();
+  }
 }
 
 const onOptionClick = (index: number) => {
