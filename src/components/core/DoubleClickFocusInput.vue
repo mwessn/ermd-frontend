@@ -4,7 +4,7 @@
       :type="type"
       :id="id"
       :maxlength="length"
-      class="cursor-inherit p-1 overflow-ellipsis"
+      class="cursor-inherit p-1 overflow-ellipsis align-middle"
       ref="inputRef"
       autocomplete="off"
       tabindex="-1"
@@ -20,6 +20,8 @@
 
       @keydown.enter.prevent="emit('enterKey')"
       @keyup.delete="onDelete"
+
+      @keydown.shift.prevent
   >
 </template>
 

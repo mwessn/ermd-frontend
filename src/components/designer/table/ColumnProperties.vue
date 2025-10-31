@@ -1,7 +1,7 @@
 <template>
   <div
       class="absolute left-full bottom-0
-        bg-accentGray text-sm
+        bg-accentGray text-sm z-90
         rounded-r-lg rounded-tl-lg"
   >
     <div v-if="col.type.modifier && col.modifierValues" class="flex justify-center border-b border-b-accentDarkGray">
@@ -47,7 +47,7 @@
       <ColPropertyCheckbox
           v-model="col.autoIncrement"
           label="AI"
-          :disabled="colCanAutoIncrement(col)"
+          :disabled="!colCanAutoIncrement(col) || col.primaryKey"
       />
 
       <div class="p-2 border-l border-l-accentDarkGray grid gap-2 w-16">
@@ -67,12 +67,16 @@
 <script setup lang="ts">
 import { colCanAutoIncrement, colCanBeNullable, colCanBePrimary, type TableCol } from "@/types/table.ts";
 import ColPropertyCheckbox from "@/components/designer/table/ColPropertyCheckbox.vue";
-import type { PropType } from "vue";
+import { computed, type PropType } from "vue";
 
-defineProps({
+const props = defineProps({
   col: {
     type: Object as PropType<TableCol>,
     required: true
   },
+});
+
+const defaultInputType = computed(() => {
+
 });
 </script>

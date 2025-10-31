@@ -3,7 +3,9 @@
       class="w-64 absolute z-10 group/table focus:z-20 focus:outline-0"
       tabindex="-1"
       ref="tableRef"
+
       :style="{ top: table.posY + 'px', left: table.posX + 'px' }"
+
       @focus="selectTable(table)"
       @focusout="onFocusOut"
   >
@@ -18,6 +20,8 @@
             class="w-full p-2 bg-monolithicCyanTsunami"
             :class="[highlightNameClass]"
             ref="nameInputRef"
+
+            :title="table.name"
 
             @mousedown.left="focusTable"
             @enter-key="focusNextInput(0)"
@@ -71,7 +75,13 @@ import { useSettingsStore } from "@/store/settings.ts";
 import { storeToRefs } from "pinia";
 import { defaultPrimaryTypes } from "@/types/TableColumnTypes/tableField.ts";
 
-const { selectTable, isManualCreation, addTableCol, deleteTableCol, bufferLogTableChange } = useDesignStore();
+const {
+  selectTable,
+  isManualCreation,
+  addTableCol,
+  deleteTableCol,
+  bufferLogTableChange
+} = useDesignStore();
 
 const props = defineProps({
   table: {

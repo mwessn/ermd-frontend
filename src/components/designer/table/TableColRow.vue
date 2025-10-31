@@ -1,6 +1,6 @@
 <template>
   <div
-    class="flex w-full not-last:border-b relative group/cols"
+    class="flex items-center w-full not-last:border-b relative group/cols"
     ref="rowRef"
 
     :tabindex="nonFocusableRow ? undefined : -1"
@@ -11,14 +11,21 @@
     @mousedown.left="onMouseDown"
     @keyup.enter="onRowEnterKey"
     @keyup.delete.stop="emit('deleteCol');"
+
+    @keyup.shift.prevent="onRowKeyUp"
   >
+    <div
+        v-if="showColType"
+        class="h-1 w-1 rounded-full p-1 border ml-1.5 mr-0.5"
+        :class="rowIndicatorStyles"
+    />
     <DoubleClickFocusInput
         v-model="col.name"
         ref="colNameRef"
 
         :name="`colName-${col.id}`"
 
-        class="w-full group-last/cols:rounded-bl-xl "
+        class="w-full group-last/cols:rounded-bl-xl"
         :class="[{ 'border-r' : !nonFocusableRow }, highlightColumnClass]"
 
         :title="col.name"
@@ -45,18 +52,14 @@
           @keydown.delete.stop
           @keyup.delete.stop
       />
-      <div>
-        <FontAwesomeIcon
-            class="cursor-pointer"
-            :icon="showColumnProps ? faChevronLeft : faChevronRight"
-            @click="showColumnProps = !showColumnProps"
-        />
-      </div>
     </div>
 
     <ColumnProperties
         v-if="showColumnProps && showColType"
         :col="col"
+
+        @keydown.delete.stop
+        @keyup.delete.stop
     />
 
     <div
@@ -72,7 +75,7 @@
 
 <script setup lang="ts">
 import { computed, nextTick, type PropType, ref, useTemplateRef, watch } from "vue";
-import { colCanAutoIncrement, colCanBePrimary, type TableCol } from "@/types/table.ts";
+import { colCanAutoIncrement, colCanBeNullable, colCanBePrimary, type TableCol } from "@/types/table.ts";
 import DoubleClickFocusInput from "@/components/core/DoubleClickFocusInput.vue";
 import { useDesignStore } from "@/store/design.ts";
 import { cloneDeep } from "lodash";
@@ -81,8 +84,6 @@ import ColTypeSelect from "@/components/designer/table/ColTypeSelect.vue";
 import { resetFocus } from "@/utils/utils.ts";
 import { type ColumnType, getDefaultModifierParams } from "@/types/TableColumnTypes/tableField.ts";
 import ColumnProperties from "@/components/designer/table/ColumnProperties.vue";
-import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import { faChevronLeft, faChevronRight } from "@fortawesome/free-solid-svg-icons";
 
 const { bufferLogColChange } = useDesignStore();
 
@@ -120,16 +121,47 @@ watch(() => props.col.type, (newType: ColumnType) => {
 watch(() => props.col.primaryKey, (newVal: boolean) => {
   if (newVal) {
     props.col.notNull = true;
+    props.col.autoIncrement = colCanAutoIncrement(props.col);
   }
 });
 
 const emit = defineEmits(['focusNext', 'mouseDown', 'deleteCol', 'focusOut']);
 
-const rowRef = useTemplateRef('rowRef');
+const rowRef = useTemplateRef<HTMLDivElement>('rowRef');
 
 const colTypeRef = useTemplateRef('colTypeRef');
 
 const showColumnProps = ref<boolean>(false);
+
+const preloadBackgroundColors = {
+  primary: 'bg-amber-300',
+  foreign: 'bg-orange-500',
+  unique: 'bg-monolithicCyanTsunami',
+  default: 'bg-lycheeIce'
+}
+
+const preloadBorderColors = {
+  primary: 'border-amber-300',
+  foreign: 'border-orange-500',
+  unique: 'border-monolithicCyanTsunami',
+  default: 'border-lycheeIce'
+}
+
+const rowIndicatorStyles = computed(() => {
+  // priority: PK > FK > UNIQUE > default
+  const base = props.col.primaryKey
+      ? "primary"
+      : props.col.foreignKey
+          ? "foreign"
+          : props.col.unique
+              ? "unique"
+              : "default";
+
+  const border = preloadBorderColors[base];
+  const bg = props.col.notNull ? preloadBackgroundColors[base] : "";
+
+  return [border, bg];
+});
 
 const onMouseDown = () => {
   emit('mouseDown');
@@ -195,6 +227,33 @@ const highlightColumnClass = computed(() => {
 
   return '';
 });
+
+const onRowKeyUp = (e: KeyboardEvent) => {
+  if (!e.shiftKey) { return; }
+  const col = props.col;
+  switch (e.key.toLowerCase()) {
+    case 'p':
+      if (colCanBePrimary(col)) {
+        col.primaryKey = !col.primaryKey;
+      }
+      return;
+    case 'n':
+      if (colCanBeNullable(col)) {
+        col.notNull = !col.notNull;
+      }
+      return;
+    case 'u':
+      col.unique = !col.unique;
+      return;
+    case 'a':
+      if (!col.primaryKey && colCanAutoIncrement(col)) {
+        col.autoIncrement = !col.autoIncrement;
+      }
+      return;
+    default:
+      return;
+  }
+}
 
 defineExpose({ focusColName, focusColType, focusRow });
 

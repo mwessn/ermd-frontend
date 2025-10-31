@@ -27,6 +27,8 @@
         @keydown.enter="onEnter"
 
         @focusout="onFocusOut"
+
+        @keydown.shift.prevent
     >
 
     <div

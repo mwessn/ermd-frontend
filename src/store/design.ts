@@ -481,7 +481,7 @@ export const useDesignStore = defineStore('design', () => {
         const foreignKey = generateNewForeignKey(
             secondTable,
             [ 'ioto', 'noto' ].includes(type),
-            [ 'ioto', 'iotm' ].includes(type),
+            [ 'ioto', 'iotm', 'mtm' ].includes(type),
             currentSettings.value.namingConvention
         )!;
 
