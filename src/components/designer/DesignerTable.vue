@@ -1,16 +1,22 @@
 <template>
   <div
-      class="w-64 absolute z-10 group/table focus:z-20 focus:outline-0"
+      class="min-w-40 max-w-120 absolute z-10 group/table focus:z-20 focus:outline-0"
       tabindex="-1"
       ref="tableRef"
 
-      :style="{ top: table.posY + 'px', left: table.posX + 'px' }"
+      :style="{ top: table.posY + 'px', left: table.posX + 'px', width: table.widthPx + 'px' }"
 
       @focus="selectTable(table)"
       @focusout="onFocusOut"
   >
 <!--    Table handle -->
-<!--    <div class="w-full h-4 bg-accentDarkGray radial-accentGray z-20" />-->
+    <div class="w-full h-4 z-20 flex justify-end">
+      <div
+          class="bg-accentDarkGray radial-accentGray h-ful w-18 cursor-col-resize"
+          @mousedown.left="setResizedTable(table)"
+          @mouseup.left="setResizedTable()"
+      />
+    </div>
     <div class="z-20 bg-accentGray rounded-b-lg">
       <div class="w-full border-b border-b-accentDarkGray">
         <DoubleClickFocusInput
@@ -56,8 +62,10 @@
     </div>
 
     <!--    Pseudo border   -->
-    <div class="absolute w-[104%] h-[calc(100%+3px)] z-[-1] top-0 -right-[2%] rounded-b-xl
+    <div class="absolute w-full p-1 h-14/15 z-[-1] top-4 right-0 rounded-b-xl
      bg-transparent group-hover/table:bg-lycheeIce group-focus/table:bg-monolithicCyanTsunami"
+
+         tabindex="-1"
     />
   </div>
 </template>
@@ -77,10 +85,11 @@ import { defaultPrimaryTypes } from "@/types/TableColumnTypes/tableField.ts";
 
 const {
   selectTable,
+  setResizedTable,
   isManualCreation,
   addTableCol,
   deleteTableCol,
-  bufferLogTableChange
+  bufferLogTableChange,
 } = useDesignStore();
 
 const props = defineProps({

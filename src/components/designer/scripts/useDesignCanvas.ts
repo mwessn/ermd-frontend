@@ -30,6 +30,7 @@ export function useDesignCanvas() {
 
     // (Buffer variable) initial position of selected table before drag
     const lastSelectedPos = ref<CursorPos| undefined>(undefined);
+    const lastWidth = ref<number| undefined>(undefined);
 
 
     const isDragging = computed(() =>
@@ -102,6 +103,12 @@ export function useDesignCanvas() {
                 designStore.bufferLogTableMove(lastSelectedPos.value);
                 lastSelectedPos.value = undefined;
             }
+            if (lastWidth.value) {
+                designStore.bufferLogTableResize(lastWidth.value);
+                lastWidth.value = undefined;
+            }
+
+            designStore.setResizedTable();
         }
     };
 
@@ -126,17 +133,25 @@ export function useDesignCanvas() {
             translateOffsetX.value += evt.movementX;
             translateOffsetY.value += evt.movementY;
         } else {
-            // Else move the table
+            // Else move ir resize the table
+            if (designStore.resizedTable != undefined) {
 
-            // If just started moving, write initial position to buffer
-            if (!lastSelectedPos.value) {
-                lastSelectedPos.value = {
-                    x: designStore.selectedTable.posX,
-                    y: designStore.selectedTable.posY
+                // Store initial width
+                if (!lastWidth.value) {
+                    lastWidth.value = designStore.resizedTable.widthPx;
                 }
-            }
+                designStore.resizeSelectedTable(evt.movementX / scaleFactor.value);
+            } else {
 
-            designStore.moveSelectedTable(evt.movementX / scaleFactor.value, evt.movementY / scaleFactor.value);
+                // If just started moving, write initial position to buffer
+                if (!lastSelectedPos.value) {
+                    lastSelectedPos.value = {
+                        x: designStore.selectedTable.posX,
+                        y: designStore.selectedTable.posY
+                    }
+                }
+                designStore.moveSelectedTable(evt.movementX / scaleFactor.value, evt.movementY / scaleFactor.value);
+            }
         }
 
         currentMousePos.value = { x: evt.clientX, y: evt.clientY };

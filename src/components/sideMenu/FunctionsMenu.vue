@@ -84,7 +84,7 @@ const functionsMenuTopItems: readonly MenuItem[] = [
   {
     pic: faArrowRight,
     hint: 'Non-identifying One-to-One relation',
-    button: 'B',
+    button: 'G',
     action: () => {
       actionStore.setAction('noto');
     }
@@ -92,7 +92,7 @@ const functionsMenuTopItems: readonly MenuItem[] = [
   {
     pic: faCircleArrowRight,
     hint: 'Identifying One-to-One relation',
-    button: 'G',
+    button: 'B',
     action: () => {
       actionStore.setAction('ioto');
     }
@@ -100,7 +100,7 @@ const functionsMenuTopItems: readonly MenuItem[] = [
   {
     pic: faChevronRight,
     hint: 'Non-identifying One-to-Many relation',
-    button: 'N',
+    button: 'H',
     action: () => {
       actionStore.setAction('notm');
     }
@@ -108,7 +108,7 @@ const functionsMenuTopItems: readonly MenuItem[] = [
   {
     pic: faChevronCircleRight,
     hint: 'Identifying One-to-Many relation',
-    button: 'H',
+    button: 'N',
     action: () => {
       actionStore.setAction('iotm');
     }

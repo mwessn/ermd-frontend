@@ -9,7 +9,7 @@ import type { DatabaseRelationship, RelationshipType } from "@/types/relationshi
 import { useActionsStore } from "@/store/action.ts";
 import { useSettingsStore } from "@/store/settings.ts";
 import { createNewRelationship } from "@/types/relationships.ts";
-import { unpluralize } from "@/utils/utils.ts";
+import { clamp, unpluralize } from "@/utils/utils.ts";
 import type { ColumnType } from "@/types/TableColumnTypes/tableField.ts";
 
 export const useDesignStore = defineStore('design', () => {
@@ -28,6 +28,7 @@ export const useDesignStore = defineStore('design', () => {
     const relations = ref<DatabaseRelationship[]>([]);
 
     const selectedTable = ref<Table | undefined>(undefined);
+    const resizedTable = ref<Table | undefined>(undefined);
 
     // Flag to track whether a table is mounted after manual creation or loaded from localStorage
     const isManualCreation = ref<boolean>(false);
@@ -79,6 +80,10 @@ export const useDesignStore = defineStore('design', () => {
         selectedTable.value = val;
     }
 
+    const setResizedTable = (val: Table | undefined = undefined) => {
+        resizedTable.value = val;
+    }
+
     const snapToGrid = (value: number, gridSize: number = 10) => {
         return Math.round(value / gridSize) * gridSize;
     };
@@ -89,6 +94,13 @@ export const useDesignStore = defineStore('design', () => {
 
             selectedTable.value.posX = snapToGrid(selectedTable.value.posX + deltaX, gridSize);
             selectedTable.value.posY = snapToGrid(selectedTable.value.posY + deltaY, gridSize);
+        }
+    }
+
+    const resizeSelectedTable = (deltaX: number) => {
+        if (selectedTable.value) {
+            selectedTable.value.widthPx = clamp(selectedTable.value.widthPx + deltaX, 120, 480);
+            // selectedTable.value.posY = snapToGrid(selectedTable.value.posY + deltaY, gridSize);
         }
     }
 
@@ -176,7 +188,7 @@ export const useDesignStore = defineStore('design', () => {
             if (!relationFirstTableId.value) {
                 // If first table not selected, select and exit
 
-                let hasPK = true
+                let hasPK = true;
                 if (type == 'mtm') {
                     // Check if selected table has primaryId column
                     hasPK = selectedTable.value.cols.find(col => col.primaryKey) == undefined;
@@ -201,27 +213,31 @@ export const useDesignStore = defineStore('design', () => {
                     if (type != "mtm") {
                         // Check if relation between tables already exists
                         const existingRel = relations.value.find(it =>
-                            (it.firstTableId == firstTable.id && it.secondTableId == selectedTable.value?.id)
+                            (it.firstTableId == firstTable.id && it.secondTableId == selectedTable.value?.id) ||
+                            (it.firstTableId == selectedTable.value?.id && it.secondTableId == firstTable.id)
                         );
+
+                        const bufferEntries: BufferEntity[] = [];
 
                         if (existingRel) {
                             if (existingRel.type != type && existingRel.type != 'mtm') {
-                                bufferStore.addUndoBufferAction({
-                                    entities: [ {
-                                        action: 'change',
-                                        type: "relation",
-                                        entityId: existingRel.id,
-                                        oldVal: cloneDeep(existingRel),
-                                    } ]
-                                });
 
-                                existingRel.type = type;
+                                // Recreate relationship with updated type
+                                bufferEntries.push(
+                                    ...deleteRelationship(existingRel, true)
+                                );
+
+                                bufferEntries.push(
+                                    ...createSimpleRelation(firstTable, selectedTable.value, type)
+                                );
+
+                                bufferStore.addUndoBufferAction({
+                                    entities: bufferEntries
+                                });
                             }
 
                             return;
                         }
-
-                        const bufferEntries: BufferEntity[] = [];
 
                         const existingMtM = mtmRelationExists(firstTable, selectedTable.value)
 
@@ -357,6 +373,17 @@ export const useDesignStore = defineStore('design', () => {
         }
     }
 
+    function bufferSetTableWidth(bufferEntry: BufferEntity) {
+        const table = tables.value.find(it => it.id == bufferEntry.entityId);
+        if (table) {
+            const width = cloneDeep(bufferEntry.oldVal as number);
+
+            bufferEntry.oldVal = cloneDeep(table.widthPx);
+
+            table.widthPx = width;
+        }
+    }
+
     function bufferSetTableVal(bufferEntry: BufferEntity) {
         const tableIndex = tables.value.findIndex(it => it.id == bufferEntry.entityId);
         if (tableIndex != -1) {
@@ -443,6 +470,19 @@ export const useDesignStore = defineStore('design', () => {
                     type: "table",
                     entityId: selectedTable.value.id,
                     oldVal: pos,
+                }]
+            });
+        }
+    }
+
+    function bufferLogTableResize(width: number) {
+        if (resizedTable.value) {
+            bufferStore.addUndoBufferAction({
+                entities: [{
+                    action: 'resize',
+                    type: "table",
+                    entityId: resizedTable.value.id,
+                    oldVal: width,
                 }]
             });
         }
@@ -599,6 +639,7 @@ export const useDesignStore = defineStore('design', () => {
     return {
         tables,
         selectedTable,
+        resizedTable,
         newTableIndex, // Must be returned to preserve state
 
         relations,
@@ -608,7 +649,9 @@ export const useDesignStore = defineStore('design', () => {
 
         addTable,
         selectTable,
+        setResizedTable,
         moveSelectedTable,
+        resizeSelectedTable,
         deleteSelectedTable,
 
         addTableCol,
@@ -623,6 +666,7 @@ export const useDesignStore = defineStore('design', () => {
         bufferDeleteTable,
         bufferRestoreTable,
         bufferSetTablePos,
+        bufferSetTableWidth,
         bufferSetTableVal,
 
         bufferDeleteCol,
@@ -634,6 +678,7 @@ export const useDesignStore = defineStore('design', () => {
         bufferChangeRelation,
 
         bufferLogTableMove,
+        bufferLogTableResize,
         bufferLogColChange,
         bufferLogTableChange,
     }

@@ -81,6 +81,8 @@ export interface Table {
 
     posX: number,
     posY: number,
+
+    widthPx: number,
 }
 
 export const generateNewTable = (
@@ -116,6 +118,8 @@ export const generateNewTable = (
 
         posX: posX,
         posY: posY,
+
+        widthPx: 160
     }
 
     return table;

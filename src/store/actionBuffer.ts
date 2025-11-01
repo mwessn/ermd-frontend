@@ -75,6 +75,10 @@ export const useActionBuffer = defineStore('actionBuffer', () => {
                             designStore.bufferSetTablePos(entity);
                             break;
                         }
+                        case "resize": {
+                            designStore.bufferSetTableWidth(entity);
+                            break;
+                        }
                         case "change": {
                             designStore.bufferSetTableVal(entity);
                             break;
@@ -160,6 +164,10 @@ export const useActionBuffer = defineStore('actionBuffer', () => {
                         }
                         case "move": {
                             designStore.bufferSetTablePos(entity);
+                            break;
+                        }
+                        case "resize": {
+                            designStore.bufferSetTableWidth(entity);
                             break;
                         }
                         case "change": {
