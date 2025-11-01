@@ -1,10 +1,14 @@
 <template>
   <div
-      class="min-w-40 max-w-120 absolute z-10 group/table focus:z-20 focus:outline-0"
+      class="min-w-40 max-w-120 absolute group/table focus:outline-0"
       tabindex="-1"
       ref="tableRef"
 
+      :class="focusedTable?.id == table.id ? 'z-20' : 'z-10'"
+
       :style="{ top: table.posY + 'px', left: table.posX + 'px', width: table.widthPx + 'px' }"
+
+      @click="focusedTable = table"
 
       @focus="selectTable(table)"
       @focusout="onFocusOut"
@@ -63,9 +67,7 @@
 
     <!--    Pseudo border   -->
     <div class="absolute w-full p-1 h-14/15 z-[-1] top-4 right-0 rounded-b-xl
-     bg-transparent group-hover/table:bg-lycheeIce group-focus/table:bg-monolithicCyanTsunami"
-
-         tabindex="-1"
+      bg-transparent group-hover/table:bg-lycheeIce group-focus/table:bg-monolithicCyanTsunami"
     />
   </div>
 </template>
@@ -91,6 +93,8 @@ const {
   deleteTableCol,
   bufferLogTableChange,
 } = useDesignStore();
+
+const { focusedTable } = storeToRefs(useDesignStore());
 
 const props = defineProps({
   table: {

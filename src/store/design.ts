@@ -30,6 +30,9 @@ export const useDesignStore = defineStore('design', () => {
     const selectedTable = ref<Table | undefined>(undefined);
     const resizedTable = ref<Table | undefined>(undefined);
 
+    // Determine which table should have the highest z-offset
+    const focusedTable = ref<Table | undefined>(undefined);
+
     // Flag to track whether a table is mounted after manual creation or loaded from localStorage
     const isManualCreation = ref<boolean>(false);
 
@@ -641,6 +644,8 @@ export const useDesignStore = defineStore('design', () => {
         selectedTable,
         resizedTable,
         newTableIndex, // Must be returned to preserve state
+
+        focusedTable,
 
         relations,
 

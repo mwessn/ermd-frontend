@@ -1,8 +1,8 @@
 <template>
   <div
       class="absolute left-full bottom-0
-        bg-accentGray text-sm z-90
-        rounded-r-lg rounded-tl-lg"
+        bg-lycheeIce text-sm z-90
+        rounded-r-lg rounded-tl-lg shadow-lg"
   >
     <div v-if="col.type.modifier && col.modifierValues" class="flex justify-center border-b border-b-accentDarkGray">
       <ModifierValueInput
