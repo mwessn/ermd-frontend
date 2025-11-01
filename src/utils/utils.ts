@@ -79,3 +79,12 @@ function preserveCase(original: string, newWord: string): string {
     return newWord;
 }
 
+
+// String validators
+export function nullOrEmpty(val: string | undefined): boolean {
+    return val == undefined || val.length == 0;
+}
+
+export function notNullOrEmpty(val: string | undefined): boolean {
+    return !nullOrEmpty(val);
+}

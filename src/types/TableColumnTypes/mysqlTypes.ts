@@ -156,7 +156,7 @@ export const mysqlTypes: Record<string, ColumnType> = {
     },
     BIGINT: {
         displayName: 'BIGINT',
-        primitive: 'int',
+        primitive: 'bigint',
         modifier: undefined, // Display width is deprecated
         flags: {
             canBePrimaryKey: true,
@@ -175,7 +175,7 @@ export const mysqlTypes: Record<string, ColumnType> = {
     },
     UNSIGNED_BIGINT: {
         displayName: 'UNSIGNED BIGINT',
-        primitive: 'int',
+        primitive: 'bigint',
         modifier: undefined, // Display width is deprecated
         flags: {
             canBePrimaryKey: true,

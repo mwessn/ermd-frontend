@@ -7,11 +7,13 @@
         type="checkbox"
         :name="label"
         :disabled="disabled"
+        @change="emit('change')"
     >
   </div>
 </template>
 
 <script setup lang="ts">
+const emit = defineEmits(['change']);
 
 const model = defineModel({
   type: Boolean,

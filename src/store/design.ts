@@ -405,9 +405,9 @@ export const useDesignStore = defineStore('design', () => {
             const colIndex = table.cols.findIndex(it => it.id == colId);
 
             if (colIndex != -1) {
-                const buff = cloneDeep(table.cols[colIndex]);
+                const oldVal = cloneDeep(table.cols[colIndex]);
                 table.cols[colIndex] = (bufferEntry.oldVal as TableCol);
-                bufferEntry.oldVal = buff;
+                bufferEntry.oldVal = oldVal;
             }
         }
     }

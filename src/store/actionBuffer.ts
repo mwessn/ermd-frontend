@@ -3,6 +3,7 @@ import { defaultSettings } from "@/types/misc.ts";
 import { ref } from "vue";
 import type { ActionBufferEntry, BufferEntity } from "@/types/actionsBuffer.ts";
 import { useDesignStore } from "@/store/design.ts";
+import { cloneDeep } from "lodash";
 
 export const useActionBuffer = defineStore('actionBuffer', () => {
     // TODO add settings store
@@ -15,7 +16,7 @@ export const useActionBuffer = defineStore('actionBuffer', () => {
 
     const addUndoBufferAction = (action: ActionBufferEntry) => {
         redoBuffer.value = [];
-        undoBuffer.value.push({ ...action });
+        undoBuffer.value.push(cloneDeep(action));
 
         if (undoBuffer.value.length > maxBufferSize) {
             undoBuffer.value.shift();
@@ -30,7 +31,6 @@ export const useActionBuffer = defineStore('actionBuffer', () => {
                 redoBuffer.value.push(entry);
             }
         }
-
     };
 
     const redo = () => {
@@ -41,7 +41,6 @@ export const useActionBuffer = defineStore('actionBuffer', () => {
                 undoBuffer.value.push(entry);
             }
         }
-
     };
 
     const clearState = () => {

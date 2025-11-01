@@ -6,8 +6,6 @@
         transition-transform duration-300"
       :class="visible ? 'translate-x-0' : 'translate-x-full'"
   >
-    {{ useDesignStore().selectedTable?.cols }}
-    {{ currentSettings.databaseEngine }}
   </div>
 </template>
 
@@ -15,6 +13,7 @@
 import { storeToRefs } from "pinia";
 import { useSettingsStore } from "@/store/settings.ts";
 import { useDesignStore } from "../../store/design.ts";
+import { useActionBuffer } from "../../store/actionBuffer.ts";
 
 defineProps({
   visible: {

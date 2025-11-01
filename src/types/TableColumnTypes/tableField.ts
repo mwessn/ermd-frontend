@@ -1,7 +1,9 @@
 import { mysqlTypes } from "@/types/TableColumnTypes/mysqlTypes.ts";
 
 const PRIMITIVE_TYPES = [
-    'int', 'decimal', 'float', 'bit',
+    'int',
+    'bigint', // For frontend handling
+    'decimal', 'float', 'bit',
     'char', 'string', 'binary',
     'date', 'time', 'datetime', 'timestamp', 'list', 'json'
 ];

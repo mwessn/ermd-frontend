@@ -25,7 +25,7 @@
 
         :name="`colName-${col.id}`"
 
-        class="w-full group-last/cols:rounded-bl-xl"
+        class="w-full group-last/cols:rounded-b-xl"
         :class="[{ 'border-r' : !nonFocusableRow }, highlightColumnClass]"
 
         :title="col.name"
@@ -47,6 +47,8 @@
           :col-id="col.id"
           :root-div="rowRef!"
 
+          @value-change="onColTypeChange"
+
           @on-enter-key="onFocusNext"
 
           @keydown.delete.stop
@@ -57,6 +59,8 @@
     <ColumnProperties
         v-if="showColumnProps && showColType"
         :col="col"
+
+        @change="onColTypeChange"
 
         @keydown.delete.stop
         @keyup.delete.stop
@@ -83,7 +87,7 @@ import { SQL_IDENTIFIER_REGEX } from "@/types/misc.ts";
 import ColTypeSelect from "@/components/designer/table/ColTypeSelect.vue";
 import { resetFocus } from "@/utils/utils.ts";
 import { type ColumnType, getDefaultModifierParams } from "@/types/TableColumnTypes/tableField.ts";
-import ColumnProperties from "@/components/designer/table/ColumnProperties.vue";
+import ColumnProperties from "@/components/designer/table/ColumnProperties/ColumnProperties.vue";
 
 const { bufferLogColChange } = useDesignStore();
 
@@ -105,22 +109,30 @@ const props = defineProps({
 const showColType = ref<boolean>(!props.nonFocusableRow);
 
 watch(() => props.col.id, () => {
+  // On storing a column prevent type selector from displaying on the new row
   showColType.value = !props.nonFocusableRow;
 });
 
-watch(() => props.col.type, (newType: ColumnType) => {
-  props.col.modifierValues = getDefaultModifierParams(newType);
+watch(() => props.col.type, (newType: ColumnType, oldType) => {
+  // Prevent resetting to default on action buffer undo/redo
+  if (newType.displayName != oldType.displayName) {
+    props.col.modifierValues = getDefaultModifierParams(newType);
+  }
+  // Check PK flag
   if (props.col.primaryKey) {
     props.col.primaryKey = colCanBePrimary(props.col);
   }
+  // Check AI flag
   if (props.col.autoIncrement) {
     props.col.autoIncrement = colCanAutoIncrement(props.col);
   }
 });
 
-watch(() => props.col.primaryKey, (newVal: boolean) => {
+watch(() => props.col.primaryKey, (newVal) => {
+  // Set default PK flags
   if (newVal) {
     props.col.notNull = true;
+    props.col.unique = true;
     props.col.autoIncrement = colCanAutoIncrement(props.col);
   }
 });
@@ -212,6 +224,17 @@ const onColNameChange = (oldVal: string) => {
   }
 }
 
+const onColTypeChange = (oldVal: TableCol) => {
+  if (!props.nonFocusableRow) {
+    // Focus table to be able to add log entry
+    emit('mouseDown');
+    bufferLogColChange(
+        props.col,
+        oldVal
+    )
+  }
+}
+
 function onFocusOut(event: FocusEvent) {
   if (!event.relatedTarget || !rowRef.value?.contains(event.relatedTarget as Node)) {
     showColumnProps.value = false;
@@ -231,28 +254,36 @@ const highlightColumnClass = computed(() => {
 const onRowKeyUp = (e: KeyboardEvent) => {
   if (!e.shiftKey) { return; }
   const col = props.col;
+  const oldVal = cloneDeep(col);
   switch (e.key.toLowerCase()) {
     case 'p':
       if (colCanBePrimary(col)) {
         col.primaryKey = !col.primaryKey;
+        break;
       }
       return;
     case 'n':
       if (colCanBeNullable(col)) {
         col.notNull = !col.notNull;
+        break;
       }
       return;
     case 'u':
-      col.unique = !col.unique;
+      if (!col.primaryKey) {
+        col.unique = !col.unique;
+        break;
+      }
       return;
     case 'a':
       if (!col.primaryKey && colCanAutoIncrement(col)) {
         col.autoIncrement = !col.autoIncrement;
+        break;
       }
       return;
     default:
       return;
   }
+  onColTypeChange(oldVal);
 }
 
 defineExpose({ focusColName, focusColType, focusRow });

@@ -85,7 +85,7 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['onEnterKey', 'focus']);
+const emit = defineEmits(['onEnterKey', 'focus', 'valueChange']);
 
 const inputRef = useTemplateRef('inputRef');
 
@@ -199,8 +199,10 @@ const onEnter = () => {
 }
 
 const onOptionClick = (index: number) => {
+  const oldVal = cloneDeep(props.col);
   selectTypeOption(index);
   selectType()
+  emit('valueChange', oldVal)
 }
 
 watch(() => props.col.type, () => {
