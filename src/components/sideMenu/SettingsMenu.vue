@@ -11,9 +11,7 @@
 </template>
 
 <script setup lang="ts">
-import { storeToRefs } from "pinia";
-import { useSettingsStore } from "@/store/settings.ts";
-import { useDesignStore } from "../../store/design.ts";
+
 import { useActionBuffer } from "../../store/actionBuffer.ts";
 
 defineProps({
@@ -23,7 +21,7 @@ defineProps({
   }
 });
 
-const { currentSettings } = storeToRefs(useSettingsStore());
+// const { currentSettings } = storeToRefs(useSettingsStore());
 
 
 </script>

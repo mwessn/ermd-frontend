@@ -81,7 +81,7 @@ export const generateCommentArea = (pos: CursorPos): CommentArea => {
         },
 
         color: randomPastelColor(),
-        name: 'New Area',
+        name: '',
         comment: '',
         showComment: false
     }

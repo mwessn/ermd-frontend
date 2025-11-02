@@ -149,7 +149,11 @@ export function useDesignCanvas() {
             }
 
             if (lastCommentAreaPosition.value) {
-                designStore.bufferLogCommentAreaMove(lastCommentAreaPosition.value);
+                designStore.bufferLogCommentAreaMove(
+                    lastCommentAreaPosition.value,
+                    intersectingTables.value,
+                    intersectingAreas.value
+                );
                 designStore.setMovedCommentArea();
                 intersectingTables.value = [];
                 intersectingAreas.value = [];

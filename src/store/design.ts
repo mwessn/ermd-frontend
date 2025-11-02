@@ -250,8 +250,8 @@ export const useDesignStore = defineStore('design', () => {
     const moveCommentArea = (
         deltaX: number,
         deltaY: number,
-        tablesInside: Table[] = [],
-        areasInside: CommentArea[] = []
+        tablesInside: Table[],
+        areasInside: CommentArea[]
     ) => {
         if (movedCommentArea.value) {
             const area = movedCommentArea.value
@@ -698,8 +698,8 @@ export const useDesignStore = defineStore('design', () => {
 
     function bufferLogCommentAreaMove(
         oldVal: CursorPos,
-        tablesInside: Table[] = [],
-        areasInside: CommentArea[] = []
+        tablesInside: Table[],
+        areasInside: CommentArea[]
     ) {
         if (movedCommentArea.value != undefined) {
             const entities: BufferEntity[] = [];

@@ -28,6 +28,8 @@
 
             class="max-w-52"
 
+            :placeholder="$t('new comment area')"
+
             @valueChange="onChange"
             @enter-key="resetFocus"
 

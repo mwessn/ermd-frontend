@@ -99,7 +99,6 @@ import { computed, nextTick, type PropType, ref, watch } from "vue";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { faClose } from "@fortawesome/free-solid-svg-icons";
 import { nullOrEmpty } from "@/utils/utils.ts";
-import type { ColumnTypeModifier } from "@/types/TableColumnTypes/tableField.ts";
 import { cloneDeep } from "lodash";
 import ModifierValueInput from "@/components/designer/table/ColumnProperties/ModifierValueInput.vue";
 
@@ -150,17 +149,6 @@ const onInputClick = () => {
     props.col.defaultValue = '';
   }
 }
-
-const modifierInputType = (mod: ColumnTypeModifier) => {
-  switch (typeof mod.defaultValue) {
-    case 'number':
-      return 'number'
-    case 'string':
-      return 'string';
-    default:
-      return 'string';
-  }
-};
 
 const defaultInputType = computed(() => {
   switch (props.col.type.primitive) {

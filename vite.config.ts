@@ -19,6 +19,25 @@ export default defineConfig({
           '@': path.resolve(__dirname, './src'),
       }
     },
+    build: {
+        rollupOptions: {
+           output: {
+               manualChunks: {
+                   vue: ['vue', 'vue-router'],
+                   state: ['pinia', 'pinia-plugin-persistedstate'],
+                   i18n: ['vue-i18n'],
+                   ui: [
+                       '@fortawesome/fontawesome-svg-core',
+                       '@fortawesome/free-brands-svg-icons',
+                       '@fortawesome/free-solid-svg-icons',
+                       '@fortawesome/vue-fontawesome',
+                       'tailwindcss'
+                   ],
+                   utils: ['lodash']
+               }
+           }
+        }
+    },
     esbuild: {
         logLevel: 'debug',
     },
