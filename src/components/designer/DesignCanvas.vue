@@ -41,16 +41,17 @@
       </svg>
 
       <DesignerCommentArea
+          v-for="area in designStore.commentAreas"
+          :area="area"
+          :key="area.id"
+          :scale-value="scaleFactor"
+      />
+
+      <DesignerCommentArea
           v-if="designStore.tempCommentArea"
           :area="designStore.tempCommentArea"
           key="temp-area"
           is-temporary
-      />
-
-      <DesignerCommentArea
-          v-for="area in designStore.commentAreas"
-          :area="area"
-          :key="area.id"
       />
     </div>
 

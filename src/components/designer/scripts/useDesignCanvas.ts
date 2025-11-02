@@ -6,6 +6,8 @@ import { clamp } from "@/utils/utils.ts";
 import { storeToRefs } from "pinia";
 import { useSettingsStore } from "@/store/settings.ts";
 import { cloneDeep } from "lodash";
+import type { Table } from "@/types/table.ts";
+import type { CommentArea } from "@/types/misc.ts";
 
 export interface CursorPos {
     x: number;
@@ -40,6 +42,10 @@ export function useDesignCanvas() {
     const lastWidth = ref<number| undefined>(undefined);
     const lastSize = ref<AreaSize | undefined>(undefined);
     const lastCommentAreaPosition = ref<CursorPos | undefined>(undefined);
+
+    // Comment area moving binding
+    const intersectingTables = ref<Table[]>([]);
+    const intersectingAreas = ref<CommentArea[]>([]);
 
     const isDragging = computed(() =>
         !!lastClickPos.value && lastClickPos.value != currentMousePos.value
@@ -76,6 +82,8 @@ export function useDesignCanvas() {
                         x: designStore.movedCommentArea.posX,
                         y: designStore.movedCommentArea.posY
                     }
+                    intersectingTables.value = designStore.getTablesInsideArea(designStore.movedCommentArea);
+                    intersectingAreas.value = designStore.getAreasInsideArea(designStore.movedCommentArea);
                 }
 
                 break;
@@ -143,6 +151,8 @@ export function useDesignCanvas() {
             if (lastCommentAreaPosition.value) {
                 designStore.bufferLogCommentAreaMove(lastCommentAreaPosition.value);
                 designStore.setMovedCommentArea();
+                intersectingTables.value = [];
+                intersectingAreas.value = [];
             }
 
             // Reset resized references
@@ -176,7 +186,12 @@ export function useDesignCanvas() {
             designStore.resizeCommentArea(commentArea, deltaX, deltaY);
         }
         else if (designStore.movedCommentArea) {
-            designStore.moveCommentArea(deltaX, deltaY);
+            designStore.moveCommentArea(
+                deltaX,
+                deltaY,
+                intersectingTables.value,
+                intersectingAreas.value
+            );
         }
 
         // No table selected, drag canvas

@@ -227,21 +227,44 @@ export const useDesignStore = defineStore('design', () => {
         }
     }
 
-    const moveCommentArea = (deltaX: number, deltaY: number) => {
+    const getTablesInsideArea = (area: CommentArea): Table[] => {
+        const areaEndX = area.posX + area.size.width;
+        const areaEndY = area.posY + area.size.height;
+
+        return tables.value.filter(it =>
+            (it.posX + it.widthPx  > area.posX && it.posX <= areaEndX) &&
+            (it.posY > area.posY && it.posY < areaEndY)
+        );
+    }
+
+    const getAreasInsideArea = (area: CommentArea): CommentArea[] => {
+        const areaEndX = area.posX + area.size.width;
+        const areaEndY = area.posY + area.size.height;
+
+        return commentAreas.value.filter(it =>
+            (it.posX > area.posX && it.posX <= areaEndX) &&
+            (it.posY > area.posY && it.posY <= areaEndY)
+        );
+    }
+
+    const moveCommentArea = (
+        deltaX: number,
+        deltaY: number,
+        tablesInside: Table[] = [],
+        areasInside: CommentArea[] = []
+    ) => {
         if (movedCommentArea.value) {
             const area = movedCommentArea.value
             area.posX = snapToGrid(area.posX + deltaX, gridSize.value);
             area.posY = snapToGrid(area.posY + deltaY, gridSize.value);
 
-            const areaEndX = area.posX + area.size.width;
-            const areaEndY = area.posY + area.size.height;
+            for (const _area of areasInside) {
+                _area.posX = snapToGrid(_area.posX + deltaX, gridSize.value);
+                _area.posY = snapToGrid(_area.posY + deltaY, gridSize.value);
+            }
 
-            const tablesInsideArea: Table[] = tables.value.filter(it =>
-                (it.posX > area.posX && it.posX < areaEndX) &&
-                (it.posY > area.posY && it.posY < areaEndY)
-            );
-
-            for (const table of tablesInsideArea) {
+            // Handles all tables, including inside subareas
+            for (const table of tablesInside) {
                 table.posX = snapToGrid(table.posX + deltaX, gridSize.value)
                 table.posY = snapToGrid(table.posY + deltaY, gridSize.value)
             }
@@ -673,7 +696,11 @@ export const useDesignStore = defineStore('design', () => {
         });
     }
 
-    function bufferLogCommentAreaMove(oldVal: CursorPos) {
+    function bufferLogCommentAreaMove(
+        oldVal: CursorPos,
+        tablesInside: Table[] = [],
+        areasInside: CommentArea[] = []
+    ) {
         if (movedCommentArea.value != undefined) {
             const entities: BufferEntity[] = [];
             entities.push({
@@ -682,6 +709,35 @@ export const useDesignStore = defineStore('design', () => {
                 entityId: movedCommentArea.value.id,
                 oldVal: oldVal,
             });
+
+            const area = movedCommentArea.value;
+
+            const deltaX = area.posX - oldVal.x;
+            const deltaY = area.posY - oldVal.y;
+
+            for (const table of tablesInside) {
+                entities.push({
+                    action: 'move',
+                    type: "table",
+                    entityId: table.id,
+                    oldVal: {
+                        x: table.posX - deltaX,
+                        y: table.posY - deltaY
+                    },
+                });
+            }
+
+            for (const _area of areasInside) {
+                entities.push({
+                    action: 'move',
+                    type: "commentArea",
+                    entityId: _area.id,
+                    oldVal: {
+                        x: _area.posX - deltaX,
+                        y: _area.posY - deltaY
+                    },
+                });
+            }
 
             bufferStore.addUndoBufferAction({
               entities
@@ -911,6 +967,10 @@ export const useDesignStore = defineStore('design', () => {
         bufferLogCommentAreaChange,
         bufferLogCommentAreaMove,
         bufferLogCommentAreaResize,
+
+
+        getTablesInsideArea,
+        getAreasInsideArea,
     }
 }, {
     persist: {

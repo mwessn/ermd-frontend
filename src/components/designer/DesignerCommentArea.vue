@@ -7,9 +7,11 @@
         background: area.color}"
   >
 <!--  Header  -->
-    <div class="w-full relative
-      text-lycheeIce text-lg bg-accentDarkGray p-2 flex items-center justify-between
-       rounded-t-lg"
+    <div
+        class="comment-area-header w-full relative
+          text-lycheeIce bg-accentDarkGray p-2 flex items-center justify-between
+            rounded-t-lg"
+        :style="{ fontSize: headerFontSize + 'px' }"
     >
       <div class="flex items-center gap-2">
         <FontAwesomeIcon
@@ -23,6 +25,8 @@
         />
         <DoubleClickFocusInput
             v-model="area.name"
+
+            class="max-w-52"
 
             @valueChange="onChange"
             @enter-key="resetFocus"
@@ -54,9 +58,11 @@
     </div>
 
 <!--  Comment box  -->
-    <div class="mt-3 w-fit h-fit ml-3 max-h-10/12 max-w-10/12
-    min-h-6 min-w-6
+    <div
+        class="mt-3 w-fit h-fit ml-3 max-h-10/12 max-w-10/12
+          min-h-6 min-w-6 origin-top-left
         text-accentDarkGray rounded mb-3 relative"
+        :style="{ scale: commentAreaScale }"
          @mousedown.stop
     >
       <FontAwesomeIcon
@@ -86,7 +92,7 @@
 </template>
 
 <script setup lang="ts">
-import { type PropType, ref } from "vue";
+import { computed, type PropType, ref } from "vue";
 import type { CommentArea } from "@/types/misc.ts";
 import { cloneDeep } from "lodash";
 import DoubleClickFocusInput from "@/components/core/DoubleClickFocusInput.vue";
@@ -104,6 +110,10 @@ const props = defineProps({
   isTemporary: {
     type: Boolean,
     default: false
+  },
+  scaleValue: {
+    type: Number,
+    default: 1,
   }
 });
 
@@ -118,6 +128,16 @@ const {
 } = useDesignStore();
 
 const oldVal = ref<CommentArea>(cloneDeep(props.area));
+
+const headerFontSize = computed(() => {
+  if (props.scaleValue < 0.4) { return 32; }
+  if (props.scaleValue < 0.6) { return 28; }
+  if (props.scaleValue < 0.8) { return 24; }
+  if (props.scaleValue < 1) { return 20; }
+  return 16;
+});
+
+const commentAreaScale = computed(() => Math.max(2 - props.scaleValue, 1));
 
 const showColorSelector = ref<boolean>(false);
 const onChange = () => {
@@ -138,3 +158,9 @@ const onColorSelectorFocusOut = () => {
   }
 }
 </script>
+
+<style scoped>
+.comment-area-header {
+  transition: font-size .2s ease;
+}
+</style>
