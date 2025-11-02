@@ -24,10 +24,9 @@
           :is-name-duplicate="isTableNameDuplicate(table.name)"
       />
 
-<!--   Must be z-0 to prevent overlaying the canvas   -->
       <svg
           ref="relationshipsRef"
-          class="fixed top-0 left-0 full z-0 origin-top-left"
+          class="fixed top-0 left-0 full z-2 origin-top-left pointer-events-none"
           overflow="visible"
       >
         <DesignerRelation
@@ -37,6 +36,8 @@
             :scale-factor="scaleFactor"
             :offset-x="translateOffsetX"
             :offset-y="translateOffsetY"
+            @mousedown.stop
+            @mouseup.stop
         />
       </svg>
 
