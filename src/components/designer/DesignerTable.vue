@@ -13,10 +13,10 @@
       @focus="selectTable(table)"
       @focusout="onFocusOut"
   >
-<!--    Table handle -->
+<!--    Table resize handle -->
     <div class="w-full h-4 z-20 flex justify-end">
       <div
-          class="bg-accentDarkGray radial-accentGray h-ful w-18 cursor-col-resize"
+          class="bg-accentDarkGray radial-accentGray h-6 w-6 cursor-col-resize"
           @mousedown.left="setResizedTable(table)"
           @mouseup.left="setResizedTable()"
       />

@@ -2,7 +2,7 @@ import { defineStore, storeToRefs } from "pinia";
 import { generateNewForeignKey, generateNewTable, type Table, type TableCol } from "@/types/table.ts";
 import { computed, ref } from "vue";
 import { useActionBuffer } from "@/store/actionBuffer.ts";
-import { type CursorPos } from "@/components/designer/scripts/useDesignCanvas.ts";
+import { type AreaSize, type CursorPos } from "@/components/designer/scripts/useDesignCanvas.ts";
 import { cloneDeep } from "lodash";
 import type { ActionBufferEntry, BufferEntity } from "@/types/actionsBuffer.ts";
 import type { DatabaseRelationship, RelationshipType } from "@/types/relationships.ts";
@@ -11,6 +11,7 @@ import { useSettingsStore } from "@/store/settings.ts";
 import { createNewRelationship } from "@/types/relationships.ts";
 import { clamp, unpluralize } from "@/utils/utils.ts";
 import type { ColumnType } from "@/types/TableColumnTypes/tableField.ts";
+import { type CommentArea, generateCommentArea } from "@/types/misc.ts";
 
 export const useDesignStore = defineStore('design', () => {
     const bufferStore = useActionBuffer();
@@ -25,13 +26,21 @@ export const useDesignStore = defineStore('design', () => {
     const tables = ref<Table[]>([]);
     const newTableIndex = ref<number>(1);
 
+    const gridSize = computed(() => currentSettings.value.snapToGrid ? 5 : 1);
+
     const relations = ref<DatabaseRelationship[]>([]);
+
+    const commentAreas = ref<CommentArea[]>([]);
 
     const selectedTable = ref<Table | undefined>(undefined);
     const resizedTable = ref<Table | undefined>(undefined);
 
     // Determine which table should have the highest z-offset
     const focusedTable = ref<Table | undefined>(undefined);
+
+    const tempCommentArea = ref<CommentArea | undefined>(undefined);
+    const resizedCommentArea = ref<CommentArea | undefined>(undefined);
+    const movedCommentArea = ref<CommentArea | undefined>(undefined);
 
     // Flag to track whether a table is mounted after manual creation or loaded from localStorage
     const isManualCreation = ref<boolean>(false);
@@ -93,10 +102,8 @@ export const useDesignStore = defineStore('design', () => {
 
     const moveSelectedTable = (deltaX: number, deltaY: number) => {
         if (selectedTable.value) {
-            const gridSize = currentSettings.value.snapToGrid ? 5 : 1;
-
-            selectedTable.value.posX = snapToGrid(selectedTable.value.posX + deltaX, gridSize);
-            selectedTable.value.posY = snapToGrid(selectedTable.value.posY + deltaY, gridSize);
+            selectedTable.value.posX = snapToGrid(selectedTable.value.posX + deltaX, gridSize.value);
+            selectedTable.value.posY = snapToGrid(selectedTable.value.posY + deltaY, gridSize.value);
         }
     }
 
@@ -175,6 +182,58 @@ export const useDesignStore = defineStore('design', () => {
 
                 selectedTable.value.cols.splice(index, 1);
             }
+        }
+    }
+
+    // Comments
+
+    const startCreatingCommentArea = (pos: CursorPos) => {
+        tempCommentArea.value = generateCommentArea(pos);
+    }
+
+    const storeCommentArea = () => {
+        if (tempCommentArea.value) {
+            commentAreas.value.push(tempCommentArea.value);
+            bufferLogCommentAreaCreate(cloneDeep(tempCommentArea.value.id));
+            tempCommentArea.value = undefined;
+        }
+    }
+
+    const resetCreatingCommentArea = () => {
+        tempCommentArea.value = undefined;
+    }
+
+    const setResizedCommentArea = (area: CommentArea | undefined = undefined) => {
+        resizedCommentArea.value = area;
+    }
+
+    const setMovedCommentArea = (area: CommentArea | undefined = undefined) => {
+        movedCommentArea.value = area;
+    }
+
+    const resizeCommentArea = (area: CommentArea, deltaX: number, deltaY: number) => {
+        area.size.width = Math.max(56, snapToGrid(area.size.width + deltaX, gridSize.value));
+        area.size.height = Math.max(56, snapToGrid(area.size.height + deltaY, gridSize.value));
+
+        // If new dimensions are less than the default textarea size, collapse it
+        if (area.size.width < 180 || area.size.height < 80) {
+            area.showComment = false;
+        }
+    }
+
+    const moveCommentArea = (deltaX: number, deltaY: number) => {
+        if (movedCommentArea.value) {
+            movedCommentArea.value.posX = snapToGrid(movedCommentArea.value.posX + deltaX, gridSize.value);
+            movedCommentArea.value.posY = snapToGrid(movedCommentArea.value.posY + deltaY, gridSize.value);
+        }
+    }
+
+    const deleteCommentArea = (area: CommentArea) => {
+        const index = commentAreas.value.indexOf(area);
+
+        if (index != -1) {
+            bufferLogCommentAreaDelete(area);
+            commentAreas.value.splice(index, 1);
         }
     }
 
@@ -339,6 +398,7 @@ export const useDesignStore = defineStore('design', () => {
         newTableIndex.value = 1;
 
         relations.value = [];
+        commentAreas.value = [];
 
         bufferStore.clearState();
     }
@@ -465,6 +525,57 @@ export const useDesignStore = defineStore('design', () => {
         }
     }
 
+    function bufferSetCommentAreaPos(entry: BufferEntity) {
+        const area = commentAreas.value.find(it => it.id == entry.entityId);
+        if (area) {
+            const oldVal: CursorPos = {
+                x: area.posX,
+                y: area.posY
+            };
+
+            const bufferPos = cloneDeep(entry.oldVal as CursorPos);
+
+            area.posX = bufferPos.x;
+            area.posY = bufferPos.y;
+
+            entry.oldVal = oldVal;
+        }
+    }
+
+    function bufferSetCommentAreaSize(entry: BufferEntity) {
+        const area = commentAreas.value.find(it => it.id == entry.entityId);
+        if (area) {
+            const oldVal = cloneDeep(area.size);
+            area.size = cloneDeep(entry.oldVal as AreaSize);
+            entry.oldVal = oldVal;
+        }
+    }
+
+    function bufferRestoreCommentArea(entry: BufferEntity) {
+        commentAreas.value.push(cloneDeep(entry.oldVal as CommentArea));
+        entry.oldVal = undefined;
+    }
+
+    function bufferDeleteCommentArea(entry: BufferEntity) {
+        const area = commentAreas.value.find(it => it.id == entry.entityId);
+        if (area) {
+            entry.oldVal = cloneDeep(area);
+            const index = commentAreas.value.indexOf(area);
+            commentAreas.value.splice(index, 1);
+        }
+    }
+
+    function bufferSetCommentAreaValues(entry: BufferEntity) {
+        const index = commentAreas.value.findIndex(it => it.id == entry.entityId);
+        if (index != -1) {
+            const oldVal = cloneDeep(commentAreas.value[index]);
+
+            commentAreas.value[index] = cloneDeep(entry.oldVal as CommentArea);
+
+            entry.oldVal = oldVal;
+        }
+    }
+
     function bufferLogTableMove(pos: CursorPos) {
         if (selectedTable.value) {
             bufferStore.addUndoBufferAction({
@@ -510,8 +621,67 @@ export const useDesignStore = defineStore('design', () => {
                 entities: [{
                     action: 'change',
                     type: "table",
-                    entityId: `${selectedTable.value.id}`,
+                    entityId: selectedTable.value.id,
                     oldVal: oldVal,
+                }]
+            });
+        }
+    }
+
+    function bufferLogCommentAreaCreate(areaId: string) {
+        bufferStore.addUndoBufferAction({
+            entities: [{
+                action: 'create',
+                type: "commentArea",
+                entityId: areaId,
+                oldVal: undefined,
+            }]
+        });
+    }
+
+    function bufferLogCommentAreaDelete(area: CommentArea) {
+        bufferStore.addUndoBufferAction({
+            entities: [{
+                action: 'delete',
+                type: "commentArea",
+                entityId: area.id,
+                oldVal: cloneDeep(area),
+            }]
+        });
+    }
+
+    function bufferLogCommentAreaChange(oldVal: CommentArea) {
+        bufferStore.addUndoBufferAction({
+            entities: [{
+                action: 'change',
+                type: "commentArea",
+                entityId: oldVal.id,
+                oldVal: oldVal,
+            }]
+        });
+    }
+
+    function bufferLogCommentAreaMove(oldVal: CursorPos) {
+        if (movedCommentArea.value != undefined) {
+            bufferStore.addUndoBufferAction({
+                entities: [{
+                    action: 'move',
+                    type: "commentArea",
+                    entityId: movedCommentArea.value.id,
+                    oldVal: oldVal,
+                }]
+            });
+        }
+    }
+
+    function bufferLogCommentAreaResize(oldVal: AreaSize) {
+        if (resizedCommentArea.value != undefined) {
+            bufferStore.addUndoBufferAction({
+                entities: [{
+                    action: 'resize',
+                    type: "commentArea",
+                    entityId: resizedCommentArea.value.id,
+                    oldVal: cloneDeep(oldVal),
                 }]
             });
         }
@@ -662,8 +832,24 @@ export const useDesignStore = defineStore('design', () => {
         addTableCol,
         deleteTableCol,
 
-        resetRelationshipCreation,
+        // Comment area creation
+        tempCommentArea,
+        startCreatingCommentArea,
+        storeCommentArea,
+        resetCreatingCommentArea,
+
+        // Existing comments areas
+        commentAreas,
+        resizedCommentArea,
+        movedCommentArea,
+        setResizedCommentArea,
+        resizeCommentArea,
+        setMovedCommentArea,
+        moveCommentArea,
+        deleteCommentArea,
+
         createRelationship,
+        resetRelationshipCreation,
 
         createNewProject,
 
@@ -682,16 +868,28 @@ export const useDesignStore = defineStore('design', () => {
         bufferRestoreRelation,
         bufferChangeRelation,
 
+        bufferSetCommentAreaPos,
+        bufferSetCommentAreaSize,
+        bufferDeleteCommentArea,
+        bufferRestoreCommentArea,
+        bufferSetCommentAreaValues,
+
         bufferLogTableMove,
         bufferLogTableResize,
         bufferLogColChange,
         bufferLogTableChange,
+
+        bufferLogCommentAreaCreate,
+        bufferLogCommentAreaDelete,
+        bufferLogCommentAreaChange,
+        bufferLogCommentAreaMove,
+        bufferLogCommentAreaResize,
     }
 }, {
     persist: {
         key: `__ermd_design`,
         pick: [
-            'tables', 'newTableIndex', 'relations'
+            'tables', 'newTableIndex', 'relations', 'commentAreas'
         ],
     }
 });

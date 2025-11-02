@@ -48,7 +48,66 @@ export const useActionBuffer = defineStore('actionBuffer', () => {
         undoBuffer.value = [];
     }
 
-    const revertAction = (entry: ActionBufferEntry): boolean => {
+    type ActionHandler = (entity: BufferEntity) => void;
+
+    const entityActionMap: Record<string, Record<string, ActionHandler>> = {
+        table: {
+            create: e => designStore.bufferRestoreTable(e),
+            delete: e => designStore.bufferDeleteTable(e),
+            move: e => designStore.bufferSetTablePos(e),
+            resize: e => designStore.bufferSetTableWidth(e),
+            change: e => designStore.bufferSetTableVal(e),
+        },
+        tableCol: {
+            create: e => designStore.bufferRestoreCol(e),
+            delete: e => designStore.bufferDeleteCol(e),
+            change: e => designStore.bufferRevertColumnVal(e),
+        },
+        relation: {
+            create: e => designStore.bufferRestoreRelation(e),
+            delete: e => designStore.bufferDeleteRelation(e),
+            change: e => designStore.bufferChangeRelation(e),
+        },
+        commentArea: {
+            create: e => designStore.bufferRestoreCommentArea(e),
+            delete: e => designStore.bufferDeleteCommentArea(e),
+            change: e => designStore.bufferSetCommentAreaValues(e),
+            move: e => designStore.bufferSetCommentAreaPos(e),
+            resize: e => designStore.bufferSetCommentAreaSize(e),
+        }
+    };
+
+    function getRevertedAction(action: string): string {
+        if (action === 'create') return 'delete';
+        if (action === 'delete') return 'create';
+        return action;
+    }
+
+    const performAction = (entry: ActionBufferEntry, revert = false): boolean => {
+        let success = true;
+
+        const entities = revert ? [...entry.entities].reverse() : entry.entities;
+
+        for (const entity of entities) {
+            const typeMap = entityActionMap[entity.type];
+            if (!typeMap || !typeMap[entity.action]) {
+                console.warn("Action buffer error:", entity);
+                success = false;
+                continue;
+            }
+
+            const actionToCall = revert ? getRevertedAction(entity.action) : entity.action;
+            typeMap[actionToCall](entity);
+        }
+
+        return success;
+    };
+
+    const revertAction = (entry: ActionBufferEntry) => performAction(entry, true);
+    const restoreAction = (entry: ActionBufferEntry) => performAction(entry, false);
+
+
+/*    const revertAction = (entry: ActionBufferEntry): boolean => {
         let reverted = true;
 
         function errorAction(entity: BufferEntity | undefined = undefined) {
@@ -128,6 +187,31 @@ export const useActionBuffer = defineStore('actionBuffer', () => {
                         default: {
                             errorAction(entity);
                             break;
+                        }
+                    }
+                    break;
+                }
+                case "commentArea": {
+                    switch (entity.action) {
+                        case "create": {
+                            designStore.bufferDeleteCommentArea(entity);
+                            break;
+                        }
+                        case "delete": {
+                            designStore.bufferRestoreCommentArea(entity);
+                            break;
+                        }
+                        case "change": {
+                            designStore.bufferSetCommentAreaValues(entity);
+                            break;
+                        }
+                        case "move": {
+                            designStore.bufferSetCommentAreaPos(entity);
+                            break;
+                        }
+                        case "resize": {
+                            designStore.bufferSetCommentAreaSize(entity);
+                            break
                         }
                     }
                     break;
@@ -222,6 +306,31 @@ export const useActionBuffer = defineStore('actionBuffer', () => {
                     }
                     break;
                 }
+                case "commentArea": {
+                    switch (entity.action) {
+                        case "create": {
+                            designStore.bufferRestoreCommentArea(entity);
+                            break;
+                        }
+                        case "delete": {
+                            designStore.bufferDeleteCommentArea(entity);
+                            break;
+                        }
+                        case "change": {
+                            designStore.bufferSetCommentAreaValues(entity);
+                            break;
+                        }
+                        case "move": {
+                            designStore.bufferSetCommentAreaPos(entity);
+                            break;
+                        }
+                        case "resize": {
+                            designStore.bufferSetCommentAreaSize(entity);
+                            break
+                        }
+                    }
+                    break;
+                }
                 default: {
                     errorAction();
                 }
@@ -229,7 +338,7 @@ export const useActionBuffer = defineStore('actionBuffer', () => {
         })
 
         return restored;
-    }
+    }*/
 
     return {
         addUndoBufferAction,

@@ -1,4 +1,6 @@
 import { type ColumnType, type DatabaseEngine, defaultPrimaryTypes } from "@/types/TableColumnTypes/tableField.ts";
+import type { AreaSize, CursorPos } from "@/components/designer/scripts/useDesignCanvas.ts";
+import { generateId } from "@/utils/utils.ts";
 
 export interface UserSettings {
     databaseEngine: DatabaseEngine;
@@ -44,3 +46,43 @@ export const RESERVED_SQL_KEYWORDS = new Set([
     "RIGHT", "ROWNUM", "SELECT", "SET", "TABLE", "TOP", "TRUNCATE", "UNION",
     "UNIQUE", "UPDATE", "VALUES", "VIEW", "WHERE", "WITH"
 ]);
+
+export interface CommentArea {
+    id: string,
+
+    posX: number,
+    posY: number,
+
+    size: AreaSize,
+
+    color: string,
+
+    name: string,
+    comment: string,
+    showComment: boolean,
+}
+
+export function randomPastelColor(): string {
+    const r = Math.floor((Math.random() * 127) + 127);
+    const g = Math.floor((Math.random() * 127) + 127);
+    const b = Math.floor((Math.random() * 127) + 127);
+    return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
+}
+
+export const generateCommentArea = (pos: CursorPos): CommentArea => {
+    return {
+        id: generateId('commentArea'),
+        posX: pos.x,
+        posY: pos.y,
+
+        size: {
+            width: 1,
+            height: 1
+        },
+
+        color: randomPastelColor(),
+        name: 'New Area',
+        comment: '',
+        showComment: false
+    }
+}

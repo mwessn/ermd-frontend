@@ -5,10 +5,16 @@ import { useDesignStore } from "@/store/design.ts";
 import { clamp } from "@/utils/utils.ts";
 import { storeToRefs } from "pinia";
 import { useSettingsStore } from "@/store/settings.ts";
+import { cloneDeep } from "lodash";
 
 export interface CursorPos {
     x: number;
     y: number;
+}
+
+export interface AreaSize {
+    width: number;
+    height: number;
 }
 
 export function useDesignCanvas() {
@@ -30,8 +36,10 @@ export function useDesignCanvas() {
 
     // (Buffer variable) initial position of selected table before drag
     const lastSelectedPos = ref<CursorPos| undefined>(undefined);
-    const lastWidth = ref<number| undefined>(undefined);
 
+    const lastWidth = ref<number| undefined>(undefined);
+    const lastSize = ref<AreaSize | undefined>(undefined);
+    const lastCommentAreaPosition = ref<CursorPos | undefined>(undefined);
 
     const isDragging = computed(() =>
         !!lastClickPos.value && lastClickPos.value != currentMousePos.value
@@ -60,6 +68,15 @@ export function useDesignCanvas() {
                 if (currentSettings.value.dragCanvasButton == 'left') {
                     startTracking(evt);
                 }
+                if (designStore.resizedCommentArea != undefined) {
+                    lastSize.value = cloneDeep(designStore.resizedCommentArea.size);
+                }
+                if (designStore.movedCommentArea != undefined) {
+                    lastCommentAreaPosition.value = {
+                        x: designStore.movedCommentArea.posX,
+                        y: designStore.movedCommentArea.posY
+                    }
+                }
 
                 break;
             }
@@ -81,13 +98,15 @@ export function useDesignCanvas() {
                 break;
             }
             case 'commentArea': {
+                startTracking(evt);
+                designStore.startCreatingCommentArea(lastClickPos.value!);
+                actionStore.setAction(undefined);
                 break;
             }
         }
     };
 
     const stopTracking = () => {
-
         // Stop tracking drag
         lastClickPos.value = undefined;
     }
@@ -108,6 +127,21 @@ export function useDesignCanvas() {
                 lastWidth.value = undefined;
             }
 
+            if (designStore.tempCommentArea != undefined) {
+                designStore.storeCommentArea();
+            }
+
+            if (lastSize.value) {
+                designStore.bufferLogCommentAreaResize(lastSize.value);
+                designStore.setResizedCommentArea();
+            }
+
+            if (lastCommentAreaPosition.value) {
+                designStore.bufferLogCommentAreaMove(lastCommentAreaPosition.value);
+                designStore.setMovedCommentArea();
+            }
+
+            // Reset resized references
             designStore.setResizedTable();
         }
     };
@@ -128,29 +162,35 @@ export function useDesignCanvas() {
         // If not dragging return
         if (!lastClickPos.value || !currentMousePos.value) return;
 
-        // If no table selected, drag canvas
-        if (designStore.selectedTable == undefined) {
+        const deltaX = evt.movementX / scaleFactor.value;
+        const deltaY = evt.movementY / scaleFactor.value;
+
+        // Handle comment areas
+        const commentArea = designStore.tempCommentArea
+            ?? designStore.resizedCommentArea;
+        if (commentArea) {
+            designStore.resizeCommentArea(commentArea, deltaX, deltaY);
+        }
+        else if (designStore.movedCommentArea) {
+            designStore.moveCommentArea(deltaX, deltaY);
+        }
+
+        // No table selected, drag canvas
+        else if (!designStore.selectedTable) {
             translateOffsetX.value += evt.movementX;
             translateOffsetY.value += evt.movementY;
-        } else {
-            // Else move ir resize the table
-            if (designStore.resizedTable != undefined) {
-
-                // Store initial width
-                if (!lastWidth.value) {
-                    lastWidth.value = designStore.resizedTable.widthPx;
-                }
-                designStore.resizeSelectedTable(evt.movementX / scaleFactor.value);
+        }
+        // Handle table move/resize
+        else {
+            const table = designStore.selectedTable;
+            if (designStore.resizedTable) {
+                if (!lastWidth.value) lastWidth.value = cloneDeep(designStore.resizedTable.widthPx);
+                designStore.resizeSelectedTable(deltaX);
             } else {
-
-                // If just started moving, write initial position to buffer
                 if (!lastSelectedPos.value) {
-                    lastSelectedPos.value = {
-                        x: designStore.selectedTable.posX,
-                        y: designStore.selectedTable.posY
-                    }
+                    lastSelectedPos.value = { x: table.posX, y: table.posY };
                 }
-                designStore.moveSelectedTable(evt.movementX / scaleFactor.value, evt.movementY / scaleFactor.value);
+                designStore.moveSelectedTable(deltaX, deltaY);
             }
         }
 

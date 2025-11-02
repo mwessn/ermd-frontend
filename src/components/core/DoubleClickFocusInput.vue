@@ -21,7 +21,7 @@
       @keydown.enter.prevent="emit('enterKey')"
       @keyup.delete="onDelete"
 
-      @keydown.shift.prevent
+      @keydown.shift="onShiftKey"
   >
 </template>
 
@@ -44,6 +44,10 @@ const props = defineProps({
   length: {
     type: Number,
     default: 63,
+  },
+  allowShiftKey: {
+    type: Boolean,
+    default: false
   }
 });
 
@@ -93,6 +97,12 @@ const onDelete = (evt: KeyboardEvent) => {
   if (evt.shiftKey && evt.key == 'Delete') {
     // Emit delete event on Shift + Del
     emit('deleteKey');
+  }
+}
+
+const onShiftKey = (e: KeyboardEvent) => {
+  if (!props.allowShiftKey) {
+    e.preventDefault();
   }
 }
 

@@ -6,7 +6,7 @@
         transition-transform duration-300"
       :class="visible ? 'translate-x-0' : 'translate-x-full'"
   >
-    {{ useDesignStore().focusedTable }}
+    {{ useActionBuffer().undoBuffer }}
   </div>
 </template>
 

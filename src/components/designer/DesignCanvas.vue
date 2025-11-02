@@ -38,6 +38,19 @@
             :offset-y="translateOffsetY"
         />
       </svg>
+
+      <DesignerCommentArea
+          v-if="designStore.tempCommentArea"
+          :area="designStore.tempCommentArea"
+          key="temp-area"
+          is-temporary
+      />
+
+      <DesignerCommentArea
+          v-for="area in designStore.commentAreas"
+          :area="area"
+          :key="area.id"
+      />
     </div>
 
     <div
@@ -78,6 +91,7 @@ import { useDesignStore } from "@/store/design.ts";
 import DesignerTable from "@/components/designer/DesignerTable.vue";
 import { resetFocus } from "@/utils/utils.ts";
 import DesignerRelation from "@/components/designer/DesignerRelation.vue";
+import DesignerCommentArea from "@/components/designer/DesignerCommentArea.vue";
 
 const actionsStore = useActionsStore();
 const designStore = useDesignStore();

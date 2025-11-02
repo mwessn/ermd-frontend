@@ -13,6 +13,9 @@ export function useKeyboardShortcuts(centerView: () => void) {
 
     const setAction = (val: UserAction) => {
         actionsStore.setAction(val);
+        if (!val) {
+            designStore.resetCreatingCommentArea();
+        }
     };
 
     const onKeydown = (evt: KeyboardEvent) => {
