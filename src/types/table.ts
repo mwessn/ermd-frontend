@@ -47,7 +47,12 @@ export const generateNewTableCol = (colType: ColumnType): TableCol => {
     }
 }
 
-export const generateNewForeignKey = (otherTable: Table, fkUnique: boolean = false, fkNotNull: boolean = false, namingCon: 'snake' | 'camel'): TableCol | undefined => {
+export const generateNewForeignKey = (
+    otherTable: Table,
+    fkUnique: boolean = false,
+    fkNotNull: boolean = false,
+    namingCon: 'snake' | 'camel'
+): TableCol | undefined => {
     const otherPrimary = otherTable.cols.find(it => it.primaryKey);
 
     if (otherPrimary) {

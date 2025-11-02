@@ -99,7 +99,11 @@ export function useDesignCanvas() {
             }
             case 'commentArea': {
                 startTracking(evt);
-                designStore.startCreatingCommentArea(lastClickPos.value!);
+                designStore.startCreatingCommentArea({
+                    x: evt.clientX / scaleFactor.value - translateOffsetX.value,
+                    y: evt.clientY / scaleFactor.value - translateOffsetY.value
+                });
+
                 actionStore.setAction(undefined);
                 break;
             }

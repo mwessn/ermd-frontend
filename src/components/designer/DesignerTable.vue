@@ -13,16 +13,8 @@
       @focus="selectTable(table)"
       @focusout="onFocusOut"
   >
-<!--    Table resize handle -->
-    <div class="w-full h-4 z-20 flex justify-end">
-      <div
-          class="bg-accentDarkGray radial-accentGray h-6 w-6 cursor-col-resize"
-          @mousedown.left="setResizedTable(table)"
-          @mouseup.left="setResizedTable()"
-      />
-    </div>
     <div class="z-20 bg-accentGray rounded-b-lg">
-      <div class="w-full border-b border-b-accentDarkGray">
+      <div class="w-full border-b border-b-accentDarkGray flex items-center justify-between bg-monolithicCyanTsunami">
         <DoubleClickFocusInput
             v-model="table.name"
             :id="`name-${table.id}`"
@@ -36,6 +28,12 @@
             @mousedown.left="focusTable"
             @enter-key="focusNextInput(0)"
             @value-change="onTableNameChange"
+        />
+        <!--    Table resize handle -->
+        <div
+            class="radial-accentGray h-6 w-8 cursor-col-resize"
+            @mousedown.left="setResizedTable(table)"
+            @mouseup.left="setResizedTable()"
         />
       </div>
       <div class="w-full min-h-4">
