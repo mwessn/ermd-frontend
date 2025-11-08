@@ -65,7 +65,9 @@
           min-h-6 min-w-6 origin-top-left
         text-accentDarkGray rounded mb-3 relative"
         :style="{ scale: commentAreaScale }"
-         @mousedown.stop
+        @mousedown.stop
+        @keydown.stop
+        @keyup.stop
     >
       <FontAwesomeIcon
           :icon="area.showComment ? faChevronUp : faChevronDown"

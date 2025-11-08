@@ -144,7 +144,7 @@ const functionsMenuMiddleItems: readonly MenuItem[] = [
     pic: faFileArrowDown,
     hint: 'Save as JSON',
     action: () => {
-      //
+      designStore.exportProjectJson('example');
     }
   },
   {

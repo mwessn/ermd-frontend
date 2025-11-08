@@ -10,7 +10,14 @@ const PRIMITIVE_TYPES = [
 
 export type PrimitiveColumnType = typeof PRIMITIVE_TYPES[number];
 
-export type DatabaseEngine = 'mysql' | 'postgres' | 'mssql' | 'sqlite';
+export const DatabaseEngines = [
+    'mysql',
+    'postgres',
+    'mssql',
+    'sqlite'
+];
+
+export type DatabaseEngine = typeof DatabaseEngines[number];
 
 export interface ColumnTypeModifier {
     readonly defaultValue: number | string;

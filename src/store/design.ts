@@ -3,15 +3,16 @@ import { generateNewForeignKey, generateNewTable, type Table, type TableCol } fr
 import { computed, ref } from "vue";
 import { useActionBuffer } from "@/store/actionBuffer.ts";
 import { type AreaSize, type CursorPos } from "@/components/designer/scripts/useDesignCanvas.ts";
-import { cloneDeep } from "lodash";
+import { cloneDeep, isNumber, isString } from "lodash";
 import type { ActionBufferEntry, BufferEntity } from "@/types/actionsBuffer.ts";
 import type { DatabaseRelationship, RelationshipType } from "@/types/relationships.ts";
 import { useActionsStore } from "@/store/action.ts";
 import { useSettingsStore } from "@/store/settings.ts";
 import { createNewRelationship } from "@/types/relationships.ts";
 import { clamp, unpluralize } from "@/utils/utils.ts";
-import type { ColumnType } from "@/types/TableColumnTypes/tableField.ts";
-import { type CommentArea, generateCommentArea } from "@/types/misc.ts";
+import { type ColumnType, DatabaseEngines } from "@/types/TableColumnTypes/tableField.ts";
+import { type CommentArea, type ExportJson, generateCommentArea } from "@/types/misc.ts";
+import { appConfig } from "@/app.config.ts";
 
 export const useDesignStore = defineStore('design', () => {
     const bufferStore = useActionBuffer();
@@ -892,6 +893,63 @@ export const useDesignStore = defineStore('design', () => {
         return [];
     }
 
+
+    function exportProjectJson (filename: string) {
+        const data: ExportJson = {
+            tables: tables.value,
+            relations: relations.value,
+            commentAreas: commentAreas.value,
+            engine: currentSettings.value.databaseEngine,
+            exportVersion: appConfig.appVersion
+        }
+
+        const json = JSON.stringify(data, null, 2);
+        const blob = new Blob([json], { type: 'application/json' });
+
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `ermd-export-${filename}.json`;
+        link.click();
+
+        URL.revokeObjectURL(url);
+    }
+
+    async function importProjectJson(file: File) {
+        try {
+            const text = await file.text();
+            const data = JSON.parse(text) as ExportJson;
+
+            if (
+                !data ||
+                !Array.isArray(data.tables) ||
+                !Array.isArray(data.relations) ||
+                !Array.isArray(data.commentAreas) ||
+                !isNumber(data.exportVersion) ||
+                !isString(data.engine) ||
+                !DatabaseEngines.includes(data.engine)
+            ) {
+                throw new Error("Invalid JSON format");
+            }
+
+            if (data.exportVersion != appConfig.appVersion) {
+                // TODO handle possible structure changes between versions
+                console.warn(`Import version mismatch: ${data.exportVersion}/${appConfig.appVersion}`);
+            }
+
+            tables.value = data.tables;
+            relations.value = data.relations;
+            commentAreas.value = data.commentAreas;
+
+            console.log(`JSON import complete`);
+        } catch (err) {
+            console.error("Failed to import JSON:", err);
+            throw err;
+        }
+    }
+
+
+
     return {
         tables,
         selectedTable,
@@ -971,6 +1029,9 @@ export const useDesignStore = defineStore('design', () => {
 
         getTablesInsideArea,
         getAreasInsideArea,
+
+        exportProjectJson,
+        importProjectJson,
     }
 }, {
     persist: {
