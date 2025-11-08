@@ -3,7 +3,12 @@ import { computed, ref } from "vue";
 import type { UserSettings } from "@/types/misc.ts";
 import { defaultSettings } from "@/types/misc.ts";
 import { cloneDeep } from "lodash";
-import { type ColumnType, type DatabaseEngine, getDefaultModifierParams } from "@/types/TableColumnTypes/tableField.ts";
+import {
+    type ColumnType,
+    type DatabaseEngine,
+    DatabaseEngines,
+    getDefaultModifierParams
+} from "@/types/TableColumnTypes/tableField.ts";
 import { mysqlTypes } from "@/types/TableColumnTypes/mysqlTypes.ts";
 
 interface ErrorDetails {
@@ -43,17 +48,28 @@ export const useSettingsStore = defineStore('settings', () => {
     const defaultPrimaryKey = computed(() => currentSettings.value.defaultPrimaryType);
     const defaultPrimarySize = computed(() => getDefaultModifierParams(currentSettings.value.defaultPrimaryType));
 
+    const setCurrentEngine = (val: DatabaseEngine) => {
+        if (!DatabaseEngines.includes(val)) {
+            throw new Error(`Unknown engine: ${val}`);
+        }
+
+        currentSettings.value.databaseEngine = val;
+    }
+
     return {
         currentSettings,
         defaultTableName,
         criticalError,
 
+        engineColumnTypes,
         currentDatabaseColumnTypes,
         columnTypeNames,
         primaryKeyTypes,
 
         defaultPrimaryKey,
         defaultPrimarySize,
+
+        setCurrentEngine,
     }
 }, {
     persist: {

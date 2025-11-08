@@ -1,7 +1,7 @@
 import { type ColumnType, type DatabaseEngine, defaultPrimaryTypes } from "@/types/TableColumnTypes/tableField.ts";
 import type { AreaSize, CursorPos } from "@/components/designer/scripts/useDesignCanvas.ts";
 import { generateId } from "@/utils/utils.ts";
-import type { Table } from "@/types/table.ts";
+import type { Table, TableCol } from "@/types/table.ts";
 import type { DatabaseRelationship } from "@/types/relationships.ts";
 
 export interface UserSettings {
@@ -90,9 +90,31 @@ export const generateCommentArea = (pos: CursorPos): CommentArea => {
 }
 
 export interface ExportJson {
-    tables: Table[],
+    tables: ExportTableType[],
     relations: DatabaseRelationship[],
     commentAreas: CommentArea[],
     engine: DatabaseEngine,
     exportVersion: number
+}
+
+export interface ExportTableType extends Omit<Table, 'cols'> {
+    cols: ExportTableColType[]
+}
+
+export interface ExportTableColType extends Omit<TableCol, 'type'>{
+    type: string;
+}
+
+export function TableCol2ExportType(c: TableCol): ExportTableColType {
+    return {
+        ...c,
+        type: c.type.displayName
+    }
+}
+
+export function Table2ExportType(t: Table): ExportTableType {
+    return {
+        ...t,
+        cols: t.cols.map(TableCol2ExportType)
+    }
 }
