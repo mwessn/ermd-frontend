@@ -5,4 +5,7 @@ export const appConfig = {
 
     // Cap to prevent performance issues
     maxActionBufferSize: 600,
+
+    motd: false,
+    motdUrl: '',
 }

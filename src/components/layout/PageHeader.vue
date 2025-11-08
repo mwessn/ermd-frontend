@@ -16,6 +16,7 @@
             class="placeholder:text-accentDarkGray"
             :placeholder="`${$t('enter project name')}...`"
             allow-shift-key
+            @enter-key="resetFocus"
         />
       </div>
     </div>
@@ -38,6 +39,7 @@ import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import DoubleClickFocusInput from "@/components/core/DoubleClickFocusInput.vue";
 import { storeToRefs } from "pinia";
 import { useExportStore } from "@/store/export.ts";
+import { resetFocus } from "@/utils/utils.ts";
 
 const emit = defineEmits(['menuToggle']);
 

@@ -175,7 +175,9 @@ watch(
         firstTable.value.posX,
         firstTable.value.posY,
         secondTable.value.posX,
-        secondTable.value.posY
+        secondTable.value.posY,
+        firstTable.value.widthPx,
+        secondTable.value.widthPx
     ],
     async () => {
       await nextTick();

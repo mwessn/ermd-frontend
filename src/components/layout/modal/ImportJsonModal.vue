@@ -6,10 +6,22 @@
       />
     </div>
 
+    <template v-if="importErrors">
+      <div class="text-red-500 max-h-64
+          overflow-hidden overscroll-y-auto
+          p-2 bg-accentDarkGray rounded mb-2"
+      >
+        <p>{{ $t('Import errors') }}:</p>
+        <p v-for="error in importErrors">
+          {{ error }}
+        </p>
+      </div>
+    </template>
+
     <div class="w-full flex gap-3 justify-end">
       <ModalButton
           :label="$t('Import')"
-          :disabled="file == undefined"
+          :disabled="!canSave"
           @click="onImport"
       />
     </div>
@@ -19,7 +31,7 @@
 <script setup lang="ts">
 import ModalLayout from "@/components/layout/ModalLayout.vue";
 import { useExportStore } from "@/store/export.ts";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import FileUpload from "@/components/layout/modal/FileUpload.vue";
 import ModalButton from "@/components/layout/modal/ModalButton.vue";
 
@@ -31,7 +43,13 @@ const importErrors = ref<string[] | undefined>(undefined);
 
 const file = ref<File | undefined>(undefined);
 
+const canSave = computed(() =>
+    file.value != undefined &&
+    importErrors.value == undefined
+);
+
 const onFileChange = (_file: File | undefined) => {
+  importErrors.value = undefined;
   file.value = _file;
 }
 
@@ -45,7 +63,7 @@ const onImport = async () => {
       }
     }
     catch (e: any) {
-      importErrors.value = [e];
+      importErrors.value = [e.toString];
     }
   }
 }

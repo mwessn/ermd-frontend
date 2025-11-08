@@ -132,7 +132,7 @@ export const useExportStore = defineStore('export', () => {
             tables.value = validatedJson.tables.map(exportType2Table);
 
             // Not ideal, but will work for now.
-            newTableIndex.value = tables.value.length;
+            newTableIndex.value = tables.value.length + 1;
 
             relations.value = validatedJson.relations;
             commentAreas.value = validatedJson.commentAreas;

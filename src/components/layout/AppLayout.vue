@@ -68,7 +68,7 @@ const importModalVisible = ref<boolean>(false);
 
 const newProjectModalVisible = ref<boolean>(false);
 
-const newProjectModalBodyText = "Creating a new project will permanently clear all exisitng data. Please confirm you want to proceed."
+const newProjectModalBodyText = "Creating a new project will permanently delete all existing data. Please confirm you want to proceed."
 
 const onNewProjectModalClose = (val: boolean | undefined) => {
   newProjectModalVisible.value = false;
