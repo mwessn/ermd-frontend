@@ -88,3 +88,10 @@ export function nullOrEmpty(val: string | undefined): boolean {
 export function notNullOrEmpty(val: string | undefined): boolean {
     return !nullOrEmpty(val);
 }
+
+export function assertDefined<ValType>(value: ValType | null | undefined, errorMessage: string | undefined = undefined): ValType {
+    if (value == null) {
+        throw new Error(errorMessage || 'Value should not be NULL.')
+    }
+    return value
+}

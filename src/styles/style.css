@@ -46,6 +46,8 @@ Tailwind
   --color-accentDarkGray: #4B4B4B;
   --color-lycheeIce: #F3E9E5;
   --color-monolithicCyanTsunami: #007A8A;
+
+  --color-tinted: rgba(0, 0, 0, 0.4);
 }
 
 @utility slider-thumb-* {

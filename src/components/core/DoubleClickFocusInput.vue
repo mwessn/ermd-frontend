@@ -4,6 +4,7 @@
       :type="type"
       :id="id"
       :maxlength="length"
+      :placeholder="placeholder"
       class="cursor-inherit p-1 overflow-ellipsis align-middle"
       ref="inputRef"
       autocomplete="off"
@@ -44,6 +45,10 @@ const props = defineProps({
   length: {
     type: Number,
     default: 63,
+  },
+  placeholder: {
+    type: String,
+    required: false
   },
   allowShiftKey: {
     type: Boolean,

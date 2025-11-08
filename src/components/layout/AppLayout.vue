@@ -3,9 +3,23 @@
 
   <PageHeader @menu-toggle="toggleMenu"/>
 
-  <FunctionsMenu :visible="functionsMenuVisible" />
+  <FunctionsMenu
+      :visible="functionsMenuVisible"
+      @openExportModal="exportModalVisible = true"
+      @openImportModal="importModalVisible = true"
+  />
 
   <SettingsMenu :visible="settingsMenuVisible" />
+
+  <ExportJsonModal
+      v-if="exportModalVisible"
+      @close="exportModalVisible = false"
+  />
+
+  <ImportJsonModal
+    v-if="importModalVisible"
+    @close="importModalVisible = false"
+  />
 
   <slot />
 </div>
@@ -17,6 +31,8 @@ import { ref } from "vue";
 import FunctionsMenu from "@/components/sideMenu/FunctionsMenu.vue";
 import SettingsMenu from "@/components/sideMenu/SettingsMenu.vue";
 import { useDesignStore } from "@/store/design.ts";
+import ExportJsonModal from "@/components/layout/modal/ExportJsonModal.vue";
+import ImportJsonModal from "@/components/layout/modal/ImportJsonModal.vue";
 
 const { tables } = useDesignStore();
 
@@ -35,5 +51,8 @@ const toggleMenu = (val: 'functions' | 'settings') => {
       break;
   }
 }
+
+const exportModalVisible = ref<boolean>(false);
+const importModalVisible = ref<boolean>(false);
 
 </script>

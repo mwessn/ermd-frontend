@@ -49,6 +49,7 @@ import { appConfig } from "@/app.config.ts";
 import Tooltip from "@/components/core/Tooltip.vue";
 import { useDesignStore } from "@/store/design.ts";
 import { resetFocus } from "@/utils/utils.ts";
+import { useExportStore } from "@/store/export.ts";
 
 defineProps({
   visible: {
@@ -57,8 +58,12 @@ defineProps({
   }
 });
 
+const emit = defineEmits(['openImportModal', 'openExportModal']);
+
 const actionStore = useActionsStore();
 const designStore = useDesignStore();
+
+const exportStore = useExportStore();
 
 interface MenuItem {
   pic: IconDefinition;
@@ -144,14 +149,14 @@ const functionsMenuMiddleItems: readonly MenuItem[] = [
     pic: faFileArrowDown,
     hint: 'Save as JSON',
     action: () => {
-      designStore.exportProjectJson('example');
+      emit('openExportModal');
     }
   },
   {
     pic: faFileArrowUp,
     hint: 'Upload JSON',
     action: () => {
-      //
+      emit('openImportModal');
     }
   },
 ]

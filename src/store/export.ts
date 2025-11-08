@@ -3,11 +3,10 @@ import { computed, ref } from "vue";
 import { appConfig } from "@/app.config.ts";
 import { useDesignStore } from "@/store/design.ts";
 import { type ExportJson, type ExportTableColType, type ExportTableType, Table2ExportType } from "@/types/misc.ts";
-import { isNumber, isString } from "lodash";
 import { type DatabaseEngine, DatabaseEngines } from "@/types/TableColumnTypes/tableField.ts";
 import { useSettingsStore } from "@/store/settings.ts";
 import type { Table, TableCol } from "@/types/table.ts";
-import TableColRow from "@/components/designer/table/TableColRow.vue";
+import { assertDefined } from "@/utils/utils.ts";
 
 export const useExportStore = defineStore('export', () => {
     const designStore = useDesignStore();
@@ -17,19 +16,30 @@ export const useExportStore = defineStore('export', () => {
         tables,
         relations,
         commentAreas,
+        isManualCreation,
+        newTableIndex
     } = storeToRefs(designStore);
 
     const {
         currentSettings,
-        engineColumnTypes,
         currentDatabaseColumnTypes,
     } = storeToRefs(settingsStore);
 
-    const projectName = ref<string>('');
-    const projectVersion = ref<string>('');
+    const projectName = ref<string>('Example Project');
+    const projectVersion = ref<string>('0.0.1');
 
-    const filename = computed(() => `${appConfig.appName}-${projectName} ${
-        projectVersion.value ? `-${projectVersion.value}` : '' 
+    function resetProjectInfo() {
+        projectName.value = 'Example project';
+        projectVersion.value = '0.0.1';
+    }
+
+    const filename = computed(() => `${appConfig.appName}-${
+        projectName.value
+            .trim()
+            .replace('_', '+_')
+            .replace(' ', '+_')
+    }${
+        projectVersion.value ? `_v${projectVersion.value.trim()}` : '' 
     }.json`);
 
     function exportProjectJson () {
@@ -47,13 +57,33 @@ export const useExportStore = defineStore('export', () => {
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = `ermd-export-${filename}.json`;
+        link.download = filename.value;
         link.click();
 
         URL.revokeObjectURL(url);
     }
 
-    async function importProjectJson(file: File) {
+    function incrementVersion(version: string): string {
+        if (!version) return '0.0.1';
+
+        // Split by dots if present
+        const parts = version.split('.');
+
+        // Try to find the last numeric part
+        for (let i = parts.length - 1; i >= 0; i--) {
+            const n = Number(parts[i]);
+            if (!isNaN(n)) {
+                // Increment only that numeric part
+                parts[i] = (n + 1).toString();
+                return parts.join('.');
+            }
+        }
+
+        // If no numeric part, return the original
+        return version;
+    }
+
+    async function importProjectJson(file: File): Promise<string[] | undefined> {
         try {
             const text = await file.text();
             const data: any = JSON.parse(text);
@@ -62,10 +92,31 @@ export const useExportStore = defineStore('export', () => {
 
             if (errors.length > 0) {
                 console.error(errors);
-                return;
+                return errors;
             }
 
             const validatedJson: ExportJson = data as ExportJson
+
+            // Clear the project state
+            designStore.createNewProject();
+
+            // Try to parse project name and version from filename
+            const filename = assertDefined(file.name).replace('.json', ''); // strip extension
+            if (filename.startsWith(`${appConfig.appName}-`)) {
+                // Assume the filename follows the patters
+                const baseName = filename.slice(appConfig.appName.length + 1);
+
+                const splitName = baseName.split('_v', 2);
+
+                projectName.value = splitName[0].replace('+_', ' ');
+                projectVersion.value = splitName[1] ?? '';
+
+                if (projectVersion.value) {
+                    projectVersion.value = incrementVersion(projectVersion.value);
+                } else {
+                    projectVersion.value = '1.0';
+                }
+            }
 
             if (validatedJson.exportVersion != appConfig.appVersion) {
                 // TODO handle possible structure changes between versions
@@ -75,8 +126,14 @@ export const useExportStore = defineStore('export', () => {
             }
 
             settingsStore.setCurrentEngine(validatedJson.engine);
+            // Prevent autofocus on newly created tables
+            isManualCreation.value = false;
 
             tables.value = validatedJson.tables.map(exportType2Table);
+
+            // Not ideal, but will work for now.
+            newTableIndex.value = tables.value.length;
+
             relations.value = validatedJson.relations;
             commentAreas.value = validatedJson.commentAreas;
 
@@ -132,7 +189,7 @@ export const useExportStore = defineStore('export', () => {
 
         if (!data.exportVersion || typeof data.exportVersion != 'number') {
             errors.push('Missing or malformed exportVersion')
-        };
+        }
 
         return errors;
     }
@@ -151,23 +208,25 @@ export const useExportStore = defineStore('export', () => {
         const errors: string[] = [];
 
         for (const key of keys) {
-            if (!(key.name in obj)) {
+            if (!key.nullable && !(key.name in obj)) {
                 errors.push(`${objType} ${objIndex} is missing key '${key.name}'`);
                 continue;
             }
-            if (key.nullable && obj[key.name] == undefined) {
+            if (key.nullable && !obj[key.name]) {
                 continue;
             }
-            if (key.type == "array" && !Array.isArray(obj[key.name])) {
+            if (key.type == "array") {
+                if (Array.isArray(obj[key.name])) { continue; }
                 errors.push(`${objType} ${objIndex}'s '${key.name}' is not an array`);
             }
-            else if (key.type == "object" && !isObject(obj[key.name])) {
+            else if (key.type == "object") {
+                if (isObject(obj[key.name])) { continue; }
                 errors.push(`${objType} ${objIndex}'s '${key.name}' is not an object`);
             }
             else if (typeof obj[key.name] != key.type) {
                 errors.push(
-                    `Unexpected type for ${objType} ${objIndex}'s '${key.name}': 
-                        expected ${key.type}, got ${ typeof obj[key.name] }`
+                    `Unexpected type for ${objType} ${objIndex}'s '${key.name}':` +
+                        `expected ${key.type}, got ${ typeof obj[key.name] }`
                 );
             }
         }
@@ -253,7 +312,7 @@ export const useExportStore = defineStore('export', () => {
         );
 
         if (typeof col.type == 'string') {
-            const existingType = Object.values(engineColumnTypes.value[engine])
+            const existingType = Object.values(settingsStore.engineColumnTypes[engine])
                 .find(it => it.displayName === col.type);
 
             if (existingType == undefined) {
@@ -301,8 +360,8 @@ export const useExportStore = defineStore('export', () => {
                 } else {
                     const col = table.cols.find(it => it.id == rel.firstTableColId);
                     if (!col) {
-                        errors.push(`Unknown colId ${rel.firstTableColId} in table ${rel.firstTableId}
-                         on relation ${rel.id ?? index}`);
+                        errors.push(`Unknown colId ${rel.firstTableColId} in table ${rel.firstTableId}` +
+                         `on relation ${rel.id ?? index}`);
                     }
                 }
             }
@@ -314,8 +373,8 @@ export const useExportStore = defineStore('export', () => {
                 } else {
                     const col = table.cols.find(it => it.id == rel.secondTableColId);
                     if (!col) {
-                        errors.push(`Unknown colId ${rel.secondTableColId} in table ${rel.secondTableId}
-                         on relation ${rel.id ?? index}`);
+                        errors.push(`Unknown colId ${rel.secondTableColId} in table ${rel.secondTableId}` +
+                         `on relation ${rel.id ?? index}`);
                     }
                 }
             }
@@ -368,7 +427,19 @@ export const useExportStore = defineStore('export', () => {
     }
 
     return {
+        projectName,
+        projectVersion,
+
+        resetProjectInfo,
+
         exportProjectJson,
         importProjectJson,
+    }
+}, {
+    persist: {
+        key: `__ermd_export`,
+        pick: [
+            'projectName', 'projectVersion'
+        ],
     }
 });

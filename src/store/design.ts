@@ -12,6 +12,7 @@ import { createNewRelationship } from "@/types/relationships.ts";
 import { clamp, unpluralize } from "@/utils/utils.ts";
 import { type ColumnType } from "@/types/TableColumnTypes/tableField.ts";
 import { type CommentArea, generateCommentArea } from "@/types/misc.ts";
+import { useExportStore } from "@/store/export.ts";
 
 export const useDesignStore = defineStore('design', () => {
     const bufferStore = useActionBuffer();
@@ -436,6 +437,8 @@ export const useDesignStore = defineStore('design', () => {
         commentAreas.value = [];
 
         bufferStore.clearState();
+
+        useExportStore().resetProjectInfo();
     }
 
     // Buffer actions
