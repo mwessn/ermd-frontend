@@ -7,6 +7,7 @@
       :visible="functionsMenuVisible"
       @openExportModal="exportModalVisible = true"
       @openImportModal="importModalVisible = true"
+      @openNewProjectModal="newProjectModalVisible = true"
   />
 
   <SettingsMenu :visible="settingsMenuVisible" />
@@ -21,6 +22,15 @@
     @close="importModalVisible = false"
   />
 
+  <YesNoModal
+      v-if="newProjectModalVisible"
+      :modal-title="$t('Create new project')"
+      :body-text="$t(newProjectModalBodyText)"
+      :confirm-text="$t('Confirm')"
+      :cancel-text="$t('Cancel')"
+      @close="onNewProjectModalClose"
+  />
+
   <slot />
 </div>
 </template>
@@ -33,6 +43,7 @@ import SettingsMenu from "@/components/sideMenu/SettingsMenu.vue";
 import { useDesignStore } from "@/store/design.ts";
 import ExportJsonModal from "@/components/layout/modal/ExportJsonModal.vue";
 import ImportJsonModal from "@/components/layout/modal/ImportJsonModal.vue";
+import YesNoModal from "@/components/layout/modal/YesNoModal.vue";
 
 const { tables } = useDesignStore();
 
@@ -54,5 +65,16 @@ const toggleMenu = (val: 'functions' | 'settings') => {
 
 const exportModalVisible = ref<boolean>(false);
 const importModalVisible = ref<boolean>(false);
+
+const newProjectModalVisible = ref<boolean>(false);
+
+const newProjectModalBodyText = "Creating a new project will permanently clear all exisitng data. Please confirm you want to proceed."
+
+const onNewProjectModalClose = (val: boolean | undefined) => {
+  newProjectModalVisible.value = false;
+  if (val) {
+    useDesignStore().createNewProject();
+  }
+}
 
 </script>

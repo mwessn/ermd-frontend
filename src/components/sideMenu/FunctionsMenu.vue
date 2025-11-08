@@ -1,7 +1,8 @@
 <template>
   <div
       class="fixed left-0 h-full w-12 bg-accentDarkGray transition-transform duration-300 text-center pt-4 mt-12 z-50"
-      :class="visible ? 'translate-x-0' : '-translate-x-full'"
+      :class="[visible ? 'translate-x-0' : '-translate-x-full',
+       disabled ? 'pointer-events-none' : '']"
   >
     <template v-for="(section, index) in sections" :key="index">
       <Tooltip v-for="(item, itemIndex) in section.items"
@@ -47,23 +48,22 @@ import { useActionsStore } from "@/store/action.ts";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
 import { appConfig } from "@/app.config.ts";
 import Tooltip from "@/components/core/Tooltip.vue";
-import { useDesignStore } from "@/store/design.ts";
 import { resetFocus } from "@/utils/utils.ts";
-import { useExportStore } from "@/store/export.ts";
 
 defineProps({
   visible: {
     type: Boolean,
     required: true,
+  },
+  disabled: {
+    type: Boolean,
+    default: false
   }
 });
 
-const emit = defineEmits(['openImportModal', 'openExportModal']);
+const emit = defineEmits(['openImportModal', 'openExportModal', 'openNewProjectModal']);
 
 const actionStore = useActionsStore();
-const designStore = useDesignStore();
-
-const exportStore = useExportStore();
 
 interface MenuItem {
   pic: IconDefinition;
@@ -141,8 +141,7 @@ const functionsMenuMiddleItems: readonly MenuItem[] = [
     pic: faFile,
     hint: 'New project',
     action: () => {
-      // TODO ask first
-      designStore.createNewProject();
+      emit('openNewProjectModal');
     }
   },
   {

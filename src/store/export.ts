@@ -29,7 +29,7 @@ export const useExportStore = defineStore('export', () => {
     const projectVersion = ref<string>('0.0.1');
 
     function resetProjectInfo() {
-        projectName.value = 'Example project';
+        projectName.value = 'New project';
         projectVersion.value = '0.0.1';
     }
 

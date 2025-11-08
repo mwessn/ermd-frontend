@@ -4,7 +4,7 @@
         class="bg-accentGray max-w-4xl w-full max-h-4/5 overflow-y-auto p-5
         rounded-lg relative border-2 border-accentDarkGray"
         @click.stop>
-      <div class="flex justify-between items-center">
+      <div class="flex justify-between items-center border-b border-accentDarkGray">
         <div class="text-accentDarkGray font-bold text-lg cursor-default">
           {{ $t(modalName) }}
         </div>

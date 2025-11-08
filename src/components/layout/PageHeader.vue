@@ -43,7 +43,6 @@ const emit = defineEmits(['menuToggle']);
 
 const {
   projectName,
-  projectVersion,
 } = storeToRefs(useExportStore());
 
 const onClick = (menu: 'functions' | 'settings') => {

@@ -8,7 +8,7 @@ import '@/styles/style.css'
 import { router } from "@/router.ts";
 import i18n from "@/utils/i18n.ts";
 
-import { useDesignStore } from "@/store/design.ts";
+import { useSettingsStore } from "@/store/settings.ts";
 
 const pinia = createPinia();
 
@@ -18,7 +18,7 @@ const app = createApp(App);
 
 app.config.errorHandler = (err) => {
     console.warn('Something terrible has happened', err)
-    useDesignStore().createNewProject();
+    useSettingsStore().setCriticalError(err as Error);
 }
 
 app.use(router);

@@ -23,14 +23,10 @@
     </div>
 
     <div class="w-full flex gap-3 justify-end">
-      <div
-          class="rounded p-2 cursor-pointer
-          bg-lycheeIce text-accentDarkGray
-          hover:opacity-80 active:opacity-50"
+      <ModalButton
+          :label="$t('Export')"
           @click="onExportClick"
-      >
-        {{ $t('Export') }}
-      </div>
+      />
     </div>
   </ModalLayout>
 </template>
@@ -39,6 +35,7 @@
 import ModalLayout from "@/components/layout/ModalLayout.vue";
 import { useExportStore } from "@/store/export.ts";
 import { storeToRefs } from "pinia";
+import ModalButton from "@/components/layout/modal/ModalButton.vue";
 
 const emit = defineEmits(['close']);
 

@@ -7,16 +7,11 @@
     </div>
 
     <div class="w-full flex gap-3 justify-end">
-      <div
-          class="rounded p-2
-          bg-lycheeIce text-accentDarkGray select-none"
-          :class=" file == undefined ?
-                      'grayscale-100 cursor-default' :
-                       'hover:opacity-80 active:opacity-50 cursor-pointer'"
+      <ModalButton
+          :label="$t('Import')"
+          :disabled="file == undefined"
           @click="onImport"
-      >
-        {{ $t('Import') }}
-      </div>
+      />
     </div>
   </ModalLayout>
 </template>
@@ -26,6 +21,7 @@ import ModalLayout from "@/components/layout/ModalLayout.vue";
 import { useExportStore } from "@/store/export.ts";
 import { ref } from "vue";
 import FileUpload from "@/components/layout/modal/FileUpload.vue";
+import ModalButton from "@/components/layout/modal/ModalButton.vue";
 
 const emit = defineEmits(['close']);
 

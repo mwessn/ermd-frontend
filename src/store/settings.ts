@@ -10,12 +10,11 @@ import {
     getDefaultModifierParams
 } from "@/types/TableColumnTypes/tableField.ts";
 import { mysqlTypes } from "@/types/TableColumnTypes/mysqlTypes.ts";
+import { useDesignStore } from "@/store/design.ts";
 
 interface ErrorDetails {
     datetime: Date,
-    entityType: string,
-    entityId: string,
-    message: string
+    error: Error
 }
 
 export const useSettingsStore = defineStore('settings', () => {
@@ -56,6 +55,14 @@ export const useSettingsStore = defineStore('settings', () => {
         currentSettings.value.databaseEngine = val;
     }
 
+    const setCriticalError = (e: Error) => {
+        criticalError.value = {
+            datetime: new Date(),
+            error: e
+        }
+        useDesignStore().createNewProject();
+    }
+
     return {
         currentSettings,
         defaultTableName,
@@ -70,6 +77,8 @@ export const useSettingsStore = defineStore('settings', () => {
         defaultPrimarySize,
 
         setCurrentEngine,
+
+        setCriticalError,
     }
 }, {
     persist: {
