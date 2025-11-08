@@ -6,9 +6,31 @@ name: Node.js CI
 on:
   pull_request:
     branches: [ "master" ]
+    types: [opened, edited, synchronize]
 
 jobs:
+  # Job 1: Check WIP prefix
+  wip-check:
+    runs-on: ubuntu-latest
+    outputs:
+      is-wip: ${{ steps.check.outputs.is-wip }}
+    steps:
+      - name: Check PR title for WIP
+        id: check
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const title = context.payload.pull_request.title || "";
+            const isWip = title.startsWith("WIP:");
+            core.setOutput("is-wip", isWip);
+            if (isWip) {
+              core.setFailed("PR is marked WIP and cannot be merged");
+            }
+
+  # Job 2: Run npm build
   build:
+    needs: wip-check
+    if: needs.wip-check.outputs.is-wip != 'true'
 
     runs-on: ubuntu-latest
 
@@ -24,4 +46,4 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
     - run: npm ci
-    - run: npm run build --if-present
+    - run: npm run build
