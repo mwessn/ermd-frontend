@@ -6,6 +6,7 @@ export interface TableCol {
     name: string,
     type: ColumnType,
     modifierValues: (number | string | undefined)[] | undefined,
+    userDefinitions: string | undefined,
 
     primaryKey: boolean,
     foreignKey: boolean,
@@ -37,6 +38,7 @@ export const generateNewTableCol = (colType: ColumnType): TableCol => {
         name: "",
         type: colType,
         modifierValues: getDefaultModifierParams(colType),
+        userDefinitions: undefined,
 
         primaryKey: false,
         foreignKey: false,
@@ -106,6 +108,7 @@ export const generateNewTable = (
             name: "id",
             type: primaryType,
             modifierValues: getDefaultModifierParams(primaryType),
+            userDefinitions: undefined,
 
             primaryKey: true,
             foreignKey: false,

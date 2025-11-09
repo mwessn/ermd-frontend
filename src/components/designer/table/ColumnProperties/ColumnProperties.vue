@@ -161,6 +161,8 @@ const defaultInputType = computed(() => {
     case 'char':
     case 'string':
     case 'list':
+    case 'list enum':
+    case 'enum':
     case 'json':
       return 'string';
     default:
