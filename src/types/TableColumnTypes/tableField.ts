@@ -1,4 +1,5 @@
 import { mysqlTypes } from "@/types/TableColumnTypes/mysqlTypes.ts";
+import { postgresTypes } from "@/types/TableColumnTypes/postgresTypes.ts";
 
 const PRIMITIVE_TYPES = [
     'int',
@@ -35,6 +36,11 @@ export const DatabaseEngines = [
     'sqlite'
 ];
 
+export type ModifierMeta = 'typeSelect' | // Render as column type dropdown selector
+                            'inputNumber' | // Render as number input (for values that could be undefined)
+                            'enumList' | // Render as enum values list
+                            'typedef'; // Render as type definition input
+
 export type DatabaseEngine = typeof DatabaseEngines[number];
 
 export interface ColumnTypeModifier {
@@ -45,6 +51,7 @@ export interface ColumnTypeModifier {
     readonly maxValue: number | undefined;
 
     readonly optional?: boolean;
+    readonly meta?: ModifierMeta;
 }
 
 export interface ColumnType {
@@ -82,7 +89,7 @@ interface ColumnTypeFlags {
 
 export const defaultPrimaryTypes: Record<DatabaseEngine, ColumnType> = {
     mysql: mysqlTypes['INT'],
-    postgres: mysqlTypes['INT'],
+    postgres: postgresTypes['UUID'],
     mssql: mysqlTypes['INT'],
     sqlite: mysqlTypes['INT']
 }

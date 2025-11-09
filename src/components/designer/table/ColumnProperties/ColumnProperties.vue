@@ -9,7 +9,6 @@
           v-for="(mod, index) in col.type.modifier"
           v-model="col.modifierValues[index]"
           :mod="mod"
-          :is-list="col.type.primitive == 'list'"
 
           :key="index"
 
@@ -70,6 +69,8 @@
               :min="col.type.flags.minValue as number"
               :max="col.type.flags.maxValue as number"
 
+              :disabled="!colCanHaveDefault(col)"
+
               @click="onInputClick"
               @change="onChange"
           >
@@ -93,7 +94,13 @@
 </template>
 
 <script setup lang="ts">
-import { colCanAutoIncrement, colCanBeNullable, colCanBePrimary, type TableCol } from "@/types/table.ts";
+import {
+  colCanAutoIncrement,
+  colCanBeNullable,
+  colCanBePrimary,
+  colCanHaveDefault,
+  type TableCol
+} from "@/types/table.ts";
 import ColPropertyCheckbox from "@/components/designer/table/ColumnProperties/ColPropertyCheckbox.vue";
 import { computed, nextTick, type PropType, ref, watch } from "vue";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";

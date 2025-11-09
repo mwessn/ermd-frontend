@@ -30,6 +30,10 @@ export function colCanBePrimary(col: TableCol) {
     return col.type.flags.canBePrimaryKey;
 }
 
+export function colCanHaveDefault(col: TableCol) {
+    return !col.autoIncrement && col.type.flags.canHaveDefault;
+}
+
 //
 
 export const generateNewTableCol = (colType: ColumnType): TableCol => {

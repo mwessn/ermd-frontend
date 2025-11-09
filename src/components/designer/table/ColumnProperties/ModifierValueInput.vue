@@ -7,7 +7,7 @@
     </p>
     <div class="border-b border-b-accentDarkGray my-1" />
     <div class="flex items-center gap-1">
-      <p v-if="isList">
+      <p v-if="mod.meta == 'enumList'">
         [
       </p>
       <input
@@ -27,7 +27,7 @@
 
           @change="emit('change')"
       >
-      <p v-if="isList">
+      <p v-if="mod.meta == 'enumList'">
         ]
       </p>
       <FontAwesomeIcon
@@ -55,16 +55,16 @@ const props = defineProps({
   mod: {
     type: Object as PropType<ColumnTypeModifier>,
     required: true
-  },
-  isList: {
-    type: Boolean,
-    default: false
   }
 });
 
 const emit = defineEmits(['change', 'removeValue']);
 
 const modifierInputType = computed(() => {
+  if (props.mod.meta == 'inputNumber') {
+    return 'number';
+  }
+
   switch (typeof props.mod.defaultValue) {
     case 'number':
       return 'number'

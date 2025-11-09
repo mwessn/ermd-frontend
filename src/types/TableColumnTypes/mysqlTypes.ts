@@ -715,7 +715,7 @@ export const mysqlTypes: Record<string, ColumnType> = {
         },
         alias: {
             mysql: 'ENUM',
-            postgres: 'TEXT',
+            postgres: 'ENUM',
             mssql: 'NVARCHAR(255)',
             sqlite: 'TEXT'
         }
@@ -727,7 +727,8 @@ export const mysqlTypes: Record<string, ColumnType> = {
             defaultValue: '',
             hint: 'Possible values',
             minValue: undefined,
-            maxValue: 64
+            maxValue: 64,
+            meta: 'enumList',
         }],
         flags: {
             canBePrimaryKey: false,

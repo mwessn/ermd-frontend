@@ -11,6 +11,7 @@ import {
 } from "@/types/TableColumnTypes/tableField.ts";
 import { mysqlTypes } from "@/types/TableColumnTypes/mysqlTypes.ts";
 import { useDesignStore } from "@/store/design.ts";
+import { postgresTypes } from "@/types/TableColumnTypes/postgresTypes.ts";
 
 interface ErrorDetails {
     datetime: Date,
@@ -27,8 +28,8 @@ export const useSettingsStore = defineStore('settings', () => {
 
     const engineColumnTypes: Record<DatabaseEngine, Record<string, ColumnType>> = {
         mysql: mysqlTypes,
+        postgres: postgresTypes,
         mssql: mysqlTypes,
-        postgres: mysqlTypes,
         sqlite: mysqlTypes,
     }
 
