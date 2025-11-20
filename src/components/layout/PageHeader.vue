@@ -19,6 +19,7 @@
             @enter-key="resetFocus"
         />
       </div>
+      <p>The tool is still in development, this is a staging page. What are you doing here?</p>
     </div>
     <div
         class="cursor-pointer"
