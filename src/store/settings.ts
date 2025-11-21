@@ -33,8 +33,13 @@ export const useSettingsStore = defineStore('settings', () => {
         sqlite: mysqlTypes,
     }
 
+    const userDefinedColumnTypes = ref<ColumnType[]>([]);
+
     const currentDatabaseColumnTypes = computed((): ColumnType[] =>
-        Object.values(engineColumnTypes[currentSettings.value.databaseEngine])
+        [
+            ...Object.values(engineColumnTypes[currentSettings.value.databaseEngine]),
+            ...userDefinedColumnTypes.value
+        ]
     );
 
     const columnTypeNames = computed(() => currentDatabaseColumnTypes.value
@@ -71,6 +76,7 @@ export const useSettingsStore = defineStore('settings', () => {
 
         engineColumnTypes,
         currentDatabaseColumnTypes,
+        userDefinedColumnTypes,
         columnTypeNames,
         primaryKeyTypes,
 

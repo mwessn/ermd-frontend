@@ -36,12 +36,19 @@ export const DatabaseEngines = [
     'sqlite'
 ];
 
-export type ModifierMeta = 'typeSelect' | // Render as column type dropdown selector
-                            'inputNumber' | // Render as number input (for values that could be undefined)
-                            'enumList' | // Render as enum values list
-                            'typedef'; // Render as type definition input
-
 export type DatabaseEngine = typeof DatabaseEngines[number];
+
+export const EngineNamingMap: Record<DatabaseEngine, string> = {
+    mysql: 'MySQL',
+    postgres: 'PostgreSQL',
+    mssql: 'Microsoft SQL',
+    sqlite: 'SQLite'
+}
+
+export type ModifierMeta = 'typeSelect' | // Render as column type dropdown selector
+    'inputNumber' | // Render as number input (for values that could be undefined)
+    'enumList' | // Render as enum values list
+    'typedef'; // Render as type definition input
 
 export interface ColumnTypeModifier {
     readonly defaultValue: number | string | undefined;

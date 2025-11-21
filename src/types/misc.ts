@@ -118,3 +118,8 @@ export function Table2ExportType(t: Table): ExportTableType {
         cols: t.cols.map(TableCol2ExportType)
     }
 }
+
+export interface SelectOption {
+    label: string;
+    value: any;
+}
