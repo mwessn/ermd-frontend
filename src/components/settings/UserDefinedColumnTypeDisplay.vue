@@ -1,5 +1,5 @@
 <template>
-
+  {{ userDefinedColumnTypes }}
 </template>
 
 <script setup lang="ts">
