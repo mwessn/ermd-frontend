@@ -27,7 +27,7 @@ export const useDesignStore = defineStore('design', () => {
     const tables = ref<Table[]>([]);
     const newTableIndex = ref<number>(1);
 
-    const gridSize = computed(() => currentSettings.value.snapToGrid ? 5 : 1);
+    const gridSize = computed(() => currentSettings.value.snapToGrid ? 8 : 1);
 
     const relations = ref<DatabaseRelationship[]>([]);
 
@@ -116,8 +116,10 @@ export const useDesignStore = defineStore('design', () => {
 
     const resizeSelectedTable = (deltaX: number) => {
         if (selectedTable.value) {
-            selectedTable.value.widthPx = clamp(selectedTable.value.widthPx + deltaX, 120, 480);
-            // selectedTable.value.posY = snapToGrid(selectedTable.value.posY + deltaY, gridSize);
+            selectedTable.value.widthPx = snapToGrid(
+                clamp(selectedTable.value.widthPx + deltaX, 120, 480),
+                gridSize.value
+            );
         }
     }
 
@@ -219,10 +221,11 @@ export const useDesignStore = defineStore('design', () => {
     }
 
     const resizeCommentArea = (area: CommentArea, deltaX: number, deltaY: number) => {
+        // Clamp minimum size
         area.size.width = Math.max(56, snapToGrid(area.size.width + deltaX, gridSize.value));
         area.size.height = Math.max(56, snapToGrid(area.size.height + deltaY, gridSize.value));
 
-        // If new dimensions are less than the default textarea size, collapse it
+        // If new area dimensions are less than the default textarea size, collapse it
         if (area.size.width < 180 || area.size.height < 80) {
             area.showComment = false;
         }
@@ -273,6 +276,10 @@ export const useDesignStore = defineStore('design', () => {
     }
 
     const deleteCommentArea = (area: CommentArea) => {
+        // Prevent deletion on accidental mouseup after moving
+        // with cursor being over the delete button
+        if (area == movedCommentArea.value) { return; }
+
         const index = commentAreas.value.indexOf(area);
 
         if (index != -1) {

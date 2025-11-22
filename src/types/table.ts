@@ -66,7 +66,6 @@ export const generateNewForeignKey = (
             otherPrimary.type
         );
 
-        // TODO this must be customizable in settings
         const postfix = namingCon == 'snake' ? '_id' : 'Id';
         col.name = `${unpluralize(otherTable.name)}${postfix}`;
 

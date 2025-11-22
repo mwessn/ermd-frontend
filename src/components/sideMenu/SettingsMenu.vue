@@ -1,30 +1,66 @@
 <template>
   <div
-      class="fixed right-0 h-full px-2 pt-4 mt-12 w-64
+      class="fixed right-0 h-full p-4 mt-12 w-64
        bg-accentDarkGray text-center z-50
        text-textColor
         transition-transform duration-300"
       :class="visible ? 'translate-x-0' : 'translate-x-full'"
   >
-    <CustomSelect
-        v-model="currentSettings.databaseEngine"
-        :label="$t('Database Engine')"
-        :options="engineSelectOptions"
+    <DBEngineChangeSelect
+        :init-value="currentSettings.databaseEngine"
+        @engineChange="onEngineChange"
     />
 
     <CustomSelect
         v-model="currentSettings.namingConvention"
         :label="$t('Naming convention')"
         :options="conventionSelectOptions"
+        :hint="$t('Will only apply to newly created tables')"
     />
 
     <CustomSelect
         v-model="currentSettings.defaultPrimaryType"
-        :label="$t('Naming convention')"
+        :label="$t('Default Primary Key')"
         :options="primaryColumnOptions"
     />
 
-    {{ currentSettings }}
+    <Separator />
+
+    <CustomCheckbox
+        v-model="currentSettings.generateMtMPrimaryKey"
+        :label="$t('Generate primary key for MtM tables')"
+    />
+
+    <template v-if="currentSettings.generateMtMPrimaryKey">
+      <CustomSelect
+          v-model="currentSettings.mtmPrimaryKeyType"
+          :label="$t('Default MtM Primary Key')"
+          :options="primaryColumnOptions"
+      />
+    </template>
+
+    <Separator />
+
+    <CustomSelect
+        v-model="currentSettings.dragCanvasButton"
+        :label="$t('Drag canvas button')"
+        :options="dragButtonSelectOptions"
+    />
+
+    <CustomCheckbox
+        v-model="currentSettings.snapToGrid"
+        :label="$t('Snap to grid')"
+        :hint="$t('Experimental, may be broken')"
+    />
+
+    <ClampedNumberInput
+        v-model="currentSettings.undoActionBufferSize"
+        :label="$t('Action buffer size')"
+        :min-value="0"
+        :max-value="1000"
+    />
+
+    <Separator />
 
   </div>
 </template>
@@ -33,9 +69,14 @@
 import { storeToRefs } from "pinia";
 import { useSettingsStore } from "@/store/settings.ts";
 import CustomSelect from "@/components/core/inputs/CustomSelect.vue";
-import { DatabaseEngines, EngineNamingMap } from "@/types/TableColumnTypes/tableField.ts";
 import type { SelectOption } from "@/types/misc.ts";
 import { computed } from "vue";
+import DBEngineChangeSelect from "@/components/settings/DBEngineChangeSelect.vue";
+import { type DatabaseEngine, DatabaseEngines } from "@/types/TableColumnTypes/tableField.ts";
+import CustomCheckbox from "@/components/core/inputs/CustomCheckbox.vue";
+import { useI18n } from "vue-i18n";
+import Separator from "@/components/core/Separator.vue";
+import ClampedNumberInput from "@/components/core/inputs/ClampedNumberInput.vue";
 
 defineProps({
   visible: {
@@ -44,14 +85,11 @@ defineProps({
   }
 });
 
-const { currentSettings, currentDatabaseColumnTypes } = storeToRefs(useSettingsStore());
+const i18n = useI18n();
 
-const engineSelectOptions: SelectOption[] = DatabaseEngines.map(e => {
-  return {
-    value: e,
-    label: EngineNamingMap[e]
-  }
-});
+const settingsStore = useSettingsStore();
+
+const { currentSettings, currentDatabaseColumnTypes } = storeToRefs(settingsStore);
 
 const conventionSelectOptions: SelectOption[] = [
   {
@@ -61,6 +99,17 @@ const conventionSelectOptions: SelectOption[] = [
   {
     label: 'CamelCase',
     value: 'camel',
+  }
+];
+
+const dragButtonSelectOptions: SelectOption[] = [
+  {
+    label: i18n.t('MMB'),
+    value: 'middle',
+  },
+  {
+    label: i18n.t('LMB'),
+    value: 'left',
   }
 ];
 
@@ -74,5 +123,11 @@ const primaryColumnOptions = computed((): SelectOption[] =>
           }
         })
 );
+
+const onEngineChange = (val: DatabaseEngine) => {
+  // Sanity check
+  if (!DatabaseEngines.includes(val)) { return; }
+  settingsStore.setCurrentEngine(val);
+}
 
 </script>

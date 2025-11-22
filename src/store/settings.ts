@@ -22,7 +22,10 @@ export const useSettingsStore = defineStore('settings', () => {
 
     const criticalError = ref<ErrorDetails | undefined>(undefined);
 
-    const currentSettings = ref<UserSettings>(cloneDeep(defaultSettings));
+    const currentSettings = ref<UserSettings>(
+        JSON.parse(localStorage.getItem("__ermd_settings") ?? "null")
+        ?? cloneDeep(defaultSettings)
+    );
 
     const defaultTableName = computed(() => currentSettings.value.namingConvention == 'snake' ? 'new_table_' : 'NewTable');
 
@@ -54,6 +57,7 @@ export const useSettingsStore = defineStore('settings', () => {
     const defaultPrimarySize = computed(() => getDefaultModifierParams(currentSettings.value.defaultPrimaryType));
 
     const setCurrentEngine = (val: DatabaseEngine) => {
+        // Sanity check
         if (!DatabaseEngines.includes(val)) {
             throw new Error(`Unknown engine: ${val}`);
         }
@@ -91,7 +95,8 @@ export const useSettingsStore = defineStore('settings', () => {
     persist: {
         key: `__ermd_settings`,
         pick: [
-            'currentSettings'
+            'currentSettings',
+            'userDefinedColumnTypes'
         ],
     }
 });

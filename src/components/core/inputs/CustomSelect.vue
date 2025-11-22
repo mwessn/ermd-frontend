@@ -50,6 +50,10 @@
         </div>
       </template>
     </div>
+
+    <p v-if="hint" class="text-sm text-accentGray my-2 text-left">
+      {{ hint }}
+    </p>
   </div>
 
 </template>
@@ -79,10 +83,16 @@ const props = defineProps({
   disabled: {
     type: Boolean,
     default: false,
+  },
+  hint: {
+    type: String,
+    default: ""
   }
 });
 
 const rootDiv = ref();
+
+const emit = defineEmits(["change"]);
 
 const selectedOption = computed((): SelectOption => props.options!.find(it => isEqual(it.value, model.value)) ?? {
   label: '',
@@ -96,8 +106,10 @@ const toggleDropdown = () => {
 }
 
 const onOptionClick = async (val: SelectOption) => {
-  if (!props.disabled) {
+  if (!props.disabled && model.value !== val) {
     model.value = val.value;
+
+    emit("change");
 
     changeDropdownVisible.value = false;
   }

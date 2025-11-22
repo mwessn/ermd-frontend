@@ -24,6 +24,13 @@ export function useDesignCanvas() {
     const designStore = useDesignStore();
 
     const { currentSettings } = storeToRefs(useSettingsStore());
+    const {
+        selectedTable,
+        resizedTable,
+        movedCommentArea,
+        resizedCommentArea,
+        tempCommentArea,
+    } = storeToRefs(designStore);
 
     // How much the canvas is dragged from its center
     const translateOffsetX = ref(0);
@@ -34,6 +41,7 @@ export function useDesignCanvas() {
 
     // Drag detection
     const lastClickPos = ref<CursorPos | undefined>();
+    const lastClickType = ref<'left' | 'middle' | undefined>(undefined);
     const currentMousePos = ref<CursorPos | undefined>();
 
     // (Buffer variable) initial position of selected table before drag
@@ -71,19 +79,19 @@ export function useDesignCanvas() {
     const onMouseDown = async (evt: MouseEvent) => {
         switch (actionStore.currentAction) {
             case undefined: {
-                if (currentSettings.value.dragCanvasButton == 'left') {
-                    startTracking(evt);
+                lastClickType.value = "left";
+                startTracking(evt);
+
+                if (resizedCommentArea.value != undefined) {
+                    lastSize.value = cloneDeep(resizedCommentArea.value.size);
                 }
-                if (designStore.resizedCommentArea != undefined) {
-                    lastSize.value = cloneDeep(designStore.resizedCommentArea.size);
-                }
-                if (designStore.movedCommentArea != undefined) {
+                if (movedCommentArea.value != undefined) {
                     lastCommentAreaPosition.value = {
-                        x: designStore.movedCommentArea.posX,
-                        y: designStore.movedCommentArea.posY
+                        x: movedCommentArea.value.posX,
+                        y: movedCommentArea.value.posY
                     }
-                    intersectingTables.value = designStore.getTablesInsideArea(designStore.movedCommentArea);
-                    intersectingAreas.value = designStore.getAreasInsideArea(designStore.movedCommentArea);
+                    intersectingTables.value = designStore.getTablesInsideArea(movedCommentArea.value);
+                    intersectingAreas.value = designStore.getAreasInsideArea(movedCommentArea.value);
                 }
 
                 break;
@@ -121,13 +129,14 @@ export function useDesignCanvas() {
     const stopTracking = () => {
         // Stop tracking drag
         lastClickPos.value = undefined;
+
+        // Quite arbitrary really, but for the best practices let it be
+        lastClickType.value = undefined;
     }
 
     const onMouseUp = () => {
         if (lastClickPos.value) {
-            if (currentSettings.value.dragCanvasButton == 'left') {
-                stopTracking();
-            }
+            stopTracking();
 
             // If moved a table, add buffer entry
             if (lastSelectedPos.value) {
@@ -139,7 +148,7 @@ export function useDesignCanvas() {
                 lastWidth.value = undefined;
             }
 
-            if (designStore.tempCommentArea != undefined) {
+            if (tempCommentArea.value != undefined) {
                 designStore.storeCommentArea();
             }
 
@@ -159,13 +168,14 @@ export function useDesignCanvas() {
                 intersectingAreas.value = [];
             }
 
-            // Reset resized references
+            // Reset references
             designStore.setResizedTable();
         }
     };
 
     const onMiddleMouseDown = (evt: MouseEvent) => {
         if (currentSettings.value.dragCanvasButton == 'middle') {
+            lastClickType.value = "middle";
             startTracking(evt);
         }
     }
@@ -180,16 +190,26 @@ export function useDesignCanvas() {
         // If not dragging return
         if (!lastClickPos.value || !currentMousePos.value) return;
 
+        // If current button is MMB we can only move the canvas
+        if (
+            currentSettings.value.dragCanvasButton == 'middle' &&
+            lastClickType.value == "middle"
+        ) {
+            translateOffsetX.value += evt.movementX;
+            translateOffsetY.value += evt.movementY;
+            return;
+        }
+
         const deltaX = evt.movementX / scaleFactor.value;
         const deltaY = evt.movementY / scaleFactor.value;
 
         // Handle comment areas
-        const commentArea = designStore.tempCommentArea
-            ?? designStore.resizedCommentArea;
+        const commentArea = tempCommentArea.value
+            ?? resizedCommentArea.value;
         if (commentArea) {
             designStore.resizeCommentArea(commentArea, deltaX, deltaY);
         }
-        else if (designStore.movedCommentArea) {
+        else if (movedCommentArea.value) {
             designStore.moveCommentArea(
                 deltaX,
                 deltaY,
@@ -199,15 +219,17 @@ export function useDesignCanvas() {
         }
 
         // No table selected, drag canvas
-        else if (!designStore.selectedTable) {
+        else if (!selectedTable.value) {
+            if (currentSettings.value.dragCanvasButton == 'middle') { return; }
+
             translateOffsetX.value += evt.movementX;
             translateOffsetY.value += evt.movementY;
         }
         // Handle table move/resize
         else {
-            const table = designStore.selectedTable;
-            if (designStore.resizedTable) {
-                if (!lastWidth.value) lastWidth.value = cloneDeep(designStore.resizedTable.widthPx);
+            const table = selectedTable.value;
+            if (resizedTable.value) {
+                if (!lastWidth.value) lastWidth.value = cloneDeep(resizedTable.value.widthPx);
                 designStore.resizeSelectedTable(deltaX);
             } else {
                 if (!lastSelectedPos.value) {

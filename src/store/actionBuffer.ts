@@ -1,13 +1,13 @@
 import { defineStore } from "pinia";
-import { defaultSettings } from "@/types/misc.ts";
 import { ref } from "vue";
 import type { ActionBufferEntry, BufferEntity } from "@/types/actionsBuffer.ts";
 import { useDesignStore } from "@/store/design.ts";
 import { cloneDeep } from "lodash";
+import { useSettingsStore } from "@/store/settings.ts";
 
 export const useActionBuffer = defineStore('actionBuffer', () => {
-    // TODO add settings store
-    const maxBufferSize = defaultSettings.undoActionBufferSize;
+
+    const { currentSettings } = useSettingsStore();
 
     const undoBuffer = ref<ActionBufferEntry[]>([]);
     const redoBuffer = ref<ActionBufferEntry[]>([]);
@@ -18,7 +18,7 @@ export const useActionBuffer = defineStore('actionBuffer', () => {
         redoBuffer.value = [];
         undoBuffer.value.push(cloneDeep(action));
 
-        if (undoBuffer.value.length > maxBufferSize) {
+        if (undoBuffer.value.length > currentSettings.undoActionBufferSize) {
             undoBuffer.value.shift();
         }
     }
