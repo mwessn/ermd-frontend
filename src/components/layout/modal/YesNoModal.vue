@@ -3,7 +3,7 @@
       :modal-name="modalTitle"
       @close="emit('close')"
   >
-    <div class="mt-4 mb-8 text-accentDarkGray">
+    <div class="mt-4 mb-8 text-backgroundDark text-lg">
       {{ bodyText }}
     </div>
 

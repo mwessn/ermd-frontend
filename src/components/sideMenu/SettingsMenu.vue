@@ -58,9 +58,12 @@
         :label="$t('Action buffer size')"
         :min-value="0"
         :max-value="1000"
+        :hint="$t('Capped to 1000 to prevent performance issues')"
     />
 
     <Separator />
+
+    <UserDefinedColumnTypeDisplay />
 
   </div>
 </template>
@@ -77,6 +80,7 @@ import CustomCheckbox from "@/components/core/inputs/CustomCheckbox.vue";
 import { useI18n } from "vue-i18n";
 import Separator from "@/components/core/Separator.vue";
 import ClampedNumberInput from "@/components/core/inputs/ClampedNumberInput.vue";
+import UserDefinedColumnTypeDisplay from "@/components/settings/UserDefinedColumnTypeDisplay.vue";
 
 defineProps({
   visible: {
@@ -127,6 +131,7 @@ const primaryColumnOptions = computed((): SelectOption[] =>
 const onEngineChange = (val: DatabaseEngine) => {
   // Sanity check
   if (!DatabaseEngines.includes(val)) { return; }
+  console.log(val);
   settingsStore.setCurrentEngine(val);
 }
 

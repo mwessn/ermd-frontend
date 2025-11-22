@@ -94,6 +94,7 @@ export interface ExportJson {
     relations: DatabaseRelationship[],
     commentAreas: CommentArea[],
     engine: DatabaseEngine,
+    userTypes: ColumnType[],
     exportVersion: number
 }
 

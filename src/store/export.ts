@@ -23,6 +23,7 @@ export const useExportStore = defineStore('export', () => {
     const {
         currentSettings,
         currentDatabaseColumnTypes,
+        userDefinedColumnTypes,
     } = storeToRefs(settingsStore);
 
     const projectName = ref<string>('Example Project');
@@ -48,6 +49,7 @@ export const useExportStore = defineStore('export', () => {
             relations: relations.value,
             commentAreas: commentAreas.value,
             engine: currentSettings.value.databaseEngine,
+            userTypes: userDefinedColumnTypes.value,
             exportVersion: appConfig.appVersion
         }
 

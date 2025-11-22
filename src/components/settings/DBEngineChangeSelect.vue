@@ -59,7 +59,7 @@ const onDatabaseEngineChange = () => {
 
 const onEngineChangeModalClose = (val: boolean | undefined) => {
   if (val) {
-    emit("engineChange", val);
+    emit("engineChange", currentValue.value);
   } else {
     currentValue.value = props.initValue;
   }

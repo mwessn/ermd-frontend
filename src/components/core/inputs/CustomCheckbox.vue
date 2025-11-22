@@ -3,7 +3,9 @@
       class="select-none my-4"
   >
     <div
-        class="bg-backgroundDark rounded-lg flex items-center gap-3 cursor-pointer p-4"
+        class="bg-backgroundDark rounded-lg p-4
+        flex items-center gap-3
+        cursor-pointer hover:opacity-80"
         @click="toggleValue"
     >
       <div

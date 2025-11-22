@@ -13,7 +13,7 @@
         @click="toggleDropdown"
         @blur="onFocusOut"
     >
-      <div class="w-full flex items-center gap-2 text-textColor">
+      <div class="w-full flex items-center gap-2 text-textColor hover:opacity-80">
         <div class="w-full overflow-ellipsis overflow-hidden text-nowrap">
           <template v-if="!selectedOption.value">
             {{ placeholder }}
@@ -31,7 +31,7 @@
       <template v-if="!disabled && changeDropdownVisible">
         <div
             class="absolute w-full top-12 left-0 p-1.5
-          bg-accentGray text-headerBlack shadow-lg opacity-95 z-20
+          bg-accentGray text-headerBlack shadow-lg z-20
            max-h-64 overflow-y-auto rounded"
             @click.stop
             @blur.stop

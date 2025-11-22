@@ -6,7 +6,7 @@ import { cloneDeep } from "lodash";
 import {
     type ColumnType,
     type DatabaseEngine,
-    DatabaseEngines,
+    DatabaseEngines, defaultCustomTypes,
     getDefaultModifierParams
 } from "@/types/TableColumnTypes/tableField.ts";
 import { mysqlTypes } from "@/types/TableColumnTypes/mysqlTypes.ts";
@@ -36,7 +36,10 @@ export const useSettingsStore = defineStore('settings', () => {
         sqlite: mysqlTypes,
     }
 
-    const userDefinedColumnTypes = ref<ColumnType[]>([]);
+    const userDefinedColumnTypes = ref<ColumnType[]>(
+        JSON.parse(localStorage.getItem("__ermd_settings") ?? "null")
+        ?? cloneDeep(defaultCustomTypes[currentSettings.value.databaseEngine])
+    );
 
     const currentDatabaseColumnTypes = computed((): ColumnType[] =>
         [
@@ -59,8 +62,27 @@ export const useSettingsStore = defineStore('settings', () => {
     const setCurrentEngine = (val: DatabaseEngine) => {
         // Sanity check
         if (!DatabaseEngines.includes(val)) {
+            console.error('Unknown engine', val)
             throw new Error(`Unknown engine: ${val}`);
         }
+
+        // Remove custom types that have conflicting names
+        const systemTypeNames = [
+            ...Object.values(engineColumnTypes[val]),
+            ...defaultCustomTypes[val]
+        ].map(it => it.displayName);
+
+        console.log(systemTypeNames);
+
+        userDefinedColumnTypes.value = userDefinedColumnTypes.value
+            .filter(
+                it => !systemTypeNames.includes(it.displayName)
+            );
+
+        userDefinedColumnTypes.value = [
+            ...userDefinedColumnTypes.value,
+            ...defaultCustomTypes[val]
+        ];
 
         currentSettings.value.databaseEngine = val;
     }

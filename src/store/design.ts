@@ -276,9 +276,9 @@ export const useDesignStore = defineStore('design', () => {
     }
 
     const deleteCommentArea = (area: CommentArea) => {
-        // Prevent deletion on accidental mouseup after moving
+        // Prevent deletion on accidental mouseup after moving or resizing
         // with cursor being over the delete button
-        if (area == movedCommentArea.value) { return; }
+        if (area == movedCommentArea.value || area == resizedCommentArea.value) { return; }
 
         const index = commentAreas.value.indexOf(area);
 
