@@ -7,12 +7,15 @@
         :suggestion="inputSuggestion"
         uppercase
 
+        ref="inputRef"
+
         @focusInput="inputActive = true"
         @blurInput="onFocusOut"
     />
 
     <div
-        v-if="inputActive && lastInputValue"
+        v-if="inputActive"
+        :class="lastInputValue ? 'block' : 'hidden'"
         class="fixed p-2 bg-accentDarkGray text-accentGray
               rounded-lg z-99 select-none max-h-56 overflow-auto w-96"
         tabindex="-1"
@@ -22,7 +25,8 @@
           v-for="option in displayOptions"
           class="p-1 cursor-pointer"
           tabindex="-1"
-          @click="console.log(option)"
+          :key="option"
+          @click="onTypeClick(option)"
       >
         {{ option }}
       </div>
@@ -47,6 +51,7 @@ const props = defineProps({
 });
 
 const rootDiv = useTemplateRef('rootDiv');
+const inputRef = useTemplateRef('inputRef');
 
 const settingsStore = useSettingsStore();
 
@@ -100,7 +105,21 @@ const inputSuggestion = computed(() =>
       undefined
 );
 
+const onTypeClick = (val: string) => {
+  const appendString = lastInputValue.value.startsWith('$') ?
+      specialKeywords.find(it => it == val) :
+      availableTypes.value.find(it => it.displayName === val)?.displayName ?? undefined;
+
+  if (appendString) {
+    const endPos = currentValue.value.length - lastInputValue.value.length;
+    currentValue.value = currentValue.value.slice(0, endPos) + appendString;
+  }
+
+  inputRef.value?.focusInput();
+}
+
 function onFocusOut(event: FocusEvent) {
+  if (!event) { return; }
   if (!event.relatedTarget || !rootDiv.value!.contains(event.relatedTarget as Node)) {
     inputActive.value = false;
   }
