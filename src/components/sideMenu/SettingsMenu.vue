@@ -1,9 +1,9 @@
 <template>
   <div
       class="fixed right-0 h-full p-4 mt-12 w-64
-       bg-accentDarkGray text-center z-50
-       text-textColor
-        transition-transform duration-300"
+          bg-accentDarkGray text-center z-50
+          text-textColor overflow-auto pb-24
+            transition-transform duration-300"
       :class="visible ? 'translate-x-0' : 'translate-x-full'"
   >
     <DBEngineChangeSelect

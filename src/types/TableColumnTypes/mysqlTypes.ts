@@ -253,7 +253,7 @@ export const mysqlTypes: Record<string, ColumnType> = {
         },
         alias: {
             mysql: 'FLOAT',
-            postgres: 'FLOAT$MODIFIER[1]',
+            postgres: 'FLOAT$MODIFIER[0]',
             mssql: 'FLOAT$MODIFIER',
             sqlite: 'REAL'
         }
