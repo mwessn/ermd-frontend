@@ -26,19 +26,21 @@
       <div class="w-3/5 border-l border-l-accentDarkGray pl-2">
         <p class="text-xl text-accentDarkGray my-2">{{ $t('Type aliases') }}</p>
         <Separator />
-        <TextInput
+
+        <CustomTypeAliasInput
             v-model="currentValue.alias.mysql"
-            label="MySQL"
+            aliased-engine="mysql"
         />
-        <TextInput
-            v-model="currentValue.alias.postgres"
-            label="PostgreSQL"
+        <CustomTypeAliasInput
+            v-model="currentValue.alias.mysql"
+            aliased-engine="postgres"
         />
       </div>
     </div>
 
     <div class="w-full flex gap-3 justify-end">
       <ModalButton
+          :disabled="!canSave"
           :label="$t('Save')"
           @click="onSave"
       />
@@ -49,11 +51,13 @@
 <script setup lang="ts">
 import ModalLayout from "@/components/layout/ModalLayout.vue";
 import ModalButton from "@/components/layout/modal/ModalButton.vue";
-import { type PropType, ref } from "vue";
+import { computed, type PropType, ref } from "vue";
 import type { ColumnType } from "@/types/TableColumnTypes/tableField.ts";
 import CustomCheckbox from "@/components/core/inputs/CustomCheckbox.vue";
 import TextInput from "@/components/core/inputs/TextInput.vue";
 import Separator from "@/components/core/Separator.vue";
+import { notBlankOrEmpty } from "@/utils/utils.ts";
+import CustomTypeAliasInput from "@/components/core/inputs/CustomTypeAliasInput.vue";
 
 const emit = defineEmits(['close']);
 
@@ -66,7 +70,7 @@ const props = defineProps({
 
 const emptyType: ColumnType = {
   displayName: '',
-  primitive: '',
+  primitive: 'string',
   modifier: undefined,
   flags: {
     canBePrimaryKey: true,
@@ -80,10 +84,16 @@ const emptyType: ColumnType = {
   alias: {
     mysql: '',
     postgres: '',
-    mssql: '',
-    sqlite: '',
+    // mssql: '',
+    // sqlite: '',
   }
 }
+
+const canSave = computed(() =>
+    notBlankOrEmpty(currentValue.value.displayName) &&
+    notBlankOrEmpty(currentValue.value.alias.mysql) &&
+    notBlankOrEmpty(currentValue.value.alias.postgres)
+);
 
 const currentValue = ref<ColumnType>(
     props.editedType ?? emptyType

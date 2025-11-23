@@ -1,12 +1,13 @@
 import { mysqlTypes } from "@/types/TableColumnTypes/mysqlTypes.ts";
 import { postgresTypes } from "@/types/TableColumnTypes/postgresTypes.ts";
 
+// Used for frontend parsing
 const PRIMITIVE_TYPES = [
     'int',
-    'bigint', // For frontend handling
-    'serial',
+    'bigint', // Displayed as a string
+    'serial', // int with locked flags
     'decimal', 'float', 'bit', 'bool',
-    'char', 'string', 'binary',
+    'string', 'binary',
     'date', 'time', 'datetime', 'interval',
     'list', 'json', 'enum', 'list enum',
 ];

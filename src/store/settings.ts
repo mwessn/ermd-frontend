@@ -36,6 +36,10 @@ export const useSettingsStore = defineStore('settings', () => {
         sqlite: mysqlTypes,
     }
 
+    const systemColumnTypes = computed(() =>
+        Object.values(engineColumnTypes[currentSettings.value.databaseEngine])
+    );
+
     const userDefinedColumnTypes = ref<ColumnType[]>(
         JSON.parse(localStorage.getItem("__ermd_settings") ?? "null")
         ?? cloneDeep(defaultCustomTypes[currentSettings.value.databaseEngine])
@@ -43,7 +47,7 @@ export const useSettingsStore = defineStore('settings', () => {
 
     const currentDatabaseColumnTypes = computed((): ColumnType[] =>
         [
-            ...Object.values(engineColumnTypes[currentSettings.value.databaseEngine]),
+            ...systemColumnTypes.value,
             ...userDefinedColumnTypes.value
         ]
     );
@@ -102,7 +106,10 @@ export const useSettingsStore = defineStore('settings', () => {
 
         engineColumnTypes,
         currentDatabaseColumnTypes,
+
+        systemColumnTypes,
         userDefinedColumnTypes,
+
         columnTypeNames,
         primaryKeyTypes,
 

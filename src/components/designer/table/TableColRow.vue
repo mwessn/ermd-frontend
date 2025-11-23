@@ -118,6 +118,10 @@ watch(() => props.col.type, (newType: ColumnType, oldType) => {
   if (newType.displayName != oldType.displayName) {
     props.col.modifierValues = getDefaultModifierParams(newType);
   }
+  if (newType.primitive == 'serial') {
+    props.col!.primaryKey = true; // rest of the flags are handled in the next watcher
+    return;
+  }
   // Check PK flag
   if (props.col.primaryKey) {
     props.col.primaryKey = colCanBePrimary(props.col);
@@ -252,7 +256,8 @@ const highlightColumnClass = computed(() => {
 });
 
 const onRowKeyUp = (e: KeyboardEvent) => {
-  if (!e.shiftKey) { return; }
+  if (!e.shiftKey || props.col!.type.primitive == 'serial') { return; } // serial column flags are locked
+
   const col = props.col;
   const oldVal = cloneDeep(col);
   switch (e.key.toLowerCase()) {

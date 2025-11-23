@@ -21,29 +21,32 @@
       <ColPropertyCheckbox
           v-model="col.primaryKey"
           label="PK"
-          :disabled="!colCanBePrimary(col)"
+          :disabled="flagsLocked || !colCanBePrimary(col)"
           @change="onChange"
       />
       <ColPropertyCheckbox
           v-model="col.notNull"
           label="NN"
-          :disabled="!colCanBeNullable(col)"
+          :disabled="flagsLocked || !colCanBeNullable(col)"
           @change="onChange"
       />
       <ColPropertyCheckbox
           v-model="col.unique"
           label="U"
-          :disabled="col.primaryKey"
+          :disabled="flagsLocked || col.primaryKey"
           @change="onChange"
       />
       <ColPropertyCheckbox
           v-model="col.autoIncrement"
           label="AI"
-          :disabled="!colCanAutoIncrement(col) || col.primaryKey"
+          :disabled="flagsLocked || !colCanAutoIncrement(col) || col.primaryKey"
           @change="onChange"
       />
 
-      <div class="p-2 border-l border-l-accentDarkGray grid gap-2">
+      <div
+          v-if="col.type.flags.canHaveDefault"
+          class="p-2 border-l border-l-accentDarkGray grid gap-2"
+      >
         <p class="wrap-break-word w-12">{{ $t('Default') }}</p>
         <div class="flex items-center gap-1">
           <template v-if="col.defaultValue != undefined">
@@ -119,6 +122,8 @@ const props = defineProps({
 let oldVal = cloneDeep(props.col);
 
 const emit = defineEmits(['change']);
+
+const flagsLocked = computed(() => props.col!.type.primitive == 'serial');
 
 const removeModifierValue = (index: number) => {
   if (props.col.modifierValues && props.col.modifierValues[index]) {
