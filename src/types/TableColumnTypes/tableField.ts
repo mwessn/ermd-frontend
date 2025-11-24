@@ -46,7 +46,12 @@ export const EngineNamingMap: Record<DatabaseEngine, string> = {
     // sqlite: 'SQLite'
 }
 
-export type ModifierMeta = 'typeSelect' | // Render as column type dropdown selector
+export const enginesWithCompositeTypes: DatabaseEngine[] = [
+    'postgres',
+];
+
+export type ModifierMeta =
+    'typeSelect' | // Render as column type dropdown selector
     'inputNumber' | // Render as number input (for values that could be undefined)
     'enumList' | // Render as enum values list
     'typedef'; // Render as type definition input

@@ -36,7 +36,11 @@
 
 <script setup lang="ts">
 import { computed, type PropType, ref, useTemplateRef } from "vue";
-import { type DatabaseEngine, EngineNamingMap } from "@/types/TableColumnTypes/tableField.ts";
+import {
+  type DatabaseEngine,
+  EngineNamingMap,
+  enginesWithCompositeTypes
+} from "@/types/TableColumnTypes/tableField.ts";
 import { useSettingsStore } from "@/store/settings.ts";
 import TextInput from "@/components/core/inputs/TextInput.vue";
 import { cloneDeep } from "lodash";
@@ -68,8 +72,8 @@ const specialKeywords: string[] = [
     '$USERDEF()',
     '$FLAG()',
     '$ENUM_FROM',
-    '$COMPOSITE',
-]
+    enginesWithCompositeTypes.includes(props.aliasedEngine) ? '$COMPOSITE' : undefined,
+].filter(Boolean) as string[];
 
 const lastInputValue = computed(() => {
   const separators = ['?', ':', '$'];
