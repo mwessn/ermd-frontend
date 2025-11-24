@@ -15,7 +15,6 @@
             v-model="projectName"
             class="placeholder:text-accentDarkGray"
             :placeholder="`${$t('enter project name')}...`"
-            allow-shift-key
             @enter-key="resetFocus"
         />
       </div>

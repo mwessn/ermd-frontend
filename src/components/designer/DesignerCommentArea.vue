@@ -32,8 +32,6 @@
 
             @valueChange="onChange"
             @enter-key="resetFocus"
-
-            allow-shift-key
         />
       </div>
       <div class="flex items-center gap-4 overflow-hidden">

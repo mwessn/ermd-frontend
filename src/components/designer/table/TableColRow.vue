@@ -12,7 +12,7 @@
     @keyup.enter="onRowEnterKey"
     @keyup.delete.stop="emit('deleteCol');"
 
-    @keyup.shift.prevent="onRowKeyUp"
+    @keyup.alt.prevent="onRowKeyUp"
   >
     <div
         v-if="showColType"
@@ -256,7 +256,7 @@ const highlightColumnClass = computed(() => {
 });
 
 const onRowKeyUp = (e: KeyboardEvent) => {
-  if (!e.shiftKey || props.col!.type.primitive == 'serial') { return; } // serial column flags are locked
+  if (!e.altKey || props.col!.type.primitive == 'serial') { return; } // serial column flags are locked
 
   const col = props.col;
   const oldVal = cloneDeep(col);
