@@ -19,6 +19,9 @@ export function useKeyboardShortcuts(centerView: () => void) {
     };
 
     const onKeydown = (evt: KeyboardEvent) => {
+
+        // Alt key is reserved for table row flag hotkeys
+        if (evt.altKey) { return; }
         // If target is an input, ignore shortcuts
         if (!(evt.target instanceof HTMLInputElement)) {
             const key = evt.key.toLowerCase();
