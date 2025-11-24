@@ -3,33 +3,41 @@
       class="w-full relative"
       tabindex="-1"
   >
-    <input
-        v-model="inputValue"
-        class="cursor-inherit p-1 overflow-ellipsis w-full"
+    <div class="flex items-center">
+      <input
+          v-model="inputValue"
+          class="cursor-inherit p-1 overflow-ellipsis w-full"
 
-        :id="`${col.id}-type-input`"
-        ref="inputRef"
-        tabindex="-1"
+          :id="`${col.id}-type-input`"
+          ref="inputRef"
+          tabindex="-1"
 
-        :title="inputValue"
+          :title="inputValue"
 
-        autocomplete="off"
+          autocomplete="off"
 
-        @mousedown.left.prevent
-        @mouseup.left.prevent
-        @dblclick.left="focusSelectAll"
-        @focus="focusSelectAll"
+          @mousedown.left.prevent
+          @mouseup.left.prevent
+          @dblclick.left="focusSelectAll"
+          @focus="focusSelectAll"
 
-        @input="selectTypeOption(0)"
-        @keyup.down="selectNextOption"
-        @keyup.up="selectPrevOption"
+          @input="selectTypeOption(0)"
+          @keyup.down="selectNextOption"
+          @keyup.up="selectPrevOption"
 
-        @keydown.enter="onEnter"
+          @keydown.enter="onEnter"
 
-        @focusout="onFocusOut"
+          @focusout="onFocusOut"
 
-        @keydown.shift.prevent
-    >
+          @keydown.shift.prevent
+      >
+      <div
+          v-if="col.modifierValues && col.modifierValues.length > 0 && col.modifierValues[0]"
+      >
+        ({{ col.modifierValues.join(', ') }})
+      </div>
+    </div>
+
 
     <div
       v-if="dropdownVisible"
