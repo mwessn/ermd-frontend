@@ -437,11 +437,11 @@ export const useDesignStore = defineStore('design', () => {
     // Misc
 
     const createNewProject = () => {
-        tables.value = [];
+        tables.value.length = 0
         newTableIndex.value = 1;
 
-        relations.value = [];
-        commentAreas.value = [];
+        relations.value.length = 0;
+        commentAreas.value.length = 0;
 
         bufferStore.clearState();
 
@@ -989,5 +989,15 @@ export const useDesignStore = defineStore('design', () => {
         pick: [
             'tables', 'newTableIndex', 'relations', 'commentAreas'
         ],
+        serializer: {
+            serialize: (state) => {
+                return JSON.stringify(state, (_, value) =>
+                    typeof value === 'bigint' ? value.toString() : value
+                );
+            },
+            deserialize: (value) => {
+                return JSON.parse(value);
+            }
+        }
     }
 });

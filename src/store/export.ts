@@ -1,5 +1,5 @@
 import { defineStore, storeToRefs } from "pinia";
-import { computed, ref } from "vue";
+import { computed, nextTick, ref } from "vue";
 import { appConfig } from "@/app.config.ts";
 import { useDesignStore } from "@/store/design.ts";
 import { type ExportJson, type ExportTableColType, type ExportTableType, Table2ExportType } from "@/types/misc.ts";
@@ -127,13 +127,18 @@ export const useExportStore = defineStore('export', () => {
                 );
             }
 
+            await nextTick();
+
             settingsStore.setCurrentEngine(validatedJson.engine);
+
+            await nextTick();
+
             // Prevent autofocus on newly created tables
             isManualCreation.value = false;
 
             tables.value = validatedJson.tables.map(exportType2Table);
 
-            // Not ideal, but will work for now.
+            // TODO properly parse names and extract last index
             newTableIndex.value = tables.value.length + 1;
 
             relations.value = validatedJson.relations;

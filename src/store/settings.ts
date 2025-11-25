@@ -76,8 +76,6 @@ export const useSettingsStore = defineStore('settings', () => {
             ...defaultCustomTypes[val]
         ].map(it => it.displayName);
 
-        console.log(systemTypeNames);
-
         userDefinedColumnTypes.value = userDefinedColumnTypes.value
             .filter(
                 it => !systemTypeNames.includes(it.displayName)
