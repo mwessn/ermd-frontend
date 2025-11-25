@@ -992,11 +992,16 @@ export const useDesignStore = defineStore('design', () => {
         serializer: {
             serialize: (state) => {
                 return JSON.stringify(state, (_, value) =>
-                    typeof value === 'bigint' ? value.toString() : value
+                    typeof value === 'bigint' ? { __type: 'bigint', value: value.toString() } : value
                 );
             },
             deserialize: (value) => {
-                return JSON.parse(value);
+                return JSON.parse(value, (_, value) => {
+                    if (value && value.__type === 'bigint') {
+                        return BigInt(value.value);
+                    }
+                    return value;
+                });
             }
         }
     }
