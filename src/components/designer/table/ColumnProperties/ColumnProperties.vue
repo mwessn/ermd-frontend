@@ -105,65 +105,58 @@ import {
   type TableCol
 } from "@/types/table.ts";
 import ColPropertyCheckbox from "@/components/designer/table/ColumnProperties/ColPropertyCheckbox.vue";
-import { computed, nextTick, type PropType, ref, watch } from "vue";
+import { computed, nextTick, ref, watch } from "vue";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { faClose } from "@fortawesome/free-solid-svg-icons";
 import { nullOrEmpty } from "@/utils/utils.ts";
 import { cloneDeep } from "lodash";
 import ModifierValueInput from "@/components/designer/table/ColumnProperties/ModifierValueInput.vue";
 
-const props = defineProps({
-  col: {
-    type: Object as PropType<TableCol>,
-    required: true
-  },
-});
+const col = defineModel<TableCol>('col', { required: true });
 
-let oldVal = cloneDeep(props.col);
+let oldVal = cloneDeep(col.value);
 
-const emit = defineEmits(['change']);
+const emit = defineEmits<{
+  change: [oldVal: TableCol]
+}>();
 
-const flagsLocked = computed(() => props.col!.type.primitive == 'serial');
+const flagsLocked = computed(() => col.value.type.primitive == 'serial');
 
 const removeModifierValue = (index: number) => {
-  if (props.col.modifierValues && props.col.modifierValues[index]) {
-    props.col.modifierValues[index] = undefined;
-
+  if (col.value.modifierValues && col.value.modifierValues[index]) {
+    col.value.modifierValues[index] = undefined;
     onChange();
   }
 }
 
 const removeDefaultValue = () => {
-  props.col.defaultValue = undefined;
-
+  col.value.defaultValue = undefined;
   onChange();
 }
 
 const onChange = async () => {
   await nextTick();
-
   emit('change', oldVal);
-
-  oldVal = cloneDeep(props.col);
+  oldVal = cloneDeep(col.value);
 }
 
-const showBrackets = ref<boolean>(props.col.defaultValue !== undefined);
+const showBrackets = ref<boolean>(col.value.defaultValue !== undefined);
 
-const defaultPlaceholder = computed(() => props.col.defaultValue == undefined ? 'none' : '');
+const defaultPlaceholder = computed(() => col.value.defaultValue == undefined ? 'none' : '');
 
 const onInputClick = () => {
-  const p = props.col.type.primitive
+  const p = col.value.type.primitive
   if (p == 'list') {
     showBrackets.value = true;
   }
   if (p == 'json') {
     showBrackets.value = true;
-    props.col.defaultValue = '';
+    col.value.defaultValue = '';
   }
 }
 
 const defaultInputType = computed(() => {
-  switch (props.col.type.primitive) {
+  switch (col.value.type.primitive) {
     case 'int':
     case 'decimal':
     case 'float':
@@ -183,16 +176,18 @@ const defaultInputType = computed(() => {
 });
 
 // input validation
-watch(() => props.col.defaultValue, (val) => {
+watch(() => col.value.defaultValue, (val) => {
   if (val == null || val === "") return;
 
-  switch (props.col.type.primitive) {
+  let sanitized: string | undefined;
+
+  switch (col.value.type.primitive) {
 
       // Only integers
     case "int":
     case "bit":
       if (!/^-?\d+$/.test(val)) {
-        props.col.defaultValue = val.replace(/[^0-9-]/g, "");
+        sanitized = val.replace(/[^0-9-]/g, "");
       }
       break;
 
@@ -202,10 +197,10 @@ watch(() => props.col.defaultValue, (val) => {
       if (!/^-?\d+\.\d+$/.test(val)) {
         // Convert to decimal format if possible
         if (/^-?\d+$/.test(val)) {
-          props.col.defaultValue = val + ".0";
+          sanitized = val + ".0";
         } else {
           // strip invalid chars but keep one "."
-          props.col.defaultValue = val
+          sanitized = val
               .replace(/[^0-9.-]/g, "")
               .replace(/(\..*)\./g, "$1");
         }
@@ -215,40 +210,44 @@ watch(() => props.col.defaultValue, (val) => {
       // bigint → integer but may exceed JS range
     case "bigint":
       if (!/^-?\d+$/.test(val)) {
-        props.col.defaultValue = val.replace(/[^0-9-]/g, "");
+        sanitized = val.replace(/[^0-9-]/g, "");
       }
       break;
 
     case 'json':
-      if (props.col.defaultValue?.startsWith("{")) {
-        props.col.defaultValue = props.col.defaultValue.slice(1);
+      if (val.startsWith("{")) {
+        sanitized = val.slice(1);
       }
       break;
 
     case 'set':
-      if (props.col.defaultValue?.startsWith("[")) {
-        props.col.defaultValue = props.col.defaultValue.slice(1);
+      if (val.startsWith("[")) {
+        sanitized = val.slice(1);
       }
       break;
 
     default:
       break;
   }
+
+  if (sanitized !== undefined) {
+    col.value.defaultValue = sanitized;
+  }
 });
 
 const validateDefaultValue = computed(() => {
-  if (props.col.type.primitive == 'list') {
+  if (col.value.type.primitive == 'list') {
     if (
-        props.col.modifierValues == undefined ||
-        nullOrEmpty(props.col.modifierValues[0] as string) ||
-        nullOrEmpty(props.col.defaultValue)
+        col.value.modifierValues == undefined ||
+        nullOrEmpty(col.value.modifierValues[0] as string) ||
+        nullOrEmpty(col.value.defaultValue)
     ) { return '' }
 
-    const allowedTypes = (props.col.modifierValues[0] as string)
+    const allowedTypes = (col.value.modifierValues[0] as string)
         .split(',')
         .map(it => it.trim());
 
-    const inputTypes = (props.col.defaultValue as string)
+    const inputTypes = (col.value.defaultValue as string)
         .split(',')
         .map(it => it.trim())
         .filter(Boolean);

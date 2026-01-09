@@ -3,7 +3,7 @@
     class="flex items-center w-full not-last:border-b relative group/cols"
     ref="rowRef"
 
-    :tabindex="nonFocusableRow ? undefined : -1"
+    :tabindex="props.nonFocusableRow ? undefined : -1"
 
     @focus="showColumnProps = true"
     @focusout="onFocusOut"
@@ -26,7 +26,7 @@
         :name="`colName-${col.id}`"
 
         class="w-full group-last/cols:rounded-b-xl"
-        :class="[{ 'border-r' : !nonFocusableRow }, highlightColumnClass]"
+        :class="[{ 'border-r' : !props.nonFocusableRow }, highlightColumnClass]"
 
         :title="col.name"
 
@@ -41,10 +41,9 @@
     <div v-if="showColType" class="min-w-1/2 flex items-center pr-2">
       <ColTypeSelect
           v-if="rowRef"
-          :col="col"
+          v-model:col="col"
           ref="colTypeRef"
 
-          :col-id="col.id"
           :root-div="rowRef!"
 
           @value-change="onColTypeChange"
@@ -58,7 +57,7 @@
 
     <ColumnProperties
         v-if="showColumnProps && showColType"
-        :col="col"
+        v-model:col="col"
 
         @change="onColTypeChange"
 
@@ -78,7 +77,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, type PropType, ref, useTemplateRef, watch } from "vue";
+import { computed, nextTick, ref, useTemplateRef, watch } from "vue";
 import { colCanAutoIncrement, colCanBeNullable, colCanBePrimary, type TableCol } from "@/types/table.ts";
 import DoubleClickFocusInput from "@/components/core/DoubleClickFocusInput.vue";
 import { useDesignStore } from "@/store/design.ts";
@@ -91,57 +90,57 @@ import ColumnProperties from "@/components/designer/table/ColumnProperties/Colum
 
 const { bufferLogColChange } = useDesignStore();
 
-const props = defineProps({
-  col: {
-    type: Object as PropType<TableCol>,
-    required: true
-  },
-  isColNameDuplicate: {
-    type: Boolean,
-    default: false
-  },
-  nonFocusableRow: {
-    type: Boolean,
-    default: false
-  }
+const col = defineModel<TableCol>('col', { required: true });
+
+const props = withDefaults(defineProps<{
+  isColNameDuplicate?: boolean
+  nonFocusableRow?: boolean
+}>(), {
+  isColNameDuplicate: false,
+  nonFocusableRow: false
 });
 
 const showColType = ref<boolean>(!props.nonFocusableRow);
 
-watch(() => props.col.id, () => {
+watch(() => col.value.id, () => {
   // On storing a column prevent type selector from displaying on the new row
   showColType.value = !props.nonFocusableRow;
 });
 
-watch(() => props.col.type, (newType: ColumnType, oldType) => {
+watch(() => col.value.type, (newType: ColumnType, oldType) => {
   // Prevent resetting to default on action buffer undo/redo
   if (newType.displayName != oldType.displayName) {
-    props.col.modifierValues = getDefaultModifierParams(newType);
+    col.value.modifierValues = getDefaultModifierParams(newType);
   }
   if (newType.primitive == 'serial') {
-    props.col!.primaryKey = true; // rest of the flags are handled in the next watcher
+    col.value.primaryKey = true; // rest of the flags are handled in the next watcher
     return;
   }
   // Check PK flag
-  if (props.col.primaryKey) {
-    props.col.primaryKey = colCanBePrimary(props.col);
+  if (col.value.primaryKey) {
+    col.value.primaryKey = colCanBePrimary(col.value);
   }
   // Check AI flag
-  if (props.col.autoIncrement) {
-    props.col.autoIncrement = colCanAutoIncrement(props.col);
+  if (col.value.autoIncrement) {
+    col.value.autoIncrement = colCanAutoIncrement(col.value);
   }
 });
 
-watch(() => props.col.primaryKey, (newVal) => {
+watch(() => col.value.primaryKey, (newVal) => {
   // Set default PK flags
   if (newVal) {
-    props.col.notNull = true;
-    props.col.unique = true;
-    props.col.autoIncrement = colCanAutoIncrement(props.col);
+    col.value.notNull = true;
+    col.value.unique = true;
+    col.value.autoIncrement = colCanAutoIncrement(col.value);
   }
 });
 
-const emit = defineEmits(['focusNext', 'mouseDown', 'deleteCol', 'focusOut']);
+const emit = defineEmits<{
+  focusNext: []
+  mouseDown: []
+  deleteCol: []
+  focusOut: []
+}>();
 
 const rowRef = useTemplateRef<HTMLDivElement>('rowRef');
 
@@ -149,14 +148,14 @@ const colTypeRef = useTemplateRef('colTypeRef');
 
 const showColumnProps = ref<boolean>(false);
 
-const preloadBackgroundColors = {
+const preloadBackgroundColors: Record<string, string> = {
   primary: 'bg-amber-300',
   foreign: 'bg-orange-500',
   unique: 'bg-monolithicCyanTsunami',
   default: 'bg-lycheeIce'
 }
 
-const preloadBorderColors = {
+const preloadBorderColors: Record<string, string> = {
   primary: 'border-amber-300',
   foreign: 'border-orange-500',
   unique: 'border-monolithicCyanTsunami',
@@ -165,16 +164,16 @@ const preloadBorderColors = {
 
 const rowIndicatorStyles = computed(() => {
   // priority: PK > FK > UNIQUE > default
-  const base = props.col.primaryKey
+  const base = col.value.primaryKey
       ? "primary"
-      : props.col.foreignKey
+      : col.value.foreignKey
           ? "foreign"
-          : props.col.unique
+          : col.value.unique
               ? "unique"
               : "default";
 
   const border = preloadBorderColors[base];
-  const bg = props.col.notNull ? preloadBackgroundColors[base] : "";
+  const bg = col.value.notNull ? preloadBackgroundColors[base] : "";
 
   return [border, bg];
 });
@@ -195,7 +194,7 @@ const focusRow = () => {
 }
 
 const focusColType = async () => {
-  if (props.col.name) {
+  if (col.value.name) {
     if (props.nonFocusableRow) {
       showColType.value = true;
     }
@@ -217,14 +216,14 @@ const onFocusNext = () => {
   emit('focusNext');
 }
 
-const onColNameChange = (oldVal: string) => {
+const onColNameChange = (oldVal: string | number) => {
   if (!props.nonFocusableRow) {
-    const oldColVal = cloneDeep(props.col);
-    oldColVal.name = oldVal;
+    const oldColVal = cloneDeep(col.value);
+    oldColVal.name = String(oldVal);
 
     // Focus table to be able to add log entry
     emit('mouseDown');
-    bufferLogColChange(props.col, oldColVal);
+    bufferLogColChange(col.value, oldColVal);
   }
 }
 
@@ -232,10 +231,7 @@ const onColTypeChange = (oldVal: TableCol) => {
   if (!props.nonFocusableRow) {
     // Focus table to be able to add log entry
     emit('mouseDown');
-    bufferLogColChange(
-        props.col,
-        oldVal
-    )
+    bufferLogColChange(col.value, oldVal);
   }
 }
 
@@ -248,49 +244,50 @@ function onFocusOut(event: FocusEvent) {
 const highlightColumnClass = computed(() => {
   if (props.isColNameDuplicate) { return '!bg-yellow-400' }
   if (
-      !SQL_IDENTIFIER_REGEX.test(props.col.name) &&
-      (!props.nonFocusableRow || props.col.name.length > 0)
+      !SQL_IDENTIFIER_REGEX.test(col.value.name) &&
+      (!props.nonFocusableRow || col.value.name.length > 0)
   ) { return '!bg-red-400' }
 
   return '';
 });
 
 const onRowKeyUp = (e: KeyboardEvent) => {
-  if (!e.altKey || props.col!.type.primitive == 'serial') { return; } // serial column flags are locked
+  if (!e.altKey || col.value.type.primitive == 'serial') { return; } // serial column flags are locked
 
-  const col = props.col;
-  const oldVal = cloneDeep(col);
+  const oldVal = cloneDeep(col.value);
+  let changed = false;
+
   switch (e.key.toLowerCase()) {
     case 'p':
-      if (colCanBePrimary(col)) {
-        col.primaryKey = !col.primaryKey;
-        break;
+      if (colCanBePrimary(col.value)) {
+        col.value.primaryKey = !col.value.primaryKey;
+        changed = true;
       }
-      return;
+      break;
     case 'n':
-      if (colCanBeNullable(col)) {
-        col.notNull = !col.notNull;
-        break;
+      if (colCanBeNullable(col.value)) {
+        col.value.notNull = !col.value.notNull;
+        changed = true;
       }
-      return;
+      break;
     case 'u':
-      if (!col.primaryKey) {
-        col.unique = !col.unique;
-        break;
+      if (!col.value.primaryKey) {
+        col.value.unique = !col.value.unique;
+        changed = true;
       }
-      return;
+      break;
     case 'a':
-      if (!col.primaryKey && colCanAutoIncrement(col)) {
-        col.autoIncrement = !col.autoIncrement;
-        break;
+      if (!col.value.primaryKey && colCanAutoIncrement(col.value)) {
+        col.value.autoIncrement = !col.value.autoIncrement;
+        changed = true;
       }
-      return;
-    default:
-      return;
+      break;
   }
-  onColTypeChange(oldVal);
+
+  if (changed) {
+    onColTypeChange(oldVal);
+  }
 }
 
 defineExpose({ focusColName, focusColType, focusRow });
-
 </script>

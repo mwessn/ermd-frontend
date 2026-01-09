@@ -1,10 +1,10 @@
 <template>
   <input
       v-model="model"
-      :type="type"
-      :id="id"
-      :maxlength="length"
-      :placeholder="placeholder"
+      :type="props.type"
+      :id="props.id"
+      :maxlength="props.length"
+      :placeholder="props.placeholder"
       class="cursor-inherit p-1 overflow-ellipsis align-middle"
       ref="inputRef"
       autocomplete="off"
@@ -27,44 +27,32 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, useTemplateRef } from "vue";
+import { ref, useTemplateRef } from "vue";
 
-const props = defineProps({
-  modelValue: {
-    type: [String, Number],
-    required: true
-  },
-  id: {
-    type: String,
-    required: false
-  },
-  type: {
-    type: String,
-    default: 'text'
-  },
-  length: {
-    type: Number,
-    default: 63,
-  },
-  placeholder: {
-    type: String,
-    required: false
-  }
+const props = withDefaults(defineProps<{
+  id?: string
+  type?: string
+  length?: number
+  placeholder?: string
+}>(), {
+  type: 'text',
+  length: 63
 });
 
-const emit = defineEmits(['update:modelValue', 'enterKey', 'deleteKey', 'valueChange']);
+const model = defineModel<string | number>({ required: true });
 
-const model = computed({
-  get: () => props.modelValue,
-  set: (val) => emit('update:modelValue', val)
-});
+const emit = defineEmits<{
+  enterKey: []
+  deleteKey: []
+  valueChange: [oldVal: string | number, newVal: string | number]
+}>();
 
 // Previous input value handle
 
-const oldVal = ref<string | number>(props.modelValue);
+const oldVal = ref<string | number>(model.value);
 
 const onFocus = () => {
-  oldVal.value = props.modelValue;
+  oldVal.value = model.value;
 }
 
 const onChange = () => {

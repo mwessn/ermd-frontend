@@ -6,8 +6,6 @@ import { clamp } from "@/utils/utils.ts";
 import { storeToRefs } from "pinia";
 import { useSettingsStore } from "@/store/settings.ts";
 import { cloneDeep } from "lodash";
-import type { Table } from "@/types/table.ts";
-import type { CommentArea } from "@/types/misc.ts";
 
 export interface CursorPos {
     x: number;
@@ -51,9 +49,9 @@ export function useDesignCanvas() {
     const lastSize = ref<AreaSize | undefined>(undefined);
     const lastCommentAreaPosition = ref<CursorPos | undefined>(undefined);
 
-    // Comment area moving binding
-    const intersectingTables = ref<Table[]>([]);
-    const intersectingAreas = ref<CommentArea[]>([]);
+    // Comment area moving binding (store IDs to avoid mutating objects)
+    const intersectingTableIds = ref<string[]>([]);
+    const intersectingAreaIds = ref<string[]>([]);
 
     const isDragging = computed(() =>
         !!lastClickPos.value && lastClickPos.value != currentMousePos.value
@@ -90,8 +88,8 @@ export function useDesignCanvas() {
                         x: movedCommentArea.value.posX,
                         y: movedCommentArea.value.posY
                     }
-                    intersectingTables.value = designStore.getTablesInsideArea(movedCommentArea.value);
-                    intersectingAreas.value = designStore.getAreasInsideArea(movedCommentArea.value);
+                    intersectingTableIds.value = designStore.getTablesInsideArea(movedCommentArea.value).map(t => t.id);
+                    intersectingAreaIds.value = designStore.getAreasInsideArea(movedCommentArea.value).map(a => a.id);
                 }
 
                 break;
@@ -160,12 +158,12 @@ export function useDesignCanvas() {
             if (lastCommentAreaPosition.value) {
                 designStore.bufferLogCommentAreaMove(
                     lastCommentAreaPosition.value,
-                    intersectingTables.value,
-                    intersectingAreas.value
+                    intersectingTableIds.value,
+                    intersectingAreaIds.value
                 );
                 designStore.setMovedCommentArea();
-                intersectingTables.value = [];
-                intersectingAreas.value = [];
+                intersectingTableIds.value = [];
+                intersectingAreaIds.value = [];
             }
 
             // Reset references
@@ -207,14 +205,14 @@ export function useDesignCanvas() {
         const commentArea = tempCommentArea.value
             ?? resizedCommentArea.value;
         if (commentArea) {
-            designStore.resizeCommentArea(commentArea, deltaX, deltaY);
+            designStore.resizeCommentArea(commentArea.id, deltaX, deltaY);
         }
         else if (movedCommentArea.value) {
             designStore.moveCommentArea(
                 deltaX,
                 deltaY,
-                intersectingTables.value,
-                intersectingAreas.value
+                intersectingTableIds.value,
+                intersectingAreaIds.value
             );
         }
 

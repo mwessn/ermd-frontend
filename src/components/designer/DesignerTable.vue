@@ -39,7 +39,7 @@
       <div class="w-full min-h-4">
         <TableColRow
           v-for="(col, index) in table.cols"
-          :col="col"
+          v-model:col="table.cols[index]"
           :key="col.id"
           :is-col-name-duplicate="duplicateColNames.has(col.name.toLowerCase())"
           ref="tableColumns"
@@ -52,7 +52,7 @@
         />
 
         <TableColRow
-            :col="newTableCol"
+            v-model:col="newTableCol"
             ref="newColRef"
             @focus-next="storeNewCol"
             @focus-out="storeNewCol(false)"
@@ -71,7 +71,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, type PropType, ref, useTemplateRef } from "vue";
+import { computed, nextTick, onMounted, ref, useTemplateRef } from "vue";
 import { generateNewTableCol, type Table, type TableCol } from "@/types/table.ts";
 import { useDesignStore } from "@/store/design.ts";
 import DoubleClickFocusInput from "@/components/core/DoubleClickFocusInput.vue";
@@ -94,23 +94,18 @@ const {
 
 const { focusedTable } = storeToRefs(useDesignStore());
 
-const props = defineProps({
-  table: {
-    type: Object as PropType<Table>,
-    required: true
-  },
-  isNameDuplicate: {
-    type: Boolean,
-    required: true
-  }
-});
+const table = defineModel<Table>('table', { required: true });
+
+const props = defineProps<{
+  isNameDuplicate: boolean
+}>();
 
 const { currentSettings } = storeToRefs(useSettingsStore());
 
 const highlightNameClass = computed(() => {
   if (props.isNameDuplicate) { return '!bg-yellow-400' }
   if (
-      !SQL_IDENTIFIER_REGEX.test(props.table.name)
+      !SQL_IDENTIFIER_REGEX.test(table.value.name)
   ) { return '!bg-red-400' }
 
   return '';
@@ -155,7 +150,7 @@ const storeNewCol = (refocus: boolean = true) => {
     // If name not blank, add a new column
     if (notBlankOrEmpty(newTableCol.value.name)) {
       // Force select table to be able to save
-      selectTable(props.table);
+      selectTable(table.value);
       const res = addTableCol(newTableCol.value);
       if (res) {
         newTableCol.value = generateNewTableCol(
@@ -177,7 +172,7 @@ const storeNewCol = (refocus: boolean = true) => {
 }
 
 const onDeleteCol = async (col: TableCol) => {
-  const index = props.table.cols.indexOf(col);
+  const index = table.value.cols.indexOf(col);
   tableRef.value?.focus();
   deleteTableCol(col);
 
@@ -195,16 +190,16 @@ const onDeleteCol = async (col: TableCol) => {
   }
 }
 
-const onTableNameChange = (oldVal: string) => {
-  const table = cloneDeep(props.table);
-  table.name = oldVal;
+const onTableNameChange = (oldVal: string | number) => {
+  const oldTable = cloneDeep(table.value);
+  oldTable.name = String(oldVal);
 
-  selectTable(props.table);
-  bufferLogTableChange(table);
+  selectTable(table.value);
+  bufferLogTableChange(oldTable);
 }
 
 const duplicateColNames = computed(() => {
-  const nameCount = props.table.cols.reduce((map, col) => {
+  const nameCount = table.value.cols.reduce((map, col) => {
     const name = col.name.trim().toLowerCase();
     return map.set(name, (map.get(name) || 0) + 1);
   }, new Map<string, number>());

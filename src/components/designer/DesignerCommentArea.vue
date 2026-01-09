@@ -1,7 +1,7 @@
 <template>
   <div
       class="absolute border border-lycheeIce rounded-lg z-1 opacity-75"
-      :class="isTemporary ? 'min-w-0.5 min-h-0.5' : 'min-w-24 min-h-24'"
+      :class="props.isTemporary ? 'min-w-0.5 min-h-0.5' : 'min-w-24 min-h-24'"
       :style="{ top: area.posY + 'px', left: area.posX + 'px',
        width: area.size.width + 'px', height: area.size.height + 'px',
         background: area.color}"
@@ -94,7 +94,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, type PropType, ref } from "vue";
+import { computed, ref } from "vue";
 import type { CommentArea } from "@/types/misc.ts";
 import { cloneDeep } from "lodash";
 import DoubleClickFocusInput from "@/components/core/DoubleClickFocusInput.vue";
@@ -104,32 +104,24 @@ import { faChevronDown, faChevronUp, faPalette, faTrashCan } from "@fortawesome/
 import { useDesignStore } from "@/store/design.ts";
 import AreaColorSelector from "@/components/core/AreaColorSelector.vue";
 
-const props = defineProps({
-  area: {
-    type: Object as PropType<CommentArea>,
-    required: true
-  },
-  isTemporary: {
-    type: Boolean,
-    default: false
-  },
-  scaleValue: {
-    type: Number,
-    default: 1,
-  }
+const area = defineModel<CommentArea>('area', { required: true });
+
+const props = withDefaults(defineProps<{
+  isTemporary?: boolean
+  scaleValue?: number
+}>(), {
+  isTemporary: false,
+  scaleValue: 1
 });
 
 const {
     setResizedCommentArea,
     setMovedCommentArea,
     deleteCommentArea,
+    bufferLogCommentAreaChange
 } = useDesignStore();
 
-const {
-  bufferLogCommentAreaChange
-} = useDesignStore();
-
-const oldVal = ref<CommentArea>(cloneDeep(props.area));
+const oldVal = ref<CommentArea>(cloneDeep(area.value));
 
 const headerFontSize = computed(() => {
   if (props.scaleValue < 0.4) { return 32; }
@@ -144,12 +136,12 @@ const commentAreaScale = computed(() => Math.max(2 - props.scaleValue, 1));
 const showColorSelector = ref<boolean>(false);
 const onChange = () => {
   // Update values that might have been modified externally
-  oldVal.value.posX = props.area.posX;
-  oldVal.value.posY = props.area.posY;
-  oldVal.value.size = props.area.size;
+  oldVal.value.posX = area.value.posX;
+  oldVal.value.posY = area.value.posY;
+  oldVal.value.size = area.value.size;
 
   bufferLogCommentAreaChange(oldVal.value);
-  oldVal.value = cloneDeep(props.area);
+  oldVal.value = cloneDeep(area.value);
 }
 
 const colorSelectorIconHovered = ref<boolean>(false);

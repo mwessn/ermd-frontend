@@ -220,7 +220,10 @@ export const useDesignStore = defineStore('design', () => {
         movedCommentArea.value = area;
     }
 
-    const resizeCommentArea = (area: CommentArea, deltaX: number, deltaY: number) => {
+    const resizeCommentArea = (areaId: string, deltaX: number, deltaY: number) => {
+        const area = commentAreas.value.find(it => it.id === areaId);
+        if (!area) return;
+
         // Clamp minimum size
         area.size.width = Math.max(56, snapToGrid(area.size.width + deltaX, gridSize.value));
         area.size.height = Math.max(56, snapToGrid(area.size.height + deltaY, gridSize.value));
@@ -254,23 +257,29 @@ export const useDesignStore = defineStore('design', () => {
     const moveCommentArea = (
         deltaX: number,
         deltaY: number,
-        tablesInside: Table[],
-        areasInside: CommentArea[]
+        tableIdsInside: string[],
+        areaIdsInside: string[]
     ) => {
         if (movedCommentArea.value) {
             const area = movedCommentArea.value
             area.posX = snapToGrid(area.posX + deltaX, gridSize.value);
             area.posY = snapToGrid(area.posY + deltaY, gridSize.value);
 
-            for (const _area of areasInside) {
-                _area.posX = snapToGrid(_area.posX + deltaX, gridSize.value);
-                _area.posY = snapToGrid(_area.posY + deltaY, gridSize.value);
+            for (const areaId of areaIdsInside) {
+                const _area = commentAreas.value.find(it => it.id === areaId);
+                if (_area) {
+                    _area.posX = snapToGrid(_area.posX + deltaX, gridSize.value);
+                    _area.posY = snapToGrid(_area.posY + deltaY, gridSize.value);
+                }
             }
 
             // Handles all tables, including inside subareas
-            for (const table of tablesInside) {
-                table.posX = snapToGrid(table.posX + deltaX, gridSize.value)
-                table.posY = snapToGrid(table.posY + deltaY, gridSize.value)
+            for (const tableId of tableIdsInside) {
+                const table = tables.value.find(it => it.id === tableId);
+                if (table) {
+                    table.posX = snapToGrid(table.posX + deltaX, gridSize.value)
+                    table.posY = snapToGrid(table.posY + deltaY, gridSize.value)
+                }
             }
         }
     }
@@ -336,7 +345,7 @@ export const useDesignStore = defineStore('design', () => {
                     );
 
                     bufferEntries.push(
-                        ...createSimpleRelation(firstTable, selectedTable.value, type)
+                        ...createSimpleRelation(firstTable.id, selectedTable.value.id, type)
                     );
 
                     bufferStore.addUndoBufferAction({
@@ -364,7 +373,7 @@ export const useDesignStore = defineStore('design', () => {
             }
 
             bufferEntries.push(
-                ...createSimpleRelation(firstTable, selectedTable.value, type)
+                ...createSimpleRelation(firstTable.id, selectedTable.value.id, type)
             );
 
             bufferStore.addUndoBufferAction({
@@ -393,8 +402,8 @@ export const useDesignStore = defineStore('design', () => {
 
                 pivotTable.name = `${ unpluralize(firstTable!.name) }${ nameJoin }${ selectedTable.value?.name }`;
 
-                const firstBufferEntry = createSimpleRelation(pivotTable, firstTable!, 'mtm');
-                const secondBufferEntry = createSimpleRelation(pivotTable, selectedTable.value!, 'mtm');
+                const firstBufferEntry = createSimpleRelation(pivotTable.id, firstTable!.id, 'mtm');
+                const secondBufferEntry = createSimpleRelation(pivotTable.id, selectedTable.value!.id, 'mtm');
 
                 return [
                     ...pivotTableEntry,
@@ -708,8 +717,8 @@ export const useDesignStore = defineStore('design', () => {
 
     function bufferLogCommentAreaMove(
         oldVal: CursorPos,
-        tablesInside: Table[],
-        areasInside: CommentArea[]
+        tableIdsInside: string[],
+        areaIdsInside: string[]
     ) {
         if (movedCommentArea.value != undefined) {
             const entities: BufferEntity[] = [];
@@ -725,28 +734,34 @@ export const useDesignStore = defineStore('design', () => {
             const deltaX = area.posX - oldVal.x;
             const deltaY = area.posY - oldVal.y;
 
-            for (const table of tablesInside) {
-                entities.push({
-                    action: 'move',
-                    type: "table",
-                    entityId: table.id,
-                    oldVal: {
-                        x: table.posX - deltaX,
-                        y: table.posY - deltaY
-                    },
-                });
+            for (const tableId of tableIdsInside) {
+                const table = tables.value.find(it => it.id === tableId);
+                if (table) {
+                    entities.push({
+                        action: 'move',
+                        type: "table",
+                        entityId: table.id,
+                        oldVal: {
+                            x: table.posX - deltaX,
+                            y: table.posY - deltaY
+                        },
+                    });
+                }
             }
 
-            for (const _area of areasInside) {
-                entities.push({
-                    action: 'move',
-                    type: "commentArea",
-                    entityId: _area.id,
-                    oldVal: {
-                        x: _area.posX - deltaX,
-                        y: _area.posY - deltaY
-                    },
-                });
+            for (const areaId of areaIdsInside) {
+                const _area = commentAreas.value.find(it => it.id === areaId);
+                if (_area) {
+                    entities.push({
+                        action: 'move',
+                        type: "commentArea",
+                        entityId: _area.id,
+                        oldVal: {
+                            x: _area.posX - deltaX,
+                            y: _area.posY - deltaY
+                        },
+                    });
+                }
             }
 
             bufferStore.addUndoBufferAction({
@@ -772,10 +787,19 @@ export const useDesignStore = defineStore('design', () => {
 
     // Helper to create non-mtm relation
     function createSimpleRelation(
-        firstTable: Table,
-        secondTable: Table,
+        firstTableId: string,
+        secondTableId: string,
         type: RelationshipType
     ): BufferEntity[] {
+        const firstTable = tables.value.find(it => it.id === firstTableId);
+        const secondTable = tables.value.find(it => it.id === secondTableId);
+
+        if (!firstTable || !secondTable) {
+            console.error("Table not found", firstTableId, secondTableId);
+            actionStore.resetAction();
+            return [];
+        }
+
         const foreignKey = generateNewForeignKey(
             secondTable,
             [ 'ioto', 'noto' ].includes(type),

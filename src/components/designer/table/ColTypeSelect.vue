@@ -75,25 +75,24 @@
 </template>
 
 <script setup lang="ts">
-import { computed, type PropType, ref, useTemplateRef, watch } from "vue";
+import { computed, ref, useTemplateRef, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { useSettingsStore } from "@/store/settings.ts";
 import { cloneDeep } from "lodash";
 import { clamp } from "@/utils/utils.ts";
 import { type TableCol } from "@/types/table.ts";
 
-const props = defineProps({
-  col: {
-    type: Object as PropType<TableCol>,
-    required: true
-  },
-  rootDiv: {
-    type: HTMLDivElement,
-    required: true
-  }
-});
+const col = defineModel<TableCol>('col', { required: true });
 
-const emit = defineEmits(['onEnterKey', 'focus', 'valueChange']);
+const props = defineProps<{
+  rootDiv: HTMLDivElement
+}>();
+
+const emit = defineEmits<{
+  onEnterKey: []
+  focus: []
+  valueChange: [oldVal: TableCol]
+}>();
 
 const inputRef = useTemplateRef('inputRef');
 
@@ -119,9 +118,7 @@ const focusSelectAll = () => {
   dropdownVisible.value = true;
 }
 
-const inputValue = ref<string>(
-    props.col.type.displayName
-);
+const inputValue = ref<string>(col.value.type.displayName);
 
 const matchedNames = computed(() => {
   const search = inputValue.value.toLowerCase();
@@ -146,12 +143,12 @@ const selectedOption = ref<number | undefined>(undefined);
 
 const selectTypeOption = (_index: number) => {
   dropdownVisible.value = true;
-  
+
   const index = clamp(_index, 0, matchedNames.value.length - 1);
 
   selectedOption.value = index;
 
-  const el = document.getElementById(`${props.col.id}-${index}`);
+  const el = document.getElementById(`${col.value.id}-${index}`);
 
   el?.scrollIntoView({
     behavior: 'smooth',
@@ -178,7 +175,7 @@ const dropdownVisible = ref<boolean>(false);
 function onFocusOut(event: FocusEvent) {
   if (!event.relatedTarget || !props.rootDiv.contains(event.relatedTarget as Node)) {
     dropdownVisible.value = false;
-    inputValue.value = props.col.type.displayName;
+    inputValue.value = col.value.type.displayName;
   }
 }
 
@@ -188,13 +185,13 @@ const selectType = (_name?: string) => {
       .find(it => it.displayName == name);
 
   if (selected) {
-    props.col.type = cloneDeep(selected);
+    col.value.type = cloneDeep(selected);
     inputValue.value = name;
     selectedOption.value = undefined;
     dropdownVisible.value = false;
   } else {
     dropdownVisible.value = false;
-    inputValue.value = props.col.type.displayName;
+    inputValue.value = col.value.type.displayName;
   }
 };
 
@@ -207,14 +204,14 @@ const onEnter = () => {
 }
 
 const onOptionClick = (index: number) => {
-  const oldVal = cloneDeep(props.col);
+  const oldVal = cloneDeep(col.value);
   selectTypeOption(index);
   selectType()
   emit('valueChange', oldVal)
 }
 
-watch(() => props.col.type, () => {
-  inputValue.value = props.col.type.displayName;
+watch(() => col.value.type, () => {
+  inputValue.value = col.value.type.displayName;
 });
 
 function focus() {
@@ -222,5 +219,4 @@ function focus() {
 }
 
 defineExpose({ focus });
-
 </script>
