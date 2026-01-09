@@ -1,6 +1,6 @@
 <template>
   <div
-      class="min-w-40 max-w-120 absolute group/table focus:outline-0"
+      class="min-w-40 max-w-160 absolute group/table focus:outline-0"
       tabindex="-1"
       ref="tableRef"
 

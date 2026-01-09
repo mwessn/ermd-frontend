@@ -130,7 +130,7 @@ export const generateNewTable = (
         posX: posX,
         posY: posY,
 
-        widthPx: 160
+        widthPx: 280
     }
 
     return table;
