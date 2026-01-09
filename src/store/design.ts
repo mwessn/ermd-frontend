@@ -221,7 +221,9 @@ export const useDesignStore = defineStore('design', () => {
     }
 
     const resizeCommentArea = (areaId: string, deltaX: number, deltaY: number) => {
-        const area = commentAreas.value.find(it => it.id === areaId);
+        // Check both stored areas and temp area (during creation)
+        const area = commentAreas.value.find(it => it.id === areaId)
+            ?? (tempCommentArea.value?.id === areaId ? tempCommentArea.value : undefined);
         if (!area) return;
 
         // Clamp minimum size
