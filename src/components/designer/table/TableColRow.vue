@@ -194,10 +194,13 @@ const focusRow = () => {
 
 const focusColType = async () => {
   if (col.value.name) {
+    // For new column row, save first then focus type
     if (props.nonFocusableRow) {
-      showColType.value = true;
+      emit('focusNext');
+      return;
     }
 
+    showColumnProps.value = true;
     await nextTick();
     colTypeRef.value?.focus();
   } else {

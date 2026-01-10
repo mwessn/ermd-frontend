@@ -141,7 +141,7 @@ const focusNextInput = (index: number) => {
 
 const isSavingNewCol = ref<boolean>(false);
 
-const storeNewCol = (refocus: boolean = true) => {
+const storeNewCol = async (refocus: boolean = true) => {
   // Saving value by pressing enter also un-focuses the input,
   // which causes this method to trigger twice.
   // To prevent it, we do an action state check
@@ -153,11 +153,14 @@ const storeNewCol = (refocus: boolean = true) => {
       selectTable(table.value);
       const res = addTableCol(newTableCol.value);
       if (res) {
+        const savedColIndex = table.value.cols.length - 1;
         newTableCol.value = generateNewTableCol(
           defaultPrimaryTypes[currentSettings.value.databaseEngine]
         );
         if (refocus) {
-          newColRef.value?.focusColName();
+          // Focus the type selector of the just-saved column
+          await nextTick();
+          columnsRef.value?.[savedColIndex]?.focusColType();
         }
         // Reset selection
         selectTable();
