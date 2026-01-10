@@ -33,6 +33,7 @@
         >
         <div
           v-if="col.modifierValues && col.modifierValues.length > 0 && col.modifierValues[0]"
+          class="whitespace-nowrap"
         >
           ({{ col.modifierValues.join(', ') }})
         </div>
