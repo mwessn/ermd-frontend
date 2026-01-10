@@ -23,8 +23,20 @@ export const focusElement = (elId: string) => {
   el?.focus();
 };
 
-export function sleep(ms: number) {
-  return new Promise( resolve => setTimeout(resolve, ms) );
+export function sleep(ms: number, signal?: AbortSignal): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (signal?.aborted) {
+      reject(signal.reason);
+      return;
+    }
+
+    const timeoutId = setTimeout(resolve, ms);
+
+    signal?.addEventListener('abort', () => {
+      clearTimeout(timeoutId);
+      reject(signal.reason);
+    }, { once: true });
+  });
 }
 
 export function notBlankOrEmpty(val: string) {

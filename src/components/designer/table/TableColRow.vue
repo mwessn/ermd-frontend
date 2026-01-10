@@ -4,6 +4,8 @@
       class="flex items-center w-full not-last:border-b relative group/cols"
 
       :tabindex="props.nonFocusableRow ? undefined : -1"
+      :aria-label="props.nonFocusableRow ? 'New column input' : `Column ${col.name || 'unnamed'}, press Delete to remove`"
+      role="row"
 
       @focus="showColumnProps = true"
       @focusout="onFocusOut"
@@ -44,7 +46,8 @@
           ref="colTypeRef"
           v-model:col="col"
 
-          :root-div="rowRef!"
+          :root-div="rowRef"
+          aria-label="Column type selector"
 
           @value-change="onColTypeChange"
 

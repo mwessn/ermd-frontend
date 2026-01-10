@@ -33,6 +33,8 @@
             class="absolute w-full top-12 left-0 p-1.5
           bg-accentGray text-headerBlack shadow-lg z-20
            max-h-64 overflow-y-auto rounded"
+            role="listbox"
+            :aria-label="label || 'Options'"
             @click.stop
             @blur.stop
           >
@@ -43,6 +45,8 @@
                 overflow-hidden mb-1.5 flex gap-3 items-center
                 hover:opacity-80 hover:bg-tinted"
               :class="{ 'border border-lycheeIce': selectedOption == option }"
+              role="option"
+              :aria-selected="selectedOption == option"
               @click="onOptionClick(option)"
               @blur.stop
             >
@@ -84,7 +88,7 @@ const rootDiv = ref();
 
 const emit = defineEmits(["change"]);
 
-const selectedOption = computed((): SelectOption => props.options!.find(it => isEqual(it.value, model.value)) ?? {
+const selectedOption = computed((): SelectOption => props.options.find(it => isEqual(it.value, model.value)) ?? {
   label: '',
   value: ''
 });

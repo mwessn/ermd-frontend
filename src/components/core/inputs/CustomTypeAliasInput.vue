@@ -118,7 +118,7 @@ const onTypeClick = (val: string) => {
 
 function onFocusOut(event: FocusEvent) {
   if (!event) { return; }
-  if (!event.relatedTarget || !rootDiv.value!.contains(event.relatedTarget as Node)) {
+  if (!event.relatedTarget || !rootDiv.value?.contains(event.relatedTarget as Node)) {
     inputActive.value = false;
   }
 }

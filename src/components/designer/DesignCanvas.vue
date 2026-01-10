@@ -17,10 +17,10 @@
         :style="{ scale: scaleFactor, transform: `translate(${ translatePos })` }"
       >
         <DesignerTable
-          v-for="(table, index) in designStore.tables"
+          v-for="table in designStore.tables"
           :id="`table-${table.id}`"
           :key="table.id"
-          v-model:table="designStore.tables[index]"
+          :table="table"
           :is-name-duplicate="isTableNameDuplicate(table.name)"
         />
 
@@ -42,16 +42,16 @@
         </svg>
 
         <DesignerCommentArea
-          v-for="(area, index) in designStore.commentAreas"
+          v-for="area in designStore.commentAreas"
           :key="area.id"
-          v-model:area="designStore.commentAreas[index]"
+          :area="area"
           :scale-value="scaleFactor"
         />
 
         <DesignerCommentArea
           v-if="designStore.tempCommentArea"
           key="temp-area"
-          v-model:area="designStore.tempCommentArea"
+          :area="designStore.tempCommentArea"
           is-temporary
         />
       </div>

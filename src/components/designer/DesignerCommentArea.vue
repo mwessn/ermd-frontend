@@ -109,15 +109,16 @@ import {
   COMMENT_AREA_MAX_SCALE
 } from "@/types/constants.ts";
 
-const area = defineModel<CommentArea>('area', { required: true });
-
 const props = withDefaults(defineProps<{
+  area: CommentArea
   isTemporary?: boolean
   scaleValue?: number
 }>(), {
   isTemporary: false,
   scaleValue: 1
 });
+
+const area = computed(() => props.area);
 
 const {
   setResizedCommentArea,

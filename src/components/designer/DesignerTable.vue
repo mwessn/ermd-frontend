@@ -94,11 +94,12 @@ const {
 
 const { focusedTable, isManualCreation } = storeToRefs(useDesignStore());
 
-const table = defineModel<Table>('table', { required: true });
-
 const props = defineProps<{
+  table: Table
   isNameDuplicate: boolean
 }>();
+
+const table = computed(() => props.table);
 
 const { currentSettings } = storeToRefs(useSettingsStore());
 

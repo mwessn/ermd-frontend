@@ -18,7 +18,7 @@ const app = createApp(App);
 
 app.config.errorHandler = (err) => {
   console.warn('Something terrible has happened', err);
-  useSettingsStore().setCriticalError(err as Error);
+  useSettingsStore().setCriticalError(err instanceof Error ? err : new Error(String(err)));
 };
 
 app.use(router);

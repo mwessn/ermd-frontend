@@ -11,7 +11,7 @@
           :text="item.hint"
           :button="item.button"
           :aria-label="item.hint"
-          tabindex="1"
+          tabindex="0"
           @keyup.enter="execAction(item.action)"
         >
           <div

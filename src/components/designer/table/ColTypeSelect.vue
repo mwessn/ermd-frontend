@@ -3,7 +3,7 @@
       class="w-full relative"
       tabindex="-1"
     >
-      <div class="flex items-center">
+      <div class="flex items-center gap-1">
         <input
           :id="`${col.id}-type-input`"
           ref="inputRef"
@@ -31,9 +31,12 @@
 
           @keydown.shift.prevent
         >
+        <div v-if="col.defaultValue" class="text-monolithicCyanTsunami text-right max-w-2/5 min-w-max overflow-hidden overflow-ellipsis">
+          {{ col.defaultValue }}
+        </div>
         <div
           v-if="col.modifierValues && col.modifierValues.length > 0 && col.modifierValues[0]"
-          class="whitespace-nowrap"
+          class="whitespace-nowrap w-fit"
         >
           ({{ col.modifierValues.join(', ') }})
         </div>
@@ -120,22 +123,30 @@ const focusSelectAll = () => {
 
 const inputValue = ref<string>(col.value.type.displayName);
 
+// Pre-compute lowercase names for faster filtering/sorting
+const columnTypeNamesLower = computed(() =>
+  columnTypeNames.value.map(name => ({ name, lower: name.toLowerCase() })));
+
 const matchedNames = computed(() => {
   const search = inputValue.value.toLowerCase();
 
-  return columnTypeNames.value
-    .filter(name => name.toLowerCase().includes(search))
-    .sort((a, b) => {
-      const A = a.toLowerCase(), B = b.toLowerCase();
+  // Early return: empty search shows all types in original order
+  if (!search) {
+    return columnTypeNames.value;
+  }
 
-      const exactA = A === search, exactB = B === search;
+  return columnTypeNamesLower.value
+    .filter(({ lower }) => lower.includes(search))
+    .sort((a, b) => {
+      const exactA = a.lower === search, exactB = b.lower === search;
       if (exactA !== exactB) return exactA ? -1 : 1;
 
-      const startsA = A.startsWith(search), startsB = B.startsWith(search);
+      const startsA = a.lower.startsWith(search), startsB = b.lower.startsWith(search);
       if (startsA !== startsB) return startsA ? -1 : 1;
 
       return 0;
-    });
+    })
+    .map(({ name }) => name);
 });
 
 
@@ -214,8 +225,10 @@ const onOptionClick = (index: number) => {
   emit('valueChange', oldVal);
 };
 
-watch(() => col.value.type, () => {
-  inputValue.value = col.value.type.displayName;
+watch(() => col.value.type.displayName, (newDisplayName) => {
+  if (inputValue.value !== newDisplayName) {
+    inputValue.value = newDisplayName;
+  }
 });
 
 function focus() {

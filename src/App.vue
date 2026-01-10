@@ -25,9 +25,9 @@ const isMobile = computed(() => window.innerWidth <= 768);
 watch(
   () => i18n.locale,
   (value) => {
-    document.querySelector('html')!.setAttribute('lang', value.value);
+    document.querySelector('html')?.setAttribute('lang', value.value);
   },
-  {immediate: true}
+  { immediate: true }
 );
 
 watch(

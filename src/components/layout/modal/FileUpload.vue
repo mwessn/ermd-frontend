@@ -82,7 +82,9 @@ const openFilePicker = () => {
 };
 
 const onFileRemove = () => {
-  fileInput.value!.value = '';
+  if (fileInput.value) {
+    fileInput.value.value = '';
+  }
   _file.value = undefined;
   fileObj.value = undefined;
 
@@ -102,6 +104,6 @@ const onFileChange = async (event: Event | undefined = undefined) => {
 const emit = defineEmits(['onFileChange']);
 
 onMounted(() => {
-  fileInput.value!.focus();
+  fileInput.value?.focus();
 });
 </script>

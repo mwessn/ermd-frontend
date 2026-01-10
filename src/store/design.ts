@@ -60,15 +60,23 @@ export const useDesignStore = defineStore('design', () => {
   // Flag to track whether a table is mounted after manual creation or loaded from localStorage
   const isManualCreation = ref<boolean>(false);
 
-  const duplicateTableNames = computed(() => {
-    const nameCount = tables.value.reduce((map, table) => {
-      const name = table.name.trim().toLowerCase();
-      return map.set(name, (map.get(name) || 0) + 1);
-    }, new Map<string, number>());
+  // Extract normalized table names to minimize recomputation triggers
+  const normalizedTableNames = computed(() =>
+    tables.value.map(table => table.name.trim().toLowerCase()));
 
-    return new Set(
-      [...nameCount].flatMap(([name, count]) => count > 1 ? [name] : [])
-    );
+  const duplicateTableNames = computed(() => {
+    const names = normalizedTableNames.value;
+    const nameCount: Record<string, number> = {};
+    const duplicates = new Set<string>();
+
+    for (const name of names) {
+      nameCount[name] = (nameCount[name] || 0) + 1;
+      if (nameCount[name] === 2) {
+        duplicates.add(name);
+      }
+    }
+
+    return duplicates;
   });
 
   // Table operations
