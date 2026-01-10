@@ -1,15 +1,17 @@
 <template>
-  <div class="p-2 border-l border-l-accentDarkGray grid gap-2">
-    <p class="wrap-break-word max-w-16">{{ $t(label) }}</p>
-    <input
+    <div class="p-2 border-l border-l-accentDarkGray grid gap-2">
+      <p class="wrap-break-word max-w-16">
+        {{ $t(label) }}
+      </p>
+      <input
         v-model="model"
         class="self-end"
         type="checkbox"
         :name="label"
         :disabled="disabled"
         @change="emit('change')"
-    >
-  </div>
+      >
+    </div>
 </template>
 
 <script setup lang="ts">
@@ -20,14 +22,10 @@ const model = defineModel({
   required: true
 });
 
-defineProps({
-  label: {
-    type: String,
-    required: true
-  },
-  disabled: {
-    type: Boolean,
-    default: false
-  }
+withDefaults(defineProps<{
+  label: string
+  disabled?: boolean
+}>(), {
+  disabled: false
 });
 </script>

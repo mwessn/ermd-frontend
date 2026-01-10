@@ -1,12 +1,12 @@
 <template>
-  <input
-      v-model="model"
-      :type="type"
-      :id="id"
-      :maxlength="length"
-      :placeholder="placeholder"
-      class="cursor-inherit p-1 overflow-ellipsis align-middle"
+    <input
+      :id="props.id"
       ref="inputRef"
+      v-model="model"
+      :type="props.type"
+      :maxlength="props.length"
+      :placeholder="props.placeholder"
+      class="cursor-inherit p-1 overflow-ellipsis align-middle"
       autocomplete="off"
       tabindex="-1"
 
@@ -19,57 +19,47 @@
 
       @focusout="deselectAll"
 
-      @keydown.enter.prevent="emit('enterKey')"
+      @keydown.enter.exact.prevent="emit('enterKey')"
       @keyup.delete="onDelete"
 
       @keydown.alt.prevent
-  >
+    >
 </template>
 
 <script setup lang="ts">
-import { computed, ref, useTemplateRef } from "vue";
+import { ref, useTemplateRef } from "vue";
 
-const props = defineProps({
-  modelValue: {
-    type: [String, Number],
-    required: true
-  },
-  id: {
-    type: String,
-    required: false
-  },
-  type: {
-    type: String,
-    default: 'text'
-  },
-  length: {
-    type: Number,
-    default: 63,
-  },
-  placeholder: {
-    type: String,
-    required: false
-  }
+const props = withDefaults(defineProps<{
+  id?: string
+  type?: string
+  length?: number
+  placeholder?: string
+}>(), {
+  id: undefined,
+  type: 'text',
+  length: 63,
+  placeholder: undefined
 });
 
-const emit = defineEmits(['update:modelValue', 'enterKey', 'deleteKey', 'valueChange']);
+const model = defineModel<string | number>({ required: true });
 
-const model = computed({
-  get: () => props.modelValue,
-  set: (val) => emit('update:modelValue', val)
-});
+const emit = defineEmits<{
+  enterKey: []
+  deleteKey: []
+  valueChange: [oldVal: string | number, newVal: string | number]
+}>();
 
 // Previous input value handle
 
-const oldVal = ref<string | number>(props.modelValue);
+const oldVal = ref<string | number>(model.value);
 
 const onFocus = () => {
-  oldVal.value = props.modelValue;
-}
+  oldVal.value = model.value;
+};
 
 const onChange = () => {
   emit('valueChange', oldVal.value, model.value);
-}
+};
 
 // Input focus state handle
 
@@ -77,7 +67,7 @@ const inputRef = useTemplateRef('inputRef');
 
 const focusInput = () => {
   inputRef.value?.focus();
-}
+};
 
 const selectAll = () => {
   inputRef.value?.select();
@@ -86,20 +76,20 @@ const selectAll = () => {
 const deselectAll = () => {
   // If input has any active text selection, deselect all
   inputRef.value?.setSelectionRange(-1, -1);
-}
+};
 
 const focusSelectAll = () => {
   deselectAll();
   focusInput();
   selectAll();
-}
+};
 
 const onDelete = (evt: KeyboardEvent) => {
   if (evt.shiftKey && evt.key == 'Delete') {
     // Emit delete event on Shift + Del
     emit('deleteKey');
   }
-}
+};
 
 defineExpose({ focusSelectAll });
 </script>

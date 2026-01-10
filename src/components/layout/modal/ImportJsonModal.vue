@@ -1,31 +1,32 @@
 <template>
-  <ModalLayout :modal-name="$t('Import JSON')" @close="emit('close')">
-    <div class="my-4">
-      <FileUpload
-        @onFileChange="onFileChange"
-      />
-    </div>
+    <ModalLayout :modal-name="$t('Import JSON')" @close="emit('close')">
+      <div class="my-4">
+        <FileUpload
+          @on-file-change="onFileChange"
+        />
+      </div>
 
-    <template v-if="importErrors">
-      <div class="text-red-500 max-h-64
+      <template v-if="importErrors">
+        <div
+          class="text-red-500 max-h-64
           overflow-hidden overscroll-y-auto
           p-2 bg-accentDarkGray rounded mb-2"
-      >
-        <p>{{ $t('Import errors') }}:</p>
-        <p v-for="error in importErrors">
-          {{ error }}
-        </p>
-      </div>
-    </template>
+        >
+          <p>{{ $t('Import errors') }}:</p>
+          <p v-for="(error, index) in importErrors" :key="index">
+            {{ error }}
+          </p>
+        </div>
+      </template>
 
-    <div class="w-full flex gap-3 justify-end">
-      <ModalButton
+      <div class="w-full flex gap-3 justify-end">
+        <ModalButton
           :label="$t('Import')"
           :disabled="!canSave"
           @click="onImport"
-      />
-    </div>
-  </ModalLayout>
+        />
+      </div>
+    </ModalLayout>
 </template>
 
 <script setup lang="ts">
@@ -44,14 +45,13 @@ const importErrors = ref<string[] | undefined>(undefined);
 const file = ref<File | undefined>(undefined);
 
 const canSave = computed(() =>
-    file.value != undefined &&
-    importErrors.value == undefined
-);
+  file.value != undefined &&
+    importErrors.value == undefined);
 
 const onFileChange = (_file: File | undefined) => {
   importErrors.value = undefined;
   file.value = _file;
-}
+};
 
 const onImport = async () => {
   if (file.value) {
@@ -62,11 +62,11 @@ const onImport = async () => {
         emit('close');
       }
     }
-    catch (e: any) {
-      importErrors.value = [e.toString];
+    catch (e: unknown) {
+      importErrors.value = [String(e)];
     }
   }
-}
+};
 
 </script>
 

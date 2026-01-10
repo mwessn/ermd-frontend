@@ -8,12 +8,12 @@ type BufferActionType = "create" | "delete" | "move" | "change" | "resize";
 type BufferStoreVal = Table | CursorPos | TableCol | DatabaseRelationship | CommentArea | AreaSize | undefined | number;
 
 export interface BufferEntity {
-    action: BufferActionType;
-    type: BufferEntityType,
-    entityId: string,
-    oldVal: BufferStoreVal;
+  action: BufferActionType;
+  type: BufferEntityType,
+  entityId: string,
+  oldVal: BufferStoreVal;
 }
 
 export interface ActionBufferEntry {
-    entities: BufferEntity[];
+  entities: BufferEntity[];
 }

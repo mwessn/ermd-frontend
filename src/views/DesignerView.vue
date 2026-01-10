@@ -1,5 +1,5 @@
 <template>
-  <DesignCanvas />
+    <DesignCanvas />
 </template>
 
 <script setup lang="ts">

@@ -1,57 +1,59 @@
 <template>
-  <ModalLayout :modal-name="$t('Add custom type')" @close="emit('close')">
-    <div class="my-4 flex gap-2">
-      <div class="w-2/5">
-        <TextInput
-          v-model="currentValue.displayName"
-          :label="$t('Name')"
-        />
+    <ModalLayout :modal-name="$t('Add custom type')" @close="emit('close')">
+      <div class="my-4 flex gap-2">
+        <div class="w-2/5">
+          <TextInput
+            v-model="currentValue.displayName"
+            :label="$t('Name')"
+          />
 
-        <CustomCheckbox
+          <CustomCheckbox
             v-model="currentValue.flags.canBePrimaryKey"
             :label="$t('Can be used as primary key')"
-        />
+          />
 
-        <CustomCheckbox
+          <CustomCheckbox
             v-model="currentValue.flags.canAutoIncrement"
             :label="$t('Can be autoincremented')"
-        />
+          />
 
-        <CustomCheckbox
+          <CustomCheckbox
             v-model="currentValue.flags.canHaveDefault"
             :label="$t('Can have a default value')"
-        />
-      </div>
+          />
+        </div>
 
-      <div class="w-3/5 border-l border-l-accentDarkGray pl-2">
-        <p class="text-xl text-accentDarkGray my-2">{{ $t('Type aliases') }}</p>
-        <Separator />
+        <div class="w-3/5 border-l border-l-accentDarkGray pl-2">
+          <p class="text-xl text-accentDarkGray my-2">
+            {{ $t('Type aliases') }}
+          </p>
+          <Separator />
 
-        <CustomTypeAliasInput
+          <CustomTypeAliasInput
             v-model="currentValue.alias.mysql"
             aliased-engine="mysql"
-        />
-        <CustomTypeAliasInput
+          />
+          <CustomTypeAliasInput
             v-model="currentValue.alias.mysql"
             aliased-engine="postgres"
-        />
+          />
+        </div>
       </div>
-    </div>
 
-    <div class="w-full flex gap-3 justify-end">
-      <ModalButton
+      <div class="w-full flex gap-3 justify-end">
+        <ModalButton
           :disabled="!canSave"
           :label="$t('Save')"
           @click="onSave"
-      />
-    </div>
-  </ModalLayout>
+        />
+      </div>
+    </ModalLayout>
 </template>
 
 <script setup lang="ts">
 import ModalLayout from "@/components/layout/ModalLayout.vue";
 import ModalButton from "@/components/layout/modal/ModalButton.vue";
-import { computed, type PropType, ref } from "vue";
+import { computed, ref } from "vue";
 import type { ColumnType } from "@/types/TableColumnTypes/tableField.ts";
 import CustomCheckbox from "@/components/core/inputs/CustomCheckbox.vue";
 import TextInput from "@/components/core/inputs/TextInput.vue";
@@ -61,12 +63,9 @@ import CustomTypeAliasInput from "@/components/core/inputs/CustomTypeAliasInput.
 
 const emit = defineEmits(['close']);
 
-const props = defineProps({
-  editedType: {
-    type: Object as PropType<ColumnType>,
-    required: false,
-  }
-})
+const props = defineProps<{
+  editedType?: ColumnType
+}>();
 
 const emptyType: ColumnType = {
   displayName: '',
@@ -87,19 +86,18 @@ const emptyType: ColumnType = {
     // mssql: '',
     // sqlite: '',
   }
-}
+};
 
 const canSave = computed(() =>
-    notBlankOrEmpty(currentValue.value.displayName) &&
+  notBlankOrEmpty(currentValue.value.displayName) &&
     notBlankOrEmpty(currentValue.value.alias.mysql) &&
-    notBlankOrEmpty(currentValue.value.alias.postgres)
-);
+    notBlankOrEmpty(currentValue.value.alias.postgres));
 
 const currentValue = ref<ColumnType>(
-    props.editedType ?? emptyType
+  props.editedType ?? emptyType
 );
 
 const onSave = () => {
   emit('close', currentValue.value);
-}
+};
 </script>

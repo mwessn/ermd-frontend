@@ -1,24 +1,24 @@
 <template>
-  <CustomSelect
+    <CustomSelect
       v-model="currentValue"
       :label="$t('Database Engine')"
       :options="engineSelectOptions"
       @change="onDatabaseEngineChange"
-  />
+    />
 
-  <teleport to="body">
-    <YesNoModal
+    <teleport to="body">
+      <YesNoModal
         v-if="showEngineChangeModal"
         :modal-title="$t('Changing Database Engine')"
         :body-text="$t(ERMDMessages.dbTypeChange)"
         @close="onEngineChangeModalClose"
-    />
-  </teleport>
+      />
+    </teleport>
 </template>
 
 <script setup lang="ts">
 import CustomSelect from "@/components/core/inputs/CustomSelect.vue";
-import { type PropType, ref } from "vue";
+import { ref } from "vue";
 import { type DatabaseEngine, DatabaseEngines, EngineNamingMap } from "@/types/TableColumnTypes/tableField.ts";
 import { cloneDeep } from "lodash";
 import { storeToRefs } from "pinia";
@@ -27,12 +27,9 @@ import type { SelectOption } from "@/types/misc.ts";
 import YesNoModal from "@/components/layout/modal/YesNoModal.vue";
 import { ERMDMessages } from "@/types/messages.ts";
 
-const props = defineProps({
-  initValue: {
-    type: String as PropType<DatabaseEngine>,
-    required: true,
-  }
-})
+const props = defineProps<{
+  initValue: DatabaseEngine
+}>();
 
 const currentValue = ref<DatabaseEngine>(cloneDeep(props.initValue));
 
@@ -44,7 +41,7 @@ const engineSelectOptions: SelectOption[] = DatabaseEngines.map(e => {
   return {
     value: e,
     label: EngineNamingMap[e]
-  }
+  };
 });
 
 const showEngineChangeModal = ref<boolean>(false);
@@ -55,7 +52,7 @@ const onDatabaseEngineChange = () => {
   } else {
     emit('engineChange', currentValue.value);
   }
-}
+};
 
 const onEngineChangeModalClose = (val: boolean | undefined) => {
   if (val) {
@@ -64,5 +61,5 @@ const onEngineChangeModalClose = (val: boolean | undefined) => {
     currentValue.value = props.initValue;
   }
   showEngineChangeModal.value = false;
-}
+};
 </script>

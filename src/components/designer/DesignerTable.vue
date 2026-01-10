@@ -1,8 +1,8 @@
 <template>
-  <div
+    <div
+      ref="tableRef"
       class="min-w-40 max-w-160 absolute group/table focus:outline-0"
       tabindex="-1"
-      ref="tableRef"
 
       :class="focusedTable?.id == table.id ? 'z-20' : 'z-10'"
 
@@ -12,66 +12,66 @@
 
       @focus="selectTable(table)"
       @focusout="onFocusOut"
-  >
-    <div class="z-20 bg-accentGray rounded-b-lg">
-      <div class="w-full border-b border-b-accentDarkGray flex items-center justify-between bg-monolithicCyanTsunami">
-        <DoubleClickFocusInput
-            v-model="table.name"
+    >
+      <div class="z-20 bg-accentGray rounded-b-lg">
+        <div class="w-full border-b border-b-accentDarkGray flex items-center justify-between bg-monolithicCyanTsunami">
+          <DoubleClickFocusInput
             :id="`name-${table.id}`"
+            ref="nameInputRef"
+            v-model="table.name"
             type="text"
             class="w-full p-2 bg-monolithicCyanTsunami"
             :class="[highlightNameClass]"
-            ref="nameInputRef"
 
             :title="table.name"
 
             @mousedown.left="focusTable"
             @enter-key="focusNextInput(0)"
             @value-change="onTableNameChange"
-        />
-        <!--    Table resize handle -->
-        <div
+          />
+          <!--    Table resize handle -->
+          <div
             class="radial-accentGray h-6 w-8 cursor-col-resize"
             @mousedown.left="setResizedTable(table)"
             @mouseup.left="setResizedTable()"
-        />
-      </div>
-      <div class="w-full min-h-4">
-        <TableColRow
-          v-for="(col, index) in table.cols"
-          :col="col"
-          :key="col.id"
-          :is-col-name-duplicate="duplicateColNames.has(col.name.toLowerCase())"
-          ref="tableColumns"
-          @focus-next="focusNextInput(index + 1)"
-          @mouse-down="selectTable(table)"
+          />
+        </div>
+        <div class="w-full min-h-4">
+          <TableColRow
+            v-for="(col, index) in table.cols"
+            :key="col.id"
+            ref="tableColumns"
+            v-model:col="table.cols[index]"
+            :is-col-name-duplicate="duplicateColNames.has(col.name.toLowerCase())"
+            @focus-next="focusNextInput(index + 1)"
+            @mouse-down="selectTable(table)"
 
-          @keydown.delete.stop
-          @keyup.delete.stop
-          @delete-col="onDeleteCol(col)"
-        />
+            @keydown.delete.stop
+            @keyup.delete.stop
+            @delete-col="onDeleteCol(col)"
+          />
 
-        <TableColRow
-            :col="newTableCol"
+          <TableColRow
             ref="newColRef"
+            v-model:col="newTableCol"
+            non-focusable-row
             @focus-next="storeNewCol"
             @focus-out="storeNewCol(false)"
             @mouse-down="focusTable()"
-            non-focusable-row
-        />
-
+          />
+        </div>
       </div>
-    </div>
 
-    <!--    Pseudo border   -->
-    <div class="absolute w-full p-1 h-14/15 z-[-1] top-4 right-0 rounded-b-xl
+      <!--    Pseudo border   -->
+      <div
+        class="absolute w-full p-1 h-14/15 z-[-1] top-4 right-0 rounded-b-xl
       bg-transparent group-hover/table:bg-lycheeIce group-focus/table:bg-monolithicCyanTsunami"
-    />
-  </div>
+      />
+    </div>
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, type PropType, ref, useTemplateRef } from "vue";
+import { computed, nextTick, onMounted, ref, useTemplateRef } from "vue";
 import { generateNewTableCol, type Table, type TableCol } from "@/types/table.ts";
 import { useDesignStore } from "@/store/design.ts";
 import DoubleClickFocusInput from "@/components/core/DoubleClickFocusInput.vue";
@@ -82,52 +82,48 @@ import { SQL_IDENTIFIER_REGEX } from "@/types/misc.ts";
 import { useSettingsStore } from "@/store/settings.ts";
 import { storeToRefs } from "pinia";
 import { defaultPrimaryTypes } from "@/types/TableColumnTypes/tableField.ts";
+import { FOCUS_DELAY_MS } from "@/types/constants.ts";
 
 const {
   selectTable,
   setResizedTable,
-  isManualCreation,
   addTableCol,
   deleteTableCol,
   bufferLogTableChange,
 } = useDesignStore();
 
-const { focusedTable } = storeToRefs(useDesignStore());
+const { focusedTable, isManualCreation } = storeToRefs(useDesignStore());
 
-const props = defineProps({
-  table: {
-    type: Object as PropType<Table>,
-    required: true
-  },
-  isNameDuplicate: {
-    type: Boolean,
-    required: true
-  }
-});
+const props = defineProps<{
+  table: Table
+  isNameDuplicate: boolean
+}>();
+
+const table = computed(() => props.table);
 
 const { currentSettings } = storeToRefs(useSettingsStore());
 
 const highlightNameClass = computed(() => {
-  if (props.isNameDuplicate) { return '!bg-yellow-400' }
+  if (props.isNameDuplicate) { return '!bg-yellow-400'; }
   if (
-      !SQL_IDENTIFIER_REGEX.test(props.table.name)
-  ) { return '!bg-red-400' }
+    !SQL_IDENTIFIER_REGEX.test(table.value.name)
+  ) { return '!bg-red-400'; }
 
   return '';
-})
+});
 
 const tableRef = useTemplateRef('tableRef');
 
 const focusTable = () => {
   tableRef.value?.focus();
-}
+};
 
 const onFocusOut = () => {
   selectTable();
-}
+};
 
 const newTableCol = ref<TableCol>(generateNewTableCol(
-    defaultPrimaryTypes[currentSettings.value.databaseEngine]
+  defaultPrimaryTypes[currentSettings.value.databaseEngine]
 ));
 
 const nameInputRef = useTemplateRef('nameInputRef');
@@ -142,11 +138,11 @@ const focusNextInput = (index: number) => {
   } else {
     newColRef.value?.focusColName();
   }
-}
+};
 
 const isSavingNewCol = ref<boolean>(false);
 
-const storeNewCol = (refocus: boolean = true) => {
+const storeNewCol = async (refocus: boolean = true) => {
   // Saving value by pressing enter also un-focuses the input,
   // which causes this method to trigger twice.
   // To prevent it, we do an action state check
@@ -155,14 +151,17 @@ const storeNewCol = (refocus: boolean = true) => {
     // If name not blank, add a new column
     if (notBlankOrEmpty(newTableCol.value.name)) {
       // Force select table to be able to save
-      selectTable(props.table);
+      selectTable(table.value);
       const res = addTableCol(newTableCol.value);
       if (res) {
+        const savedColIndex = table.value.cols.length - 1;
         newTableCol.value = generateNewTableCol(
-            defaultPrimaryTypes[currentSettings.value.databaseEngine]
+          defaultPrimaryTypes[currentSettings.value.databaseEngine]
         );
         if (refocus) {
-          newColRef.value?.focusColName();
+          // Focus the type selector of the just-saved column
+          await nextTick();
+          columnsRef.value?.[savedColIndex]?.focusColType();
         }
         // Reset selection
         selectTable();
@@ -174,10 +173,10 @@ const storeNewCol = (refocus: boolean = true) => {
     }
     isSavingNewCol.value = false;
   }
-}
+};
 
 const onDeleteCol = async (col: TableCol) => {
-  const index = props.table.cols.indexOf(col);
+  const index = table.value.cols.indexOf(col);
   tableRef.value?.focus();
   deleteTableCol(col);
 
@@ -193,33 +192,33 @@ const onDeleteCol = async (col: TableCol) => {
       columnsRef.value[index - 1]?.focusRow();
     }
   }
-}
+};
 
-const onTableNameChange = (oldVal: string) => {
-  const table = cloneDeep(props.table);
-  table.name = oldVal;
+const onTableNameChange = (oldVal: string | number) => {
+  const oldTable = cloneDeep(table.value);
+  oldTable.name = String(oldVal);
 
-  selectTable(props.table);
-  bufferLogTableChange(table);
-}
+  selectTable(table.value);
+  bufferLogTableChange(oldTable);
+};
 
 const duplicateColNames = computed(() => {
-  const nameCount = props.table.cols.reduce((map, col) => {
+  const nameCount = table.value.cols.reduce((map, col) => {
     const name = col.name.trim().toLowerCase();
     return map.set(name, (map.get(name) || 0) + 1);
   }, new Map<string, number>());
 
   return new Set(
-      [...nameCount].flatMap(([name, count]) => count > 1 ? [name] : [])
+    [...nameCount].flatMap(([name, count]) => count > 1 ? [name] : [])
   );
 });
 
 onMounted(async () => {
   // When a new table is created manually, focus table name input and select all content
-  if (isManualCreation) {
+  if (isManualCreation.value) {
     // Sleep for a short time after mount, otherwise won't focus
     // nextTick() is not enough
-    await sleep(50);
+    await sleep(FOCUS_DELAY_MS);
     nameInputRef.value?.focusSelectAll();
   }
 });
