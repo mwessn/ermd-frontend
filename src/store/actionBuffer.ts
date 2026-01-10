@@ -1,4 +1,4 @@
-import { defineStore } from "pinia";
+import { defineStore, storeToRefs } from "pinia";
 import { ref } from "vue";
 import type { ActionBufferEntry, BufferEntity } from "@/types/actionsBuffer.ts";
 import { useDesignStore } from "@/store/design.ts";
@@ -7,7 +7,7 @@ import { useSettingsStore } from "@/store/settings.ts";
 
 export const useActionBuffer = defineStore('actionBuffer', () => {
 
-    const { currentSettings } = useSettingsStore();
+    const { currentSettings } = storeToRefs(useSettingsStore());
 
     const undoBuffer = ref<ActionBufferEntry[]>([]);
     const redoBuffer = ref<ActionBufferEntry[]>([]);
@@ -18,7 +18,7 @@ export const useActionBuffer = defineStore('actionBuffer', () => {
         redoBuffer.value = [];
         undoBuffer.value.push(cloneDeep(action));
 
-        if (undoBuffer.value.length > currentSettings.undoActionBufferSize) {
+        if (undoBuffer.value.length > currentSettings.value.undoActionBufferSize) {
             undoBuffer.value.shift();
         }
     }

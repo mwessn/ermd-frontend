@@ -103,6 +103,12 @@ import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { faChevronDown, faChevronUp, faPalette, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { useDesignStore } from "@/store/design.ts";
 import AreaColorSelector from "@/components/core/AreaColorSelector.vue";
+import {
+    COMMENT_AREA_FONT_SIZES,
+    COMMENT_AREA_DEFAULT_FONT_SIZE,
+    COMMENT_AREA_MIN_SCALE,
+    COMMENT_AREA_MAX_SCALE
+} from "@/types/constants.ts";
 
 const area = defineModel<CommentArea>('area', { required: true });
 
@@ -124,14 +130,13 @@ const {
 const oldVal = ref<CommentArea>(cloneDeep(area.value));
 
 const headerFontSize = computed(() => {
-  if (props.scaleValue < 0.4) { return 32; }
-  if (props.scaleValue < 0.6) { return 28; }
-  if (props.scaleValue < 0.8) { return 24; }
-  if (props.scaleValue < 1) { return 20; }
-  return 16;
+  for (const { maxScale, fontSize } of COMMENT_AREA_FONT_SIZES) {
+    if (props.scaleValue < maxScale) return fontSize;
+  }
+  return COMMENT_AREA_DEFAULT_FONT_SIZE;
 });
 
-const commentAreaScale = computed(() => Math.max(2 - props.scaleValue, 1));
+const commentAreaScale = computed(() => Math.max(COMMENT_AREA_MAX_SCALE - props.scaleValue, COMMENT_AREA_MIN_SCALE));
 
 const showColorSelector = ref<boolean>(false);
 const onChange = () => {

@@ -34,6 +34,19 @@ import { useDesignStore } from "@/store/design.ts";
 import type { Table } from "@/types/table.ts";
 import { clamp } from "@/utils/utils.ts";
 import { storeToRefs } from "pinia";
+import {
+    RELATION_BASE_CIRCLE_SIZE,
+    RELATION_CIRCLE_SIZE_MULTIPLIER,
+    RELATION_MAX_CIRCLE_SIZE,
+    RELATION_BASE_TRIANGLE_RADIUS,
+    RELATION_TRIANGLE_RADIUS_MULTIPLIER,
+    RELATION_MAX_TRIANGLE_RADIUS,
+    RELATION_BASE_LINE_WIDTH,
+    RELATION_LINE_WIDTH_MULTIPLIER,
+    RELATION_MAX_LINE_WIDTH,
+    RELATION_DASH_PATTERN,
+    RELATION_LINE_OFFSET
+} from "@/types/constants.ts";
 
 const props = defineProps({
   relation: {
@@ -67,37 +80,25 @@ const manyRelationshipTypes: RelationshipType[] = [
 
 const isManyRelationship = computed(() => manyRelationshipTypes.includes(props.relation.type));
 
-const baseCircleSize = 6;
-const circleSizeMultiplier = 1.4;
-const maxCircleSize = 16;
-
 // Increase circle size on zooming out
 const circleRadius = computed(() => clamp(
-    baseCircleSize + baseCircleSize * circleSizeMultiplier * (1 - props.scaleFactor),
-    baseCircleSize,
-    maxCircleSize)
+    RELATION_BASE_CIRCLE_SIZE + RELATION_BASE_CIRCLE_SIZE * RELATION_CIRCLE_SIZE_MULTIPLIER * (1 - props.scaleFactor),
+    RELATION_BASE_CIRCLE_SIZE,
+    RELATION_MAX_CIRCLE_SIZE)
 );
 
-const baseTriangleRadius = 12;
-const triangleRadiusMultiplier = 1.8;
-const maxTriangleRadius = 26;
-
-// Increase circle size on zooming out
+// Increase triangle size on zooming out
 const triangleRadius = computed(() => clamp(
-    baseTriangleRadius + baseTriangleRadius * triangleRadiusMultiplier * (1 - props.scaleFactor),
-    baseTriangleRadius,
-    maxTriangleRadius)
+    RELATION_BASE_TRIANGLE_RADIUS + RELATION_BASE_TRIANGLE_RADIUS * RELATION_TRIANGLE_RADIUS_MULTIPLIER * (1 - props.scaleFactor),
+    RELATION_BASE_TRIANGLE_RADIUS,
+    RELATION_MAX_TRIANGLE_RADIUS)
 );
 
-const baseLineWidth = 3;
-const lineWidthMultiplier = 1.4;
-const maxLineWidth = 8;
-
-// Increase circle size on zooming out
+// Increase line width on zooming out
 const lineWidth = computed(() => clamp(
-    baseLineWidth + baseLineWidth * lineWidthMultiplier * (1 - props.scaleFactor),
-    baseLineWidth,
-    maxLineWidth)
+    RELATION_BASE_LINE_WIDTH + RELATION_BASE_LINE_WIDTH * RELATION_LINE_WIDTH_MULTIPLIER * (1 - props.scaleFactor),
+    RELATION_BASE_LINE_WIDTH,
+    RELATION_MAX_LINE_WIDTH)
 );
 
 // Make the line come out of the triangle tip / circle center
@@ -107,7 +108,7 @@ const x1offset = computed(() =>
 );
 
 // Non-identifying are dashed
-const lineDash = computed(() => nonIdentifyingTypes.includes(props.relation.type) ? '35,10' : undefined);
+const lineDash = computed(() => nonIdentifyingTypes.includes(props.relation.type) ? RELATION_DASH_PATTERN : undefined);
 
 const { tables, selectedTable } = storeToRefs(useDesignStore());
 
@@ -155,16 +156,14 @@ const calculateLineCoordinates = () => {
     const anchor1 = document.getElementById(`anchor-${ props.relation.firstTableColId }-${ anchor1side.value }`);
     const anchor2 = document.getElementById(`anchor-${ props.relation.secondTableColId }-${ firstLeftOfSecond ? 'l' : 'r' }`);
 
-    // Little offset to prevent line corners from sticking out
-    const offsetPx = 5;
-
     if (anchor1 && anchor2) {
       const firstPos = anchor1.getBoundingClientRect();
       x1.value = firstPos.x / props.scaleFactor - props.offsetX;
       y1.value = firstPos.y / props.scaleFactor - props.offsetY;
 
       const secondPos = anchor2.getBoundingClientRect();
-      x2.value = secondPos.x / props.scaleFactor - props.offsetX + (firstLeftOfSecond ? offsetPx : -offsetPx);
+      // Little offset to prevent line corners from sticking out
+      x2.value = secondPos.x / props.scaleFactor - props.offsetX + (firstLeftOfSecond ? RELATION_LINE_OFFSET : -RELATION_LINE_OFFSET);
       y2.value = secondPos.y / props.scaleFactor - props.offsetY;
     }
   }

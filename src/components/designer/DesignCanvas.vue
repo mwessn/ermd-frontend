@@ -95,6 +95,7 @@ import DesignerTable from "@/components/designer/DesignerTable.vue";
 import { resetFocus } from "@/utils/utils.ts";
 import DesignerRelation from "@/components/designer/DesignerRelation.vue";
 import DesignerCommentArea from "@/components/designer/DesignerCommentArea.vue";
+import { CANVAS_GRID_BG_SIZE } from "@/types/constants.ts";
 
 const actionsStore = useActionsStore();
 const designStore = useDesignStore();
@@ -104,9 +105,7 @@ const cursorStyle = computed(() => {
   return `url(/cursors/${cursor}.cur) 0 0, auto`;
 });
 
-const baseBgSize = 50;
-
-const bgSize = computed(() => `${ baseBgSize * scaleFactor.value }px ${ baseBgSize * scaleFactor.value }px`);
+const bgSize = computed(() => `${ CANVAS_GRID_BG_SIZE * scaleFactor.value }px ${ CANVAS_GRID_BG_SIZE * scaleFactor.value }px`);
 
 const isTableNameDuplicate = (name: string) => designStore.duplicateTableNames.has(name.trim().toLowerCase());
 

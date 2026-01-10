@@ -57,8 +57,8 @@
         v-model="currentSettings.undoActionBufferSize"
         :label="$t('Action buffer size')"
         :min-value="0"
-        :max-value="1000"
-        :hint="$t('Capped to 1000 to prevent performance issues')"
+        :max-value="MAX_UNDO_BUFFER_SIZE"
+        :hint="$t('Capped to {max} to prevent performance issues', { max: MAX_UNDO_BUFFER_SIZE })"
     />
 
     <Separator />
@@ -81,6 +81,7 @@ import { useI18n } from "vue-i18n";
 import Separator from "@/components/core/Separator.vue";
 import ClampedNumberInput from "@/components/core/inputs/ClampedNumberInput.vue";
 import UserDefinedColumnTypeDisplay from "@/components/settings/UserDefinedColumnTypeDisplay.vue";
+import { MAX_UNDO_BUFFER_SIZE } from "@/types/constants.ts";
 
 defineProps({
   visible: {

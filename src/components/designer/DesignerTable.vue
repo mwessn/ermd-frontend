@@ -82,17 +82,17 @@ import { SQL_IDENTIFIER_REGEX } from "@/types/misc.ts";
 import { useSettingsStore } from "@/store/settings.ts";
 import { storeToRefs } from "pinia";
 import { defaultPrimaryTypes } from "@/types/TableColumnTypes/tableField.ts";
+import { FOCUS_DELAY_MS } from "@/types/constants.ts";
 
 const {
   selectTable,
   setResizedTable,
-  isManualCreation,
   addTableCol,
   deleteTableCol,
   bufferLogTableChange,
 } = useDesignStore();
 
-const { focusedTable } = storeToRefs(useDesignStore());
+const { focusedTable, isManualCreation } = storeToRefs(useDesignStore());
 
 const table = defineModel<Table>('table', { required: true });
 
@@ -211,10 +211,10 @@ const duplicateColNames = computed(() => {
 
 onMounted(async () => {
   // When a new table is created manually, focus table name input and select all content
-  if (isManualCreation) {
+  if (isManualCreation.value) {
     // Sleep for a short time after mount, otherwise won't focus
     // nextTick() is not enough
-    await sleep(50);
+    await sleep(FOCUS_DELAY_MS);
     nameInputRef.value?.focusSelectAll();
   }
 });

@@ -41,13 +41,14 @@ import { ref } from "vue";
 import FunctionsMenu from "@/components/sideMenu/FunctionsMenu.vue";
 import SettingsMenu from "@/components/sideMenu/SettingsMenu.vue";
 import { useDesignStore } from "@/store/design.ts";
+import { storeToRefs } from "pinia";
 import ExportJsonModal from "@/components/layout/modal/ExportJsonModal.vue";
 import ImportJsonModal from "@/components/layout/modal/ImportJsonModal.vue";
 import YesNoModal from "@/components/layout/modal/YesNoModal.vue";
 
-const { tables } = useDesignStore();
+const { tables } = storeToRefs(useDesignStore());
 
-const isFirstLaunch = tables.length == 0;
+const isFirstLaunch = tables.value.length == 0;
 
 const functionsMenuVisible = ref<boolean>(true);
 const settingsMenuVisible = ref<boolean>(isFirstLaunch);

@@ -15,6 +15,12 @@
 <script setup lang="ts">
 
 import { onMounted, useTemplateRef } from "vue";
+import {
+    PASTEL_SATURATION_BASE,
+    PASTEL_SATURATION_RANGE,
+    PASTEL_LIGHTNESS_BASE,
+    PASTEL_LIGHTNESS_RANGE
+} from "@/types/constants.ts";
 
 const model = defineModel({
   type: String,
@@ -32,8 +38,8 @@ function generatePastelPalette(count: number): string[] {
   const colors: string[] = [];
   for (let i = 0; i < count; i++) {
     const h = Math.floor((360 / count) * i);
-    const s = 70 + Math.random() * 10; // 70–80%
-    const l = 80 + Math.random() * 5;  // 80–85%
+    const s = PASTEL_SATURATION_BASE + Math.random() * PASTEL_SATURATION_RANGE;
+    const l = PASTEL_LIGHTNESS_BASE + Math.random() * PASTEL_LIGHTNESS_RANGE;
     colors.push(`hsl(${h}, ${s}%, ${l}%)`);
   }
   return colors;

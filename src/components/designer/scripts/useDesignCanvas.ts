@@ -6,6 +6,7 @@ import { clamp } from "@/utils/utils.ts";
 import { storeToRefs } from "pinia";
 import { useSettingsStore } from "@/store/settings.ts";
 import { cloneDeep } from "lodash";
+import { ZOOM_SHIFT_MULTIPLIER, ZOOM_STEP, ZOOM_MIN, ZOOM_MAX } from "@/types/constants.ts";
 
 export interface CursorPos {
     x: number;
@@ -241,15 +242,15 @@ export function useDesignCanvas() {
     };
 
     const onScroll = (evt: WheelEvent) => {
-        const zoomMultiplier = evt.shiftKey ? 3 : 1;
+        const zoomMultiplier = evt.shiftKey ? ZOOM_SHIFT_MULTIPLIER : 1;
 
-        const zoomStep = 0.02 * zoomMultiplier;
+        const zoomStep = ZOOM_STEP * zoomMultiplier;
 
         const direction = evt.deltaY < 0 ? 1 : -1;
 
         // Adjust transform so it zooms to the cursor position
         const oldScale = scaleFactor.value;
-        const newScale = clamp(oldScale + direction * zoomStep, 0.2, 1.5);
+        const newScale = clamp(oldScale + direction * zoomStep, ZOOM_MIN, ZOOM_MAX);
 
         const rect = (evt.currentTarget as HTMLElement).getBoundingClientRect();
         const x = evt.clientX - rect.left;

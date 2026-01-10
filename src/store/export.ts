@@ -21,6 +21,12 @@ export const useExportStore = defineStore('export', () => {
     } = storeToRefs(designStore);
 
     const {
+        setAllTables,
+        setAllRelations,
+        setAllCommentAreas,
+    } = designStore;
+
+    const {
         currentSettings,
         currentDatabaseColumnTypes,
         userDefinedColumnTypes,
@@ -136,13 +142,14 @@ export const useExportStore = defineStore('export', () => {
             // Prevent autofocus on newly created tables
             isManualCreation.value = false;
 
-            tables.value = validatedJson.tables.map(exportType2Table);
+            const importedTables = validatedJson.tables.map(exportType2Table);
+            setAllTables(importedTables);
 
             // TODO properly parse names and extract last index
-            newTableIndex.value = tables.value.length + 1;
+            newTableIndex.value = importedTables.length + 1;
 
-            relations.value = validatedJson.relations;
-            commentAreas.value = validatedJson.commentAreas;
+            setAllRelations(validatedJson.relations);
+            setAllCommentAreas(validatedJson.commentAreas);
 
             console.log(`JSON import complete`);
         } catch (err) {

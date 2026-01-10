@@ -13,6 +13,15 @@ import { clamp, unpluralize } from "@/utils/utils.ts";
 import { type ColumnType } from "@/types/TableColumnTypes/tableField.ts";
 import { type CommentArea, generateCommentArea } from "@/types/misc.ts";
 import { useExportStore } from "@/store/export.ts";
+import {
+    GRID_SNAP_SIZE,
+    DEFAULT_GRID_SIZE,
+    TABLE_MIN_WIDTH,
+    TABLE_MAX_WIDTH,
+    COMMENT_AREA_MIN_SIZE,
+    COMMENT_AREA_COLLAPSE_WIDTH,
+    COMMENT_AREA_COLLAPSE_HEIGHT
+} from "@/types/constants.ts";
 
 export const useDesignStore = defineStore('design', () => {
     const bufferStore = useActionBuffer();
@@ -24,14 +33,19 @@ export const useDesignStore = defineStore('design', () => {
         defaultTableName,
     } = storeToRefs(useSettingsStore());
 
-    const tables = ref<Table[]>([]);
+    // Primary storage as Maps for O(1) lookups
+    const tablesMap = ref<Map<string, Table>>(new Map());
+    const relationsMap = ref<Map<string, DatabaseRelationship>>(new Map());
+    const commentAreasMap = ref<Map<string, CommentArea>>(new Map());
+
+    // Computed arrays for component iteration (maintains reactivity)
+    const tables = computed(() => [...tablesMap.value.values()]);
+    const relations = computed(() => [...relationsMap.value.values()]);
+    const commentAreas = computed(() => [...commentAreasMap.value.values()]);
+
     const newTableIndex = ref<number>(1);
 
-    const gridSize = computed(() => currentSettings.value.snapToGrid ? 8 : 1);
-
-    const relations = ref<DatabaseRelationship[]>([]);
-
-    const commentAreas = ref<CommentArea[]>([]);
+    const gridSize = computed(() => currentSettings.value.snapToGrid ? GRID_SNAP_SIZE : 1);
 
     const selectedTable = ref<Table | undefined>(undefined);
     const resizedTable = ref<Table | undefined>(undefined);
@@ -74,7 +88,7 @@ export const useDesignStore = defineStore('design', () => {
             generatePrimary,
         );
 
-        tables.value.push(table);
+        tablesMap.value.set(table.id, table);
 
         const bufferAction: ActionBufferEntry = {
             entities: [{
@@ -103,7 +117,7 @@ export const useDesignStore = defineStore('design', () => {
         resizedTable.value = val;
     }
 
-    const snapToGrid = (value: number, gridSize: number = 10) => {
+    const snapToGrid = (value: number, gridSize: number = DEFAULT_GRID_SIZE) => {
         return Math.round(value / gridSize) * gridSize;
     };
 
@@ -117,7 +131,7 @@ export const useDesignStore = defineStore('design', () => {
     const resizeSelectedTable = (deltaX: number) => {
         if (selectedTable.value) {
             selectedTable.value.widthPx = snapToGrid(
-                clamp(selectedTable.value.widthPx + deltaX, 120, 480),
+                clamp(selectedTable.value.widthPx + deltaX, TABLE_MIN_WIDTH, TABLE_MAX_WIDTH),
                 gridSize.value
             );
         }
@@ -202,7 +216,7 @@ export const useDesignStore = defineStore('design', () => {
 
     const storeCommentArea = () => {
         if (tempCommentArea.value) {
-            commentAreas.value.push(tempCommentArea.value);
+            commentAreasMap.value.set(tempCommentArea.value.id, tempCommentArea.value);
             bufferLogCommentAreaCreate(cloneDeep(tempCommentArea.value.id));
             tempCommentArea.value = undefined;
         }
@@ -222,16 +236,16 @@ export const useDesignStore = defineStore('design', () => {
 
     const resizeCommentArea = (areaId: string, deltaX: number, deltaY: number) => {
         // Check both stored areas and temp area (during creation)
-        const area = commentAreas.value.find(it => it.id === areaId)
+        const area = commentAreasMap.value.get(areaId)
             ?? (tempCommentArea.value?.id === areaId ? tempCommentArea.value : undefined);
         if (!area) return;
 
         // Clamp minimum size
-        area.size.width = Math.max(56, snapToGrid(area.size.width + deltaX, gridSize.value));
-        area.size.height = Math.max(56, snapToGrid(area.size.height + deltaY, gridSize.value));
+        area.size.width = Math.max(COMMENT_AREA_MIN_SIZE, snapToGrid(area.size.width + deltaX, gridSize.value));
+        area.size.height = Math.max(COMMENT_AREA_MIN_SIZE, snapToGrid(area.size.height + deltaY, gridSize.value));
 
         // If new area dimensions are less than the default textarea size, collapse it
-        if (area.size.width < 180 || area.size.height < 80) {
+        if (area.size.width < COMMENT_AREA_COLLAPSE_WIDTH || area.size.height < COMMENT_AREA_COLLAPSE_HEIGHT) {
             area.showComment = false;
         }
     }
@@ -268,7 +282,7 @@ export const useDesignStore = defineStore('design', () => {
             area.posY = snapToGrid(area.posY + deltaY, gridSize.value);
 
             for (const areaId of areaIdsInside) {
-                const _area = commentAreas.value.find(it => it.id === areaId);
+                const _area = commentAreasMap.value.get(areaId);
                 if (_area) {
                     _area.posX = snapToGrid(_area.posX + deltaX, gridSize.value);
                     _area.posY = snapToGrid(_area.posY + deltaY, gridSize.value);
@@ -277,7 +291,7 @@ export const useDesignStore = defineStore('design', () => {
 
             // Handles all tables, including inside subareas
             for (const tableId of tableIdsInside) {
-                const table = tables.value.find(it => it.id === tableId);
+                const table = tablesMap.value.get(tableId);
                 if (table) {
                     table.posX = snapToGrid(table.posX + deltaX, gridSize.value)
                     table.posY = snapToGrid(table.posY + deltaY, gridSize.value)
@@ -291,11 +305,9 @@ export const useDesignStore = defineStore('design', () => {
         // with cursor being over the delete button
         if (area == movedCommentArea.value || area == resizedCommentArea.value) { return; }
 
-        const index = commentAreas.value.indexOf(area);
-
-        if (index != -1) {
+        if (commentAreasMap.value.has(area.id)) {
             bufferLogCommentAreaDelete(area);
-            commentAreas.value.splice(index, 1);
+            commentAreasMap.value.delete(area.id);
         }
     }
 
@@ -322,7 +334,7 @@ export const useDesignStore = defineStore('design', () => {
         // Check if selected table is not the same
         if (relationFirstTableId.value === selectedTable.value.id) { return; }
 
-        const firstTable = tables.value.find(it => it.id === relationFirstTableId.value);
+        const firstTable = tablesMap.value.get(relationFirstTableId.value);
         if (!firstTable) {
             actionStore.resetAction();
             return;
@@ -361,17 +373,19 @@ export const useDesignStore = defineStore('design', () => {
             const existingMtM = mtmRelationExists(firstTable, selectedTable.value)
 
             if (existingMtM) {
-                const pivot = tables.value.find(it => it.id == existingMtM.firstTableId)!;
-                bufferEntries.push(
-                    ...deleteTable(pivot),
-                    // deleteTable() doesn't add buffer entry for table deletion so we must add it manually
-                    {
-                        action: 'delete',
-                        type: 'table',
-                        entityId: pivot.id,
-                        oldVal: cloneDeep(pivot),
-                    },
-                );
+                const pivot = tablesMap.value.get(existingMtM.firstTableId);
+                if (pivot) {
+                    bufferEntries.push(
+                        ...deleteTable(pivot),
+                        // deleteTable() doesn't add buffer entry for table deletion so we must add it manually
+                        {
+                            action: 'delete',
+                            type: 'table',
+                            entityId: pivot.id,
+                            oldVal: cloneDeep(pivot),
+                        },
+                    );
+                }
             }
 
             bufferEntries.push(
@@ -396,7 +410,8 @@ export const useDesignStore = defineStore('design', () => {
                     currentSettings.value.mtmPrimaryKeyType,
                 );
 
-                const pivotTable = tables.value.find(it => it.id == pivotTableEntry[0].entityId)!;
+                const pivotTable = tablesMap.value.get(pivotTableEntry[0].entityId);
+                if (!pivotTable) return [];
 
                 const nameJoin = currentSettings.value.namingConvention == 'snake' ?
                     '_has_' :
@@ -448,11 +463,11 @@ export const useDesignStore = defineStore('design', () => {
     // Misc
 
     const createNewProject = () => {
-        tables.value.length = 0
+        tablesMap.value.clear();
         newTableIndex.value = 1;
 
-        relations.value.length = 0;
-        commentAreas.value.length = 0;
+        relationsMap.value.clear();
+        commentAreasMap.value.clear();
 
         bufferStore.clearState();
 
@@ -462,7 +477,7 @@ export const useDesignStore = defineStore('design', () => {
     // Buffer actions
 
     function bufferDeleteTable(bufferEntry: BufferEntity) {
-        const table = tables.value.find(it => it.id == bufferEntry.entityId);
+        const table = tablesMap.value.get(bufferEntry.entityId);
         if (table) {
             // Store copy to buffer and delete the table
             bufferEntry.oldVal = cloneDeep(table);
@@ -473,12 +488,13 @@ export const useDesignStore = defineStore('design', () => {
     }
 
     function bufferRestoreTable(bufferEntry: BufferEntity) {
-        tables.value.push(cloneDeep(bufferEntry.oldVal as Table));
+        const table = cloneDeep(bufferEntry.oldVal as Table);
+        tablesMap.value.set(table.id, table);
         bufferEntry.oldVal = undefined;
     }
 
     function bufferSetTablePos(bufferEntry: BufferEntity) {
-        const table = tables.value.find(it => it.id == bufferEntry.entityId);
+        const table = tablesMap.value.get(bufferEntry.entityId);
         if (table) {
             const pos = cloneDeep(bufferEntry.oldVal as CursorPos);
             // Swap buffer oldVal and current value
@@ -493,7 +509,7 @@ export const useDesignStore = defineStore('design', () => {
     }
 
     function bufferSetTableWidth(bufferEntry: BufferEntity) {
-        const table = tables.value.find(it => it.id == bufferEntry.entityId);
+        const table = tablesMap.value.get(bufferEntry.entityId);
         if (table) {
             const width = cloneDeep(bufferEntry.oldVal as number);
 
@@ -504,12 +520,11 @@ export const useDesignStore = defineStore('design', () => {
     }
 
     function bufferSetTableVal(bufferEntry: BufferEntity) {
-        const tableIndex = tables.value.findIndex(it => it.id == bufferEntry.entityId);
-        if (tableIndex != -1) {
-            const oldVal = cloneDeep(tables.value[tableIndex]);
-
-            tables.value[tableIndex] = cloneDeep(bufferEntry.oldVal as Table);
-
+        const existingTable = tablesMap.value.get(bufferEntry.entityId);
+        if (existingTable) {
+            const oldVal = cloneDeep(existingTable);
+            const newTable = cloneDeep(bufferEntry.oldVal as Table);
+            tablesMap.value.set(bufferEntry.entityId, newTable);
             bufferEntry.oldVal = oldVal;
         }
     }
@@ -518,7 +533,7 @@ export const useDesignStore = defineStore('design', () => {
         const [tableId, colId] = bufferEntry.entityId.split('.');
         if (!tableId || !colId) return;
 
-        const table = tables.value.find(it => it.id == tableId);
+        const table = tablesMap.value.get(tableId);
         if (table) {
             const colIndex = table.cols.findIndex(it => it.id == colId);
 
@@ -534,7 +549,7 @@ export const useDesignStore = defineStore('design', () => {
         if (!tableId || !colId || !colIndex) return;
 
 
-        const table = tables.value.find(it => it.id == tableId);
+        const table = tablesMap.value.get(tableId);
         if (table) {
             table.cols.splice(parseInt(colIndex), 0, cloneDeep(bufferEntry.oldVal) as TableCol);
 
@@ -546,7 +561,7 @@ export const useDesignStore = defineStore('design', () => {
         const [tableId, colId] = bufferEntry.entityId.split('.');
         if (!tableId || !colId) return;
 
-        const table = tables.value.find(it => it.id == tableId);
+        const table = tablesMap.value.get(tableId);
         if (table) {
             const colIndex = table.cols.findIndex(it => it.id == colId);
 
@@ -559,30 +574,30 @@ export const useDesignStore = defineStore('design', () => {
     }
 
     function bufferDeleteRelation(bufferEntry: BufferEntity) {
-        const relation = relations.value.find(it => it.id == bufferEntry.entityId);
+        const relation = relationsMap.value.get(bufferEntry.entityId);
         if (relation) {
             bufferEntry.oldVal = cloneDeep(relation);
-            const index = relations.value.indexOf(relation);
-            relations.value.splice(index, 1);
+            relationsMap.value.delete(bufferEntry.entityId);
         }
     }
 
     function bufferRestoreRelation(bufferEntry: BufferEntity) {
-        relations.value.push(cloneDeep(bufferEntry.oldVal as DatabaseRelationship));
+        const relation = cloneDeep(bufferEntry.oldVal as DatabaseRelationship);
+        relationsMap.value.set(relation.id, relation);
         bufferEntry.oldVal = undefined;
     }
 
     function bufferChangeRelation(bufferEntry: BufferEntity) {
-        const relationIndex = relations.value.findIndex(it => it.id == bufferEntry.entityId);
-        if (relationIndex != -1) {
-            const oldVal = cloneDeep(relations.value[relationIndex]);
-            relations.value[relationIndex] = bufferEntry.oldVal as DatabaseRelationship;
+        const existingRelation = relationsMap.value.get(bufferEntry.entityId);
+        if (existingRelation) {
+            const oldVal = cloneDeep(existingRelation);
+            relationsMap.value.set(bufferEntry.entityId, bufferEntry.oldVal as DatabaseRelationship);
             bufferEntry.oldVal = oldVal;
         }
     }
 
     function bufferSetCommentAreaPos(entry: BufferEntity) {
-        const area = commentAreas.value.find(it => it.id == entry.entityId);
+        const area = commentAreasMap.value.get(entry.entityId);
         if (area) {
             const oldVal: CursorPos = {
                 x: area.posX,
@@ -599,7 +614,7 @@ export const useDesignStore = defineStore('design', () => {
     }
 
     function bufferSetCommentAreaSize(entry: BufferEntity) {
-        const area = commentAreas.value.find(it => it.id == entry.entityId);
+        const area = commentAreasMap.value.get(entry.entityId);
         if (area) {
             const oldVal = cloneDeep(area.size);
             area.size = cloneDeep(entry.oldVal as AreaSize);
@@ -608,26 +623,25 @@ export const useDesignStore = defineStore('design', () => {
     }
 
     function bufferRestoreCommentArea(entry: BufferEntity) {
-        commentAreas.value.push(cloneDeep(entry.oldVal as CommentArea));
+        const area = cloneDeep(entry.oldVal as CommentArea);
+        commentAreasMap.value.set(area.id, area);
         entry.oldVal = undefined;
     }
 
     function bufferDeleteCommentArea(entry: BufferEntity) {
-        const area = commentAreas.value.find(it => it.id == entry.entityId);
+        const area = commentAreasMap.value.get(entry.entityId);
         if (area) {
             entry.oldVal = cloneDeep(area);
-            const index = commentAreas.value.indexOf(area);
-            commentAreas.value.splice(index, 1);
+            commentAreasMap.value.delete(entry.entityId);
         }
     }
 
     function bufferSetCommentAreaValues(entry: BufferEntity) {
-        const index = commentAreas.value.findIndex(it => it.id == entry.entityId);
-        if (index != -1) {
-            const oldVal = cloneDeep(commentAreas.value[index]);
-
-            commentAreas.value[index] = cloneDeep(entry.oldVal as CommentArea);
-
+        const existingArea = commentAreasMap.value.get(entry.entityId);
+        if (existingArea) {
+            const oldVal = cloneDeep(existingArea);
+            const newArea = cloneDeep(entry.oldVal as CommentArea);
+            commentAreasMap.value.set(entry.entityId, newArea);
             entry.oldVal = oldVal;
         }
     }
@@ -737,7 +751,7 @@ export const useDesignStore = defineStore('design', () => {
             const deltaY = area.posY - oldVal.y;
 
             for (const tableId of tableIdsInside) {
-                const table = tables.value.find(it => it.id === tableId);
+                const table = tablesMap.value.get(tableId);
                 if (table) {
                     entities.push({
                         action: 'move',
@@ -752,7 +766,7 @@ export const useDesignStore = defineStore('design', () => {
             }
 
             for (const areaId of areaIdsInside) {
-                const _area = commentAreas.value.find(it => it.id === areaId);
+                const _area = commentAreasMap.value.get(areaId);
                 if (_area) {
                     entities.push({
                         action: 'move',
@@ -793,8 +807,8 @@ export const useDesignStore = defineStore('design', () => {
         secondTableId: string,
         type: RelationshipType
     ): BufferEntity[] {
-        const firstTable = tables.value.find(it => it.id === firstTableId);
-        const secondTable = tables.value.find(it => it.id === secondTableId);
+        const firstTable = tablesMap.value.get(firstTableId);
+        const secondTable = tablesMap.value.get(secondTableId);
 
         if (!firstTable || !secondTable) {
             console.error("Table not found", firstTableId, secondTableId);
@@ -830,7 +844,7 @@ export const useDesignStore = defineStore('design', () => {
             type
         ));
 
-        relations.value.push(rel);
+        relationsMap.value.set(rel.id, rel);
 
         return [{
             action: 'create',
@@ -847,7 +861,7 @@ export const useDesignStore = defineStore('design', () => {
 
     function deleteRelationship(relation: DatabaseRelationship, deleteColumn: boolean = false) {
         const bufferEntries: BufferEntity[] = [];
-        const firstTable = tables.value.find(it => it.id == relation.firstTableId);
+        const firstTable = tablesMap.value.get(relation.firstTableId);
 
         if (!firstTable) { return []; }
 
@@ -884,9 +898,7 @@ export const useDesignStore = defineStore('design', () => {
             oldVal: cloneDeep(relation)
         });
 
-        const relationId = relations.value.indexOf(relation);
-
-        relations.value.splice(relationId, 1);
+        relationsMap.value.delete(relation.id);
 
         return bufferEntries;
     }
@@ -895,7 +907,7 @@ export const useDesignStore = defineStore('design', () => {
         const mtmRels = relations.value.filter(it => it.type == 'mtm' && it.secondTableId == first.id);
 
         return mtmRels.find(relation => {
-            const pivot = tables.value.find(table => table.id === relation.firstTableId);
+            const pivot = tablesMap.value.get(relation.firstTableId);
             if (!pivot) return false;
 
             return relations.value.some(it =>
@@ -907,25 +919,39 @@ export const useDesignStore = defineStore('design', () => {
     }
 
     function deleteTable(table: Table) {
-        const index = tables.value.indexOf(table);
-
-        if (index != -1) {
-            const bufferEntities: BufferEntity[] = [];
-
-            const existingRelations = relations.value.filter(it =>
-                it.firstTableId == table.id || it.secondTableId == table.id
-            );
-
-            existingRelations.forEach( it =>
-                bufferEntities.push(...deleteRelationship(it, false))
-            );
-
-            tables.value.splice(index, 1);
-
-            return bufferEntities;
+        if (!tablesMap.value.has(table.id)) {
+            return [];
         }
 
-        return [];
+        const bufferEntities: BufferEntity[] = [];
+
+        const existingRelations = relations.value.filter(it =>
+            it.firstTableId == table.id || it.secondTableId == table.id
+        );
+
+        existingRelations.forEach( it =>
+            bufferEntities.push(...deleteRelationship(it, false))
+        );
+
+        tablesMap.value.delete(table.id);
+
+        return bufferEntities;
+    }
+
+    // Import helpers for setting all data at once (used by export store)
+    function setAllTables(newTables: Table[]) {
+        tablesMap.value.clear();
+        newTables.forEach(table => tablesMap.value.set(table.id, table));
+    }
+
+    function setAllRelations(newRelations: DatabaseRelationship[]) {
+        relationsMap.value.clear();
+        newRelations.forEach(rel => relationsMap.value.set(rel.id, rel));
+    }
+
+    function setAllCommentAreas(newAreas: CommentArea[]) {
+        commentAreasMap.value.clear();
+        newAreas.forEach(area => commentAreasMap.value.set(area.id, area));
     }
 
 
@@ -1008,26 +1034,53 @@ export const useDesignStore = defineStore('design', () => {
 
         getTablesInsideArea,
         getAreasInsideArea,
+
+        // Import helpers
+        setAllTables,
+        setAllRelations,
+        setAllCommentAreas,
+
+        // Expose maps for direct access when needed
+        tablesMap,
+        relationsMap,
+        commentAreasMap,
     }
 }, {
     persist: {
         key: `__ermd_design`,
         pick: [
-            'tables', 'newTableIndex', 'relations', 'commentAreas'
+            'tablesMap', 'newTableIndex', 'relationsMap', 'commentAreasMap'
         ],
         serializer: {
             serialize: (state) => {
-                return JSON.stringify(state, (_, value) =>
-                    typeof value === 'bigint' ? { __type: 'bigint', value: value.toString() } : value
-                );
+                // Convert Maps to arrays for storage
+                const toSave = {
+                    tables: [...(state.tablesMap as Map<string, Table>).values()],
+                    relations: [...(state.relationsMap as Map<string, DatabaseRelationship>).values()],
+                    commentAreas: [...(state.commentAreasMap as Map<string, CommentArea>).values()],
+                    newTableIndex: state.newTableIndex
+                };
+                return JSON.stringify(toSave, (_key, value) => {
+                    if (typeof value === 'bigint') {
+                        return { __type: 'bigint', value: value.toString() };
+                    }
+                    return value;
+                });
             },
             deserialize: (value) => {
-                return JSON.parse(value, (_, value) => {
+                const parsed = JSON.parse(value, (_key, value) => {
                     if (value && value.__type === 'bigint') {
                         return BigInt(value.value);
                     }
                     return value;
                 });
+                // Convert arrays to Maps for hydration
+                return {
+                    tablesMap: new Map(parsed.tables?.map((t: Table) => [t.id, t]) ?? []),
+                    relationsMap: new Map(parsed.relations?.map((r: DatabaseRelationship) => [r.id, r]) ?? []),
+                    commentAreasMap: new Map(parsed.commentAreas?.map((a: CommentArea) => [a.id, a]) ?? []),
+                    newTableIndex: parsed.newTableIndex ?? 0
+                };
             }
         }
     }
