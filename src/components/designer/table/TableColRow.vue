@@ -1,27 +1,27 @@
 <template>
-  <div
-    class="flex items-center w-full not-last:border-b relative group/cols"
-    ref="rowRef"
-
-    :tabindex="props.nonFocusableRow ? undefined : -1"
-
-    @focus="showColumnProps = true"
-    @focusout="onFocusOut"
-
-    @mousedown.left="onMouseDown"
-    @keyup.enter="onRowEnterKey"
-    @keyup.delete.stop="emit('deleteCol');"
-
-    @keyup.alt.prevent="onRowKeyUp"
-  >
     <div
+      ref="rowRef"
+      class="flex items-center w-full not-last:border-b relative group/cols"
+
+      :tabindex="props.nonFocusableRow ? undefined : -1"
+
+      @focus="showColumnProps = true"
+      @focusout="onFocusOut"
+
+      @mousedown.left="onMouseDown"
+      @keyup.enter.exact="onRowEnterKey"
+      @keyup.delete.exact.stop="emit('deleteCol');"
+
+      @keyup.alt.prevent="onRowKeyUp"
+    >
+      <div
         v-if="showColType"
         class="h-1 w-1 rounded-full p-1 border ml-1.5 mr-0.5"
         :class="rowIndicatorStyles"
-    />
-    <DoubleClickFocusInput
-        v-model="col.name"
+      />
+      <DoubleClickFocusInput
         ref="colNameRef"
+        v-model="col.name"
 
         :name="`colName-${col.id}`"
 
@@ -37,12 +37,12 @@
         @keyup.delete.stop
 
         @value-change="onColNameChange"
-    />
-    <div v-if="showColType" class="min-w-1/2 flex items-center pr-2">
-      <ColTypeSelect
+      />
+      <div v-if="showColType" class="min-w-1/2 flex items-center pr-2">
+        <ColTypeSelect
           v-if="rowRef"
-          v-model:col="col"
           ref="colTypeRef"
+          v-model:col="col"
 
           :root-div="rowRef!"
 
@@ -52,10 +52,10 @@
 
           @keydown.delete.stop
           @keyup.delete.stop
-      />
-    </div>
+        />
+      </div>
 
-    <ColumnProperties
+      <ColumnProperties
         v-if="showColumnProps && showColType"
         v-model:col="col"
 
@@ -63,17 +63,16 @@
 
         @keydown.delete.stop
         @keyup.delete.stop
-    />
+      />
 
-    <div
+      <div
         v-if="col.foreignKey || col.primaryKey"
         class="absolute full flex items-center justify-between z-0 pointer-events-none"
-    >
-      <div :id="`anchor-${col.id}-l`" />
-      <div :id="`anchor-${col.id}-r`" />
+      >
+        <div :id="`anchor-${col.id}-l`" />
+        <div :id="`anchor-${col.id}-r`" />
+      </div>
     </div>
-
-  </div>
 </template>
 
 <script setup lang="ts">
@@ -153,24 +152,24 @@ const preloadBackgroundColors: Record<string, string> = {
   foreign: 'bg-orange-500',
   unique: 'bg-monolithicCyanTsunami',
   default: 'bg-lycheeIce'
-}
+};
 
 const preloadBorderColors: Record<string, string> = {
   primary: 'border-amber-300',
   foreign: 'border-orange-500',
   unique: 'border-monolithicCyanTsunami',
   default: 'border-lycheeIce'
-}
+};
 
 const rowIndicatorStyles = computed(() => {
   // priority: PK > FK > UNIQUE > default
   const base = col.value.primaryKey
-      ? "primary"
-      : col.value.foreignKey
-          ? "foreign"
-          : col.value.unique
-              ? "unique"
-              : "default";
+    ? "primary"
+    : col.value.foreignKey
+      ? "foreign"
+      : col.value.unique
+        ? "unique"
+        : "default";
 
   const border = preloadBorderColors[base];
   const bg = col.value.notNull ? preloadBackgroundColors[base] : "";
@@ -181,17 +180,17 @@ const rowIndicatorStyles = computed(() => {
 const onMouseDown = () => {
   emit('mouseDown');
   rowRef.value?.focus();
-}
+};
 
 const colNameRef = useTemplateRef('colNameRef');
 
 const focusColName = () => {
   colNameRef.value?.focusSelectAll();
-}
+};
 
 const focusRow = () => {
   rowRef.value?.focus();
-}
+};
 
 const focusColType = async () => {
   if (col.value.name) {
@@ -204,17 +203,17 @@ const focusColType = async () => {
   } else {
     resetFocus();
   }
-}
+};
 
 const onRowEnterKey = (evt: InputEvent) => {
   if (!(evt.target instanceof HTMLInputElement)) {
     focusColName();
   }
-}
+};
 
 const onFocusNext = () => {
   emit('focusNext');
-}
+};
 
 const onColNameChange = (oldVal: string | number) => {
   if (!props.nonFocusableRow) {
@@ -225,7 +224,7 @@ const onColNameChange = (oldVal: string | number) => {
     emit('mouseDown');
     bufferLogColChange(col.value, oldColVal);
   }
-}
+};
 
 const onColTypeChange = (oldVal: TableCol) => {
   if (!props.nonFocusableRow) {
@@ -233,7 +232,7 @@ const onColTypeChange = (oldVal: TableCol) => {
     emit('mouseDown');
     bufferLogColChange(col.value, oldVal);
   }
-}
+};
 
 function onFocusOut(event: FocusEvent) {
   if (!event.relatedTarget || !rowRef.value?.contains(event.relatedTarget as Node)) {
@@ -242,11 +241,11 @@ function onFocusOut(event: FocusEvent) {
 }
 
 const highlightColumnClass = computed(() => {
-  if (props.isColNameDuplicate) { return '!bg-yellow-400' }
+  if (props.isColNameDuplicate) { return '!bg-yellow-400'; }
   if (
-      !SQL_IDENTIFIER_REGEX.test(col.value.name) &&
+    !SQL_IDENTIFIER_REGEX.test(col.value.name) &&
       (!props.nonFocusableRow || col.value.name.length > 0)
-  ) { return '!bg-red-400' }
+  ) { return '!bg-red-400'; }
 
   return '';
 });
@@ -287,7 +286,7 @@ const onRowKeyUp = (e: KeyboardEvent) => {
   if (changed) {
     onColTypeChange(oldVal);
   }
-}
+};
 
 defineExpose({ focusColName, focusColType, focusRow });
 </script>

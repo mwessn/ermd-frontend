@@ -1,15 +1,15 @@
 <template>
-  <div
+    <div
       class="w-full relative"
       tabindex="-1"
-  >
-    <div class="flex items-center">
-      <input
-          v-model="inputValue"
-          class="cursor-inherit p-1 overflow-ellipsis w-full"
-
+    >
+      <div class="flex items-center">
+        <input
           :id="`${col.id}-type-input`"
           ref="inputRef"
+
+          v-model="inputValue"
+          class="cursor-inherit p-1 overflow-ellipsis w-full"
           tabindex="-1"
 
           :title="inputValue"
@@ -25,53 +25,52 @@
           @keyup.down="selectNextOption"
           @keyup.up="selectPrevOption"
 
-          @keydown.enter="onEnter"
+          @keydown.enter.exact="onEnter"
 
           @focusout="onFocusOut"
 
           @keydown.shift.prevent
-      >
-      <div
+        >
+        <div
           v-if="col.modifierValues && col.modifierValues.length > 0 && col.modifierValues[0]"
-      >
-        ({{ col.modifierValues.join(', ') }})
+        >
+          ({{ col.modifierValues.join(', ') }})
+        </div>
       </div>
-    </div>
 
 
-    <div
-      v-if="dropdownVisible"
-      class="w-full absolute b-1 l-0 p-2 min-w-max
+      <div
+        v-if="dropdownVisible"
+        ref="rootDiv"
+
+        class="w-full absolute b-1 l-0 p-2 min-w-max
        bg-accentGray border rounded-b shadow-lg
        max-h-36 overflow-x-visible overflow-y-scroll z-999"
+        tabindex="-1"
 
-      ref="rootDiv"
-      tabindex="-1"
+        @focusout.stop
+        @click.stop
 
-      @focusout.stop
-      @click.stop
-
-      @keydown.up.prevent
-      @keydown.down.prevent
-    >
-      <div
+        @keydown.up.prevent
+        @keydown.down.prevent
+      >
+        <div
           v-for="(name, index) in matchedNames"
-          class="w-full bg-accentGray overflow-x-clip z-999 rounded p-1 overscroll-x-none"
-
-          :class="{ 'border border-secondaryAccentGray' : selectedOption == index }"
+          :id="`${col.id}-${index}`"
 
           :key="`${col.id}-${index}`"
-          :id="`${col.id}-${index}`"
+
+          class="w-full bg-accentGray overflow-x-clip z-999 rounded p-1 overscroll-x-none"
+          :class="{ 'border border-secondaryAccentGray' : selectedOption == index }"
 
           @focusout.stop
 
           @mouseup.left="onOptionClick(index)"
-      >
-        {{ name }}
+        >
+          {{ name }}
+        </div>
       </div>
     </div>
-
-  </div>
 </template>
 
 <script setup lang="ts">
@@ -105,7 +104,7 @@ const selectAll = () => {
 const deselectAll = () => {
   // If input has any active text selection, deselect all
   inputRef.value?.setSelectionRange(-1, -1);
-}
+};
 
 const focusSelectAll = () => {
   emit('focus');
@@ -116,7 +115,7 @@ const focusSelectAll = () => {
   selectTypeOption(0);
 
   dropdownVisible.value = true;
-}
+};
 
 const inputValue = ref<string>(col.value.type.displayName);
 
@@ -124,18 +123,18 @@ const matchedNames = computed(() => {
   const search = inputValue.value.toLowerCase();
 
   return columnTypeNames.value
-      .filter(name => name.toLowerCase().includes(search))
-      .sort((a, b) => {
-        const A = a.toLowerCase(), B = b.toLowerCase();
+    .filter(name => name.toLowerCase().includes(search))
+    .sort((a, b) => {
+      const A = a.toLowerCase(), B = b.toLowerCase();
 
-        const exactA = A === search, exactB = B === search;
-        if (exactA !== exactB) return exactA ? -1 : 1;
+      const exactA = A === search, exactB = B === search;
+      if (exactA !== exactB) return exactA ? -1 : 1;
 
-        const startsA = A.startsWith(search), startsB = B.startsWith(search);
-        if (startsA !== startsB) return startsA ? -1 : 1;
+      const startsA = A.startsWith(search), startsB = B.startsWith(search);
+      if (startsA !== startsB) return startsA ? -1 : 1;
 
-        return 0;
-      });
+      return 0;
+    });
 });
 
 
@@ -155,19 +154,23 @@ const selectTypeOption = (_index: number) => {
     block: 'nearest',
     inline: 'nearest'
   });
-}
+};
 
 const selectNextOption = () => {
-  selectedOption.value == undefined ?
-      selectedOption.value = 0 :
-      selectTypeOption(selectedOption.value + 1);
-}
+  if (selectedOption.value == undefined) {
+    selectedOption.value = 0;
+  } else {
+    selectTypeOption(selectedOption.value + 1);
+  }
+};
 
 const selectPrevOption = () => {
-  selectedOption.value == undefined ?
-      selectedOption.value = 0 :
-      selectTypeOption(selectedOption.value - 1);
-}
+  if (selectedOption.value == undefined) {
+    selectedOption.value = 0;
+  } else {
+    selectTypeOption(selectedOption.value - 1);
+  }
+};
 
 const dropdownVisible = ref<boolean>(false);
 
@@ -182,7 +185,7 @@ function onFocusOut(event: FocusEvent) {
 const selectType = (_name?: string) => {
   const name = _name ?? matchedNames.value[selectedOption.value ?? 0];
   const selected = currentDatabaseColumnTypes.value
-      .find(it => it.displayName == name);
+    .find(it => it.displayName == name);
 
   if (selected) {
     col.value.type = cloneDeep(selected);
@@ -201,14 +204,14 @@ const onEnter = () => {
   } else {
     selectType();
   }
-}
+};
 
 const onOptionClick = (index: number) => {
   const oldVal = cloneDeep(col.value);
   selectTypeOption(index);
-  selectType()
-  emit('valueChange', oldVal)
-}
+  selectType();
+  emit('valueChange', oldVal);
+};
 
 watch(() => col.value.type, () => {
   inputValue.value = col.value.type.displayName;

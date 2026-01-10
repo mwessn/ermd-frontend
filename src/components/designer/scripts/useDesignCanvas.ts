@@ -9,282 +9,279 @@ import { cloneDeep } from "lodash";
 import { ZOOM_SHIFT_MULTIPLIER, ZOOM_STEP, ZOOM_MIN, ZOOM_MAX } from "@/types/constants.ts";
 
 export interface CursorPos {
-    x: number;
-    y: number;
+  x: number;
+  y: number;
 }
 
 export interface AreaSize {
-    width: number;
-    height: number;
+  width: number;
+  height: number;
 }
 
 export function useDesignCanvas() {
-    const actionStore = useActionsStore();
-    const designStore = useDesignStore();
+  const actionStore = useActionsStore();
+  const designStore = useDesignStore();
 
-    const { currentSettings } = storeToRefs(useSettingsStore());
-    const {
-        selectedTable,
-        resizedTable,
-        movedCommentArea,
-        resizedCommentArea,
-        tempCommentArea,
-    } = storeToRefs(designStore);
+  const { currentSettings } = storeToRefs(useSettingsStore());
+  const {
+    selectedTable,
+    resizedTable,
+    movedCommentArea,
+    resizedCommentArea,
+    tempCommentArea,
+  } = storeToRefs(designStore);
 
-    // How much the canvas is dragged from its center
-    const translateOffsetX = ref(0);
-    const translateOffsetY = ref(0);
+  // How much the canvas is dragged from its center
+  const translateOffsetX = ref(0);
+  const translateOffsetY = ref(0);
 
-    // Canvas zoom
-    const scaleFactor = ref<number>(1);
+  // Canvas zoom
+  const scaleFactor = ref<number>(1);
 
-    // Drag detection
-    const lastClickPos = ref<CursorPos | undefined>();
-    const lastClickType = ref<'left' | 'middle' | undefined>(undefined);
-    const currentMousePos = ref<CursorPos | undefined>();
+  // Drag detection
+  const lastClickPos = ref<CursorPos | undefined>();
+  const lastClickType = ref<'left' | 'middle' | undefined>(undefined);
+  const currentMousePos = ref<CursorPos | undefined>();
 
-    // (Buffer variable) initial position of selected table before drag
-    const lastSelectedPos = ref<CursorPos| undefined>(undefined);
+  // (Buffer variable) initial position of selected table before drag
+  const lastSelectedPos = ref<CursorPos| undefined>(undefined);
 
-    const lastWidth = ref<number| undefined>(undefined);
-    const lastSize = ref<AreaSize | undefined>(undefined);
-    const lastCommentAreaPosition = ref<CursorPos | undefined>(undefined);
+  const lastWidth = ref<number| undefined>(undefined);
+  const lastSize = ref<AreaSize | undefined>(undefined);
+  const lastCommentAreaPosition = ref<CursorPos | undefined>(undefined);
 
-    // Comment area moving binding (store IDs to avoid mutating objects)
-    const intersectingTableIds = ref<string[]>([]);
-    const intersectingAreaIds = ref<string[]>([]);
+  // Comment area moving binding (store IDs to avoid mutating objects)
+  const intersectingTableIds = ref<string[]>([]);
+  const intersectingAreaIds = ref<string[]>([]);
 
-    const isDragging = computed(() =>
-        !!lastClickPos.value && lastClickPos.value != currentMousePos.value
-    );
+  const isDragging = computed(() =>
+    !!lastClickPos.value && lastClickPos.value != currentMousePos.value);
 
-    // background-position property
-    const bgPos = computed(() =>
-        `${ translateOffsetX.value }px ${ translateOffsetY.value }px`
-    );
+  // background-position property
+  const bgPos = computed(() =>
+    `${ translateOffsetX.value }px ${ translateOffsetY.value }px`);
 
-    // transform translate property
-    const translatePos = computed(() =>
-        `${ translateOffsetX.value }px, ${ translateOffsetY.value }px`
-    );
+  // transform translate property
+  const translatePos = computed(() =>
+    `${ translateOffsetX.value }px, ${ translateOffsetY.value }px`);
 
-    const startTracking = (evt: MouseEvent) => {
-        // Start tracking drag
-        const pos = { x: evt.clientX, y: evt.clientY };
-        lastClickPos.value = pos;
-        currentMousePos.value = pos;
-    }
+  const startTracking = (evt: MouseEvent) => {
+    // Start tracking drag
+    const pos = { x: evt.clientX, y: evt.clientY };
+    lastClickPos.value = pos;
+    currentMousePos.value = pos;
+  };
 
-    const onMouseDown = async (evt: MouseEvent) => {
-        switch (actionStore.currentAction) {
-            case undefined: {
-                lastClickType.value = "left";
-                startTracking(evt);
+  const onMouseDown = async (evt: MouseEvent) => {
+    switch (actionStore.currentAction) {
+      case undefined: {
+        lastClickType.value = "left";
+        startTracking(evt);
 
-                if (resizedCommentArea.value != undefined) {
-                    lastSize.value = cloneDeep(resizedCommentArea.value.size);
-                }
-                if (movedCommentArea.value != undefined) {
-                    lastCommentAreaPosition.value = {
-                        x: movedCommentArea.value.posX,
-                        y: movedCommentArea.value.posY
-                    }
-                    intersectingTableIds.value = designStore.getTablesInsideArea(movedCommentArea.value).map(t => t.id);
-                    intersectingAreaIds.value = designStore.getAreasInsideArea(movedCommentArea.value).map(a => a.id);
-                }
-
-                break;
-            }
-            case 'table': {
-                // Create a table
-                const posX = evt.clientX / scaleFactor.value - translateOffsetX.value;
-                const posY = evt.clientY / scaleFactor.value - translateOffsetY.value;
-
-                designStore.addTable(posX, posY);
-                actionStore.setAction(undefined);
-                break;
-            }
-            case 'ioto':
-            case 'noto':
-            case 'iotm':
-            case 'notm':
-            case 'mtm': {
-                designStore.createRelationship(actionStore.currentAction);
-                break;
-            }
-            case 'commentArea': {
-                startTracking(evt);
-                designStore.startCreatingCommentArea({
-                    x: evt.clientX / scaleFactor.value - translateOffsetX.value,
-                    y: evt.clientY / scaleFactor.value - translateOffsetY.value
-                });
-
-                actionStore.setAction(undefined);
-                break;
-            }
+        if (resizedCommentArea.value != undefined) {
+          lastSize.value = cloneDeep(resizedCommentArea.value.size);
         }
-    };
-
-    const stopTracking = () => {
-        // Stop tracking drag
-        lastClickPos.value = undefined;
-
-        // Quite arbitrary really, but for the best practices let it be
-        lastClickType.value = undefined;
-    }
-
-    const onMouseUp = () => {
-        if (lastClickPos.value) {
-            stopTracking();
-
-            // If moved a table, add buffer entry
-            if (lastSelectedPos.value) {
-                designStore.bufferLogTableMove(lastSelectedPos.value);
-                lastSelectedPos.value = undefined;
-            }
-            if (lastWidth.value) {
-                designStore.bufferLogTableResize(lastWidth.value);
-                lastWidth.value = undefined;
-            }
-
-            if (tempCommentArea.value != undefined) {
-                designStore.storeCommentArea();
-            }
-
-            if (lastSize.value) {
-                designStore.bufferLogCommentAreaResize(lastSize.value);
-                designStore.setResizedCommentArea();
-            }
-
-            if (lastCommentAreaPosition.value) {
-                designStore.bufferLogCommentAreaMove(
-                    lastCommentAreaPosition.value,
-                    intersectingTableIds.value,
-                    intersectingAreaIds.value
-                );
-                designStore.setMovedCommentArea();
-                intersectingTableIds.value = [];
-                intersectingAreaIds.value = [];
-            }
-
-            // Reset references
-            designStore.setResizedTable();
+        if (movedCommentArea.value != undefined) {
+          lastCommentAreaPosition.value = {
+            x: movedCommentArea.value.posX,
+            y: movedCommentArea.value.posY
+          };
+          intersectingTableIds.value = designStore.getTablesInsideArea(movedCommentArea.value).map(t => t.id);
+          intersectingAreaIds.value = designStore.getAreasInsideArea(movedCommentArea.value).map(a => a.id);
         }
-    };
 
-    const onMiddleMouseDown = (evt: MouseEvent) => {
-        if (currentSettings.value.dragCanvasButton == 'middle') {
-            lastClickType.value = "middle";
-            startTracking(evt);
-        }
+        break;
+      }
+      case 'table': {
+        // Create a table
+        const posX = evt.clientX / scaleFactor.value - translateOffsetX.value;
+        const posY = evt.clientY / scaleFactor.value - translateOffsetY.value;
+
+        designStore.addTable(posX, posY);
+        actionStore.setAction(undefined);
+        break;
+      }
+      case 'ioto':
+      case 'noto':
+      case 'iotm':
+      case 'notm':
+      case 'mtm': {
+        designStore.createRelationship(actionStore.currentAction);
+        break;
+      }
+      case 'commentArea': {
+        startTracking(evt);
+        designStore.startCreatingCommentArea({
+          x: evt.clientX / scaleFactor.value - translateOffsetX.value,
+          y: evt.clientY / scaleFactor.value - translateOffsetY.value
+        });
+
+        actionStore.setAction(undefined);
+        break;
+      }
     }
+  };
 
-    const onMiddleMouseUp = () => {
-        if (currentSettings.value.dragCanvasButton == 'middle' && lastClickPos.value) {
-            stopTracking();
-        }
+  const stopTracking = () => {
+    // Stop tracking drag
+    lastClickPos.value = undefined;
+
+    // Quite arbitrary really, but for the best practices let it be
+    lastClickType.value = undefined;
+  };
+
+  const onMouseUp = () => {
+    if (lastClickPos.value) {
+      stopTracking();
+
+      // If moved a table, add buffer entry
+      if (lastSelectedPos.value) {
+        designStore.bufferLogTableMove(lastSelectedPos.value);
+        lastSelectedPos.value = undefined;
+      }
+      if (lastWidth.value) {
+        designStore.bufferLogTableResize(lastWidth.value);
+        lastWidth.value = undefined;
+      }
+
+      if (tempCommentArea.value != undefined) {
+        designStore.storeCommentArea();
+      }
+
+      if (lastSize.value) {
+        designStore.bufferLogCommentAreaResize(lastSize.value);
+        designStore.setResizedCommentArea();
+      }
+
+      if (lastCommentAreaPosition.value) {
+        designStore.bufferLogCommentAreaMove(
+          lastCommentAreaPosition.value,
+          intersectingTableIds.value,
+          intersectingAreaIds.value
+        );
+        designStore.setMovedCommentArea();
+        intersectingTableIds.value = [];
+        intersectingAreaIds.value = [];
+      }
+
+      // Reset references
+      designStore.setResizedTable();
     }
+  };
 
-    const onMouseMove = (evt: MouseEvent) => {
-        // If not dragging return
-        if (!lastClickPos.value || !currentMousePos.value) return;
+  const onMiddleMouseDown = (evt: MouseEvent) => {
+    if (currentSettings.value.dragCanvasButton == 'middle') {
+      lastClickType.value = "middle";
+      startTracking(evt);
+    }
+  };
 
-        // If current button is MMB we can only move the canvas
-        if (
-            currentSettings.value.dragCanvasButton == 'middle' &&
+  const onMiddleMouseUp = () => {
+    if (currentSettings.value.dragCanvasButton == 'middle' && lastClickPos.value) {
+      stopTracking();
+    }
+  };
+
+  const onMouseMove = (evt: MouseEvent) => {
+    // If not dragging return
+    if (!lastClickPos.value || !currentMousePos.value) return;
+
+    // If current button is MMB we can only move the canvas
+    if (
+      currentSettings.value.dragCanvasButton == 'middle' &&
             lastClickType.value == "middle"
-        ) {
-            translateOffsetX.value += evt.movementX;
-            translateOffsetY.value += evt.movementY;
-            return;
-        }
-
-        const deltaX = evt.movementX / scaleFactor.value;
-        const deltaY = evt.movementY / scaleFactor.value;
-
-        // Handle comment areas
-        const commentArea = tempCommentArea.value
-            ?? resizedCommentArea.value;
-        if (commentArea) {
-            designStore.resizeCommentArea(commentArea.id, deltaX, deltaY);
-        }
-        else if (movedCommentArea.value) {
-            designStore.moveCommentArea(
-                deltaX,
-                deltaY,
-                intersectingTableIds.value,
-                intersectingAreaIds.value
-            );
-        }
-
-        // No table selected, drag canvas
-        else if (!selectedTable.value) {
-            if (currentSettings.value.dragCanvasButton == 'middle') { return; }
-
-            translateOffsetX.value += evt.movementX;
-            translateOffsetY.value += evt.movementY;
-        }
-        // Handle table move/resize
-        else {
-            const table = selectedTable.value;
-            if (resizedTable.value) {
-                if (!lastWidth.value) lastWidth.value = cloneDeep(resizedTable.value.widthPx);
-                designStore.resizeSelectedTable(deltaX);
-            } else {
-                if (!lastSelectedPos.value) {
-                    lastSelectedPos.value = { x: table.posX, y: table.posY };
-                }
-                designStore.moveSelectedTable(deltaX, deltaY);
-            }
-        }
-
-        currentMousePos.value = { x: evt.clientX, y: evt.clientY };
-    };
-
-    const onScroll = (evt: WheelEvent) => {
-        const zoomMultiplier = evt.shiftKey ? ZOOM_SHIFT_MULTIPLIER : 1;
-
-        const zoomStep = ZOOM_STEP * zoomMultiplier;
-
-        const direction = evt.deltaY < 0 ? 1 : -1;
-
-        // Adjust transform so it zooms to the cursor position
-        const oldScale = scaleFactor.value;
-        const newScale = clamp(oldScale + direction * zoomStep, ZOOM_MIN, ZOOM_MAX);
-
-        const rect = (evt.currentTarget as HTMLElement).getBoundingClientRect();
-        const x = evt.clientX - rect.left;
-        const y = evt.clientY - rect.top;
-        translateOffsetX.value -= (x/oldScale - x/newScale);
-        translateOffsetY.value -= (y/oldScale - y/newScale);
-
-        scaleFactor.value = newScale;
+    ) {
+      translateOffsetX.value += evt.movementX;
+      translateOffsetY.value += evt.movementY;
+      return;
     }
 
-    const centerView = (x = 0, y = 0) => {
-        translateOffsetX.value = x;
-        translateOffsetY.value = y;
+    const deltaX = evt.movementX / scaleFactor.value;
+    const deltaY = evt.movementY / scaleFactor.value;
 
-        scaleFactor.value = 1;
-    };
+    // Handle comment areas
+    const commentArea = tempCommentArea.value
+            ?? resizedCommentArea.value;
+    if (commentArea) {
+      designStore.resizeCommentArea(commentArea.id, deltaX, deltaY);
+    }
+    else if (movedCommentArea.value) {
+      designStore.moveCommentArea(
+        deltaX,
+        deltaY,
+        intersectingTableIds.value,
+        intersectingAreaIds.value
+      );
+    }
 
-    return {
-        translateOffsetX,
-        translateOffsetY,
-        scaleFactor,
+    // No table selected, drag canvas
+    else if (!selectedTable.value) {
+      if (currentSettings.value.dragCanvasButton == 'middle') { return; }
 
-        isDragging,
-        bgPos,
-        translatePos,
+      translateOffsetX.value += evt.movementX;
+      translateOffsetY.value += evt.movementY;
+    }
+    // Handle table move/resize
+    else {
+      const table = selectedTable.value;
+      if (resizedTable.value) {
+        if (!lastWidth.value) lastWidth.value = cloneDeep(resizedTable.value.widthPx);
+        designStore.resizeSelectedTable(deltaX);
+      } else {
+        if (!lastSelectedPos.value) {
+          lastSelectedPos.value = { x: table.posX, y: table.posY };
+        }
+        designStore.moveSelectedTable(deltaX, deltaY);
+      }
+    }
 
-        onMouseDown,
-        onMouseUp,
-        onMouseMove,
-        onScroll,
+    currentMousePos.value = { x: evt.clientX, y: evt.clientY };
+  };
 
-        onMiddleMouseDown,
-        onMiddleMouseUp,
+  const onScroll = (evt: WheelEvent) => {
+    const zoomMultiplier = evt.shiftKey ? ZOOM_SHIFT_MULTIPLIER : 1;
 
-        centerView,
-    };
+    const zoomStep = ZOOM_STEP * zoomMultiplier;
+
+    const direction = evt.deltaY < 0 ? 1 : -1;
+
+    // Adjust transform so it zooms to the cursor position
+    const oldScale = scaleFactor.value;
+    const newScale = clamp(oldScale + direction * zoomStep, ZOOM_MIN, ZOOM_MAX);
+
+    const rect = (evt.currentTarget as HTMLElement).getBoundingClientRect();
+    const x = evt.clientX - rect.left;
+    const y = evt.clientY - rect.top;
+    translateOffsetX.value -= (x/oldScale - x/newScale);
+    translateOffsetY.value -= (y/oldScale - y/newScale);
+
+    scaleFactor.value = newScale;
+  };
+
+  const centerView = (x = 0, y = 0) => {
+    translateOffsetX.value = x;
+    translateOffsetY.value = y;
+
+    scaleFactor.value = 1;
+  };
+
+  return {
+    translateOffsetX,
+    translateOffsetY,
+    scaleFactor,
+
+    isDragging,
+    bgPos,
+    translatePos,
+
+    onMouseDown,
+    onMouseUp,
+    onMouseMove,
+    onScroll,
+
+    onMiddleMouseDown,
+    onMiddleMouseUp,
+
+    centerView,
+  };
 }

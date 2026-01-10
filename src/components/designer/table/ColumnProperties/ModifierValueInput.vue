@@ -1,18 +1,18 @@
 <template>
-  <div
+    <div
       class="p-1 w-full max-w-36 not-last:border-r border-r-accentDarkGray text-center"
-  >
-    <p>
-      {{ $t(mod.hint) }}
-    </p>
-    <div class="border-b border-b-accentDarkGray my-1" />
-    <div class="flex items-center gap-1">
-      <p v-if="mod.meta == 'enumList'">
-        [
+    >
+      <p>
+        {{ $t(mod.hint) }}
       </p>
-      <input
-          class="w-full text-center"
+      <div class="border-b border-b-accentDarkGray my-1" />
+      <div class="flex items-center gap-1">
+        <p v-if="mod.meta == 'enumList'">
+          [
+        </p>
+        <input
           v-model="model"
+          class="w-full text-center"
 
           :type="modifierInputType"
 
@@ -26,24 +26,24 @@
           :title="mod.hint"
 
           @change="emit('change')"
-      >
-      <p v-if="mod.meta == 'enumList'">
-        ]
-      </p>
-      <FontAwesomeIcon
+        >
+        <p v-if="mod.meta == 'enumList'">
+          ]
+        </p>
+        <FontAwesomeIcon
           v-if="mod.optional"
           class="cursor-pointer hover:opacity-50 ml-1"
           :icon="faClose"
           @click="emit('removeValue')"
-      />
+        />
+      </div>
     </div>
-  </div>
 </template>
 
 <script setup lang="ts">
 import { faClose } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import { computed, type PropType } from "vue";
+import { computed } from "vue";
 import type { ColumnTypeModifier } from "@/types/TableColumnTypes/tableField.ts";
 
 const model = defineModel<string | number | undefined>({
@@ -51,12 +51,9 @@ const model = defineModel<string | number | undefined>({
   required: false
 });
 
-const props = defineProps({
-  mod: {
-    type: Object as PropType<ColumnTypeModifier>,
-    required: true
-  }
-});
+const props = defineProps<{
+  mod: ColumnTypeModifier
+}>();
 
 const emit = defineEmits(['change', 'removeValue']);
 
@@ -67,7 +64,7 @@ const modifierInputType = computed(() => {
 
   switch (typeof props.mod.defaultValue) {
     case 'number':
-      return 'number'
+      return 'number';
     case 'string':
       return 'string';
     default:

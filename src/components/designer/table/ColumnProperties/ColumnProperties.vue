@@ -1,63 +1,65 @@
 <template>
-  <div
+    <div
       class="absolute left-full bottom-0
         bg-lycheeIce text-sm z-90
         rounded-r-lg rounded-tl-lg shadow-lg"
-  >
-    <div v-if="col.type.modifier && col.modifierValues" class="flex justify-center border-b border-b-accentDarkGray">
-      <ModifierValueInput
+    >
+      <div v-if="col.type.modifier && col.modifierValues" class="flex justify-center border-b border-b-accentDarkGray">
+        <ModifierValueInput
           v-for="(mod, index) in col.type.modifier"
+          :key="index"
           v-model="col.modifierValues[index]"
+
           :mod="mod"
 
-          :key="index"
-
           @change="onChange"
-          @removeValue="removeModifierValue(index)"
-      />
-    </div>
+          @remove-value="removeModifierValue(index)"
+        />
+      </div>
 
-    <div class="flex text-center">
-      <ColPropertyCheckbox
+      <div class="flex text-center">
+        <ColPropertyCheckbox
           v-model="col.primaryKey"
           label="PK"
           :disabled="flagsLocked || !colCanBePrimary(col)"
           @change="onChange"
-      />
-      <ColPropertyCheckbox
+        />
+        <ColPropertyCheckbox
           v-model="col.notNull"
           label="NN"
           :disabled="flagsLocked || !colCanBeNullable(col)"
           @change="onChange"
-      />
-      <ColPropertyCheckbox
+        />
+        <ColPropertyCheckbox
           v-model="col.unique"
           label="U"
           :disabled="flagsLocked || col.primaryKey"
           @change="onChange"
-      />
-      <ColPropertyCheckbox
+        />
+        <ColPropertyCheckbox
           v-model="col.autoIncrement"
           label="AI"
           :disabled="flagsLocked || !colCanAutoIncrement(col) || col.primaryKey"
           @change="onChange"
-      />
+        />
 
-      <div
+        <div
           v-if="col.type.flags.canHaveDefault"
           class="p-2 border-l border-l-accentDarkGray grid gap-2"
-      >
-        <p class="wrap-break-word w-12">{{ $t('Default') }}</p>
-        <div class="flex items-center gap-1">
-          <template v-if="col.defaultValue != undefined">
-            <p v-if="col.type.primitive == 'list'">
-              [
-            </p>
-            <p v-if="col.type.primitive == 'json'">
-              {
-            </p>
-          </template>
-          <input
+        >
+          <p class="wrap-break-word w-12">
+            {{ $t('Default') }}
+          </p>
+          <div class="flex items-center gap-1">
+            <template v-if="col.defaultValue != undefined">
+              <p v-if="col.type.primitive == 'list'">
+                [
+              </p>
+              <p v-if="col.type.primitive == 'json'">
+                {
+              </p>
+            </template>
+            <input
               v-model="col.defaultValue"
               :placeholder="defaultPlaceholder"
 
@@ -76,24 +78,24 @@
 
               @click="onInputClick"
               @change="onChange"
-          >
-          <template v-if="col.defaultValue != undefined">
-            <p v-if="col.type.primitive == 'list' && showBrackets">
-              ]
-            </p>
-            <p v-if="col.type.primitive == 'json' && showBrackets">
-              }
-            </p>
-            <FontAwesomeIcon
+            >
+            <template v-if="col.defaultValue != undefined">
+              <p v-if="col.type.primitive == 'list' && showBrackets">
+                ]
+              </p>
+              <p v-if="col.type.primitive == 'json' && showBrackets">
+                }
+              </p>
+              <FontAwesomeIcon
                 class="cursor-pointer hover:opacity-50 ml-1"
                 :icon="faClose"
                 @click="removeDefaultValue"
-            />
-          </template>
+              />
+            </template>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 </template>
 
 <script setup lang="ts">
@@ -127,25 +129,25 @@ const removeModifierValue = (index: number) => {
     col.value.modifierValues[index] = undefined;
     onChange();
   }
-}
+};
 
 const removeDefaultValue = () => {
   col.value.defaultValue = undefined;
   onChange();
-}
+};
 
 const onChange = async () => {
   await nextTick();
   emit('change', oldVal);
   oldVal = cloneDeep(col.value);
-}
+};
 
 const showBrackets = ref<boolean>(col.value.defaultValue !== undefined);
 
 const defaultPlaceholder = computed(() => col.value.defaultValue == undefined ? 'none' : '');
 
 const onInputClick = () => {
-  const p = col.value.type.primitive
+  const p = col.value.type.primitive;
   if (p == 'list') {
     showBrackets.value = true;
   }
@@ -153,7 +155,7 @@ const onInputClick = () => {
     showBrackets.value = true;
     col.value.defaultValue = '';
   }
-}
+};
 
 const defaultInputType = computed(() => {
   switch (col.value.type.primitive) {
@@ -161,9 +163,8 @@ const defaultInputType = computed(() => {
     case 'decimal':
     case 'float':
     case 'bit':
-      return 'number'
+      return 'number';
     case 'bigint':
-    case 'char':
     case 'string':
     case 'list':
     case 'list enum':
@@ -183,7 +184,7 @@ watch(() => col.value.defaultValue, (val) => {
 
   switch (col.value.type.primitive) {
 
-      // Only integers
+    // Only integers
     case "int":
     case "bit":
       if (!/^-?\d+$/.test(val)) {
@@ -201,8 +202,8 @@ watch(() => col.value.defaultValue, (val) => {
         } else {
           // strip invalid chars but keep one "."
           sanitized = val
-              .replace(/[^0-9.-]/g, "")
-              .replace(/(\..*)\./g, "$1");
+            .replace(/[^0-9.-]/g, "")
+            .replace(/(\..*)\./g, "$1");
         }
       }
       break;
@@ -220,7 +221,7 @@ watch(() => col.value.defaultValue, (val) => {
       }
       break;
 
-    case 'set':
+    case 'list enum':
       if (val.startsWith("[")) {
         sanitized = val.slice(1);
       }
@@ -238,23 +239,24 @@ watch(() => col.value.defaultValue, (val) => {
 const validateDefaultValue = computed(() => {
   if (col.value.type.primitive == 'list') {
     if (
-        col.value.modifierValues == undefined ||
+      col.value.modifierValues == undefined ||
         nullOrEmpty(col.value.modifierValues[0] as string) ||
         nullOrEmpty(col.value.defaultValue)
-    ) { return '' }
+    ) { return ''; }
 
     const allowedTypes = (col.value.modifierValues[0] as string)
-        .split(',')
-        .map(it => it.trim());
+      .split(',')
+      .map(it => it.trim());
 
     const inputTypes = (col.value.defaultValue as string)
-        .split(',')
-        .map(it => it.trim())
-        .filter(Boolean);
+      .split(',')
+      .map(it => it.trim())
+      .filter(Boolean);
 
     const invalidTypes = inputTypes.some(it => !allowedTypes.includes(it));
 
-    return invalidTypes ? 'bg-red-300' : ''
+    return invalidTypes ? 'bg-red-300' : '';
   }
-})
+  return '';
+});
 </script>

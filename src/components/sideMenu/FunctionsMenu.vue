@@ -1,32 +1,33 @@
 <template>
-  <div
+    <div
       class="fixed left-0 h-full w-12 bg-accentDarkGray transition-transform duration-300 text-center pt-4 mt-12 z-50"
       :class="[visible ? 'translate-x-0' : '-translate-x-full',
-       disabled ? 'pointer-events-none' : '']"
-  >
-    <template v-for="(section, index) in sections" :key="index">
-      <Tooltip v-for="(item, itemIndex) in section.items"
-               :key="itemIndex"
-               :text="item.hint"
-               :button="item.button"
-               :aria-label="item.hint"
-               tabindex="1"
-               @keyup.enter="execAction(item.action)"
-      >
-        <div
+               disabled ? 'pointer-events-none' : '']"
+    >
+      <template v-for="(section, index) in sections" :key="index">
+        <Tooltip
+          v-for="(item, itemIndex) in section.items"
+          :key="itemIndex"
+          :text="item.hint"
+          :button="item.button"
+          :aria-label="item.hint"
+          tabindex="1"
+          @keyup.enter="execAction(item.action)"
+        >
+          <div
             class="p-2 hover:opacity-50 text-lycheeIce cursor-pointer relative"
             @click="execAction(item.action)"
-        >
-          <FontAwesomeIcon :icon="item.pic" />
-        </div>
-      </Tooltip>
+          >
+            <FontAwesomeIcon :icon="item.pic" />
+          </div>
+        </Tooltip>
 
-      <div
+        <div
           v-if="index !== sections.length - 1"
           class="border border-accentGray mx-1 my-4"
-      />
-    </template>
-  </div>
+        />
+      </template>
+    </div>
 </template>
 
 <script setup lang="ts">
@@ -50,15 +51,11 @@ import { appConfig } from "@/app.config.ts";
 import Tooltip from "@/components/core/Tooltip.vue";
 import { resetFocus } from "@/utils/utils.ts";
 
-defineProps({
-  visible: {
-    type: Boolean,
-    required: true,
-  },
-  disabled: {
-    type: Boolean,
-    default: false
-  }
+withDefaults(defineProps<{
+  visible: boolean
+  disabled?: boolean
+}>(), {
+  disabled: false
 });
 
 const emit = defineEmits(['openImportModal', 'openExportModal', 'openNewProjectModal']);
@@ -75,7 +72,7 @@ interface MenuItem {
 const execAction = (action: () => void) => {
   action();
   resetFocus();
-}
+};
 
 const functionsMenuTopItems: readonly MenuItem[] = [
   {
@@ -158,7 +155,7 @@ const functionsMenuMiddleItems: readonly MenuItem[] = [
       emit('openImportModal');
     }
   },
-]
+];
 
 const functionsMenuBottomItems: readonly MenuItem[] = [
   {

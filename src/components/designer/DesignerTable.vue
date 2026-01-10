@@ -1,8 +1,8 @@
 <template>
-  <div
+    <div
+      ref="tableRef"
       class="min-w-40 max-w-160 absolute group/table focus:outline-0"
       tabindex="-1"
-      ref="tableRef"
 
       :class="focusedTable?.id == table.id ? 'z-20' : 'z-10'"
 
@@ -12,62 +12,62 @@
 
       @focus="selectTable(table)"
       @focusout="onFocusOut"
-  >
-    <div class="z-20 bg-accentGray rounded-b-lg">
-      <div class="w-full border-b border-b-accentDarkGray flex items-center justify-between bg-monolithicCyanTsunami">
-        <DoubleClickFocusInput
-            v-model="table.name"
+    >
+      <div class="z-20 bg-accentGray rounded-b-lg">
+        <div class="w-full border-b border-b-accentDarkGray flex items-center justify-between bg-monolithicCyanTsunami">
+          <DoubleClickFocusInput
             :id="`name-${table.id}`"
+            ref="nameInputRef"
+            v-model="table.name"
             type="text"
             class="w-full p-2 bg-monolithicCyanTsunami"
             :class="[highlightNameClass]"
-            ref="nameInputRef"
 
             :title="table.name"
 
             @mousedown.left="focusTable"
             @enter-key="focusNextInput(0)"
             @value-change="onTableNameChange"
-        />
-        <!--    Table resize handle -->
-        <div
+          />
+          <!--    Table resize handle -->
+          <div
             class="radial-accentGray h-6 w-8 cursor-col-resize"
             @mousedown.left="setResizedTable(table)"
             @mouseup.left="setResizedTable()"
-        />
-      </div>
-      <div class="w-full min-h-4">
-        <TableColRow
-          v-for="(col, index) in table.cols"
-          v-model:col="table.cols[index]"
-          :key="col.id"
-          :is-col-name-duplicate="duplicateColNames.has(col.name.toLowerCase())"
-          ref="tableColumns"
-          @focus-next="focusNextInput(index + 1)"
-          @mouse-down="selectTable(table)"
+          />
+        </div>
+        <div class="w-full min-h-4">
+          <TableColRow
+            v-for="(col, index) in table.cols"
+            :key="col.id"
+            ref="tableColumns"
+            v-model:col="table.cols[index]"
+            :is-col-name-duplicate="duplicateColNames.has(col.name.toLowerCase())"
+            @focus-next="focusNextInput(index + 1)"
+            @mouse-down="selectTable(table)"
 
-          @keydown.delete.stop
-          @keyup.delete.stop
-          @delete-col="onDeleteCol(col)"
-        />
+            @keydown.delete.stop
+            @keyup.delete.stop
+            @delete-col="onDeleteCol(col)"
+          />
 
-        <TableColRow
-            v-model:col="newTableCol"
+          <TableColRow
             ref="newColRef"
+            v-model:col="newTableCol"
+            non-focusable-row
             @focus-next="storeNewCol"
             @focus-out="storeNewCol(false)"
             @mouse-down="focusTable()"
-            non-focusable-row
-        />
-
+          />
+        </div>
       </div>
-    </div>
 
-    <!--    Pseudo border   -->
-    <div class="absolute w-full p-1 h-14/15 z-[-1] top-4 right-0 rounded-b-xl
+      <!--    Pseudo border   -->
+      <div
+        class="absolute w-full p-1 h-14/15 z-[-1] top-4 right-0 rounded-b-xl
       bg-transparent group-hover/table:bg-lycheeIce group-focus/table:bg-monolithicCyanTsunami"
-    />
-  </div>
+      />
+    </div>
 </template>
 
 <script setup lang="ts">
@@ -103,26 +103,26 @@ const props = defineProps<{
 const { currentSettings } = storeToRefs(useSettingsStore());
 
 const highlightNameClass = computed(() => {
-  if (props.isNameDuplicate) { return '!bg-yellow-400' }
+  if (props.isNameDuplicate) { return '!bg-yellow-400'; }
   if (
-      !SQL_IDENTIFIER_REGEX.test(table.value.name)
-  ) { return '!bg-red-400' }
+    !SQL_IDENTIFIER_REGEX.test(table.value.name)
+  ) { return '!bg-red-400'; }
 
   return '';
-})
+});
 
 const tableRef = useTemplateRef('tableRef');
 
 const focusTable = () => {
   tableRef.value?.focus();
-}
+};
 
 const onFocusOut = () => {
   selectTable();
-}
+};
 
 const newTableCol = ref<TableCol>(generateNewTableCol(
-    defaultPrimaryTypes[currentSettings.value.databaseEngine]
+  defaultPrimaryTypes[currentSettings.value.databaseEngine]
 ));
 
 const nameInputRef = useTemplateRef('nameInputRef');
@@ -137,7 +137,7 @@ const focusNextInput = (index: number) => {
   } else {
     newColRef.value?.focusColName();
   }
-}
+};
 
 const isSavingNewCol = ref<boolean>(false);
 
@@ -154,7 +154,7 @@ const storeNewCol = (refocus: boolean = true) => {
       const res = addTableCol(newTableCol.value);
       if (res) {
         newTableCol.value = generateNewTableCol(
-            defaultPrimaryTypes[currentSettings.value.databaseEngine]
+          defaultPrimaryTypes[currentSettings.value.databaseEngine]
         );
         if (refocus) {
           newColRef.value?.focusColName();
@@ -169,7 +169,7 @@ const storeNewCol = (refocus: boolean = true) => {
     }
     isSavingNewCol.value = false;
   }
-}
+};
 
 const onDeleteCol = async (col: TableCol) => {
   const index = table.value.cols.indexOf(col);
@@ -188,7 +188,7 @@ const onDeleteCol = async (col: TableCol) => {
       columnsRef.value[index - 1]?.focusRow();
     }
   }
-}
+};
 
 const onTableNameChange = (oldVal: string | number) => {
   const oldTable = cloneDeep(table.value);
@@ -196,7 +196,7 @@ const onTableNameChange = (oldVal: string | number) => {
 
   selectTable(table.value);
   bufferLogTableChange(oldTable);
-}
+};
 
 const duplicateColNames = computed(() => {
   const nameCount = table.value.cols.reduce((map, col) => {
@@ -205,7 +205,7 @@ const duplicateColNames = computed(() => {
   }, new Map<string, number>());
 
   return new Set(
-      [...nameCount].flatMap(([name, count]) => count > 1 ? [name] : [])
+    [...nameCount].flatMap(([name, count]) => count > 1 ? [name] : [])
   );
 });
 

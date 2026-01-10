@@ -1,6 +1,6 @@
 <template type="svg">
-  <g>
-    <line
+    <g>
+      <line
         ref="lineRef"
         stroke-linecap="round"
         :stroke-width="lineWidth"
@@ -11,101 +11,88 @@
         :y1="y1"
         :x2="x2"
         :y2="y2"
-    />
-    <polyline
+      />
+      <polyline
         v-if="isManyRelationship"
         :points="trianglePoints"
         :fill="lineColor"
-    />
-    <circle
+      />
+      <circle
         v-else
         :r="circleRadius"
         :cx="x1"
         :cy="y1"
         :fill="lineColor"
-    />
-  </g>
+      />
+    </g>
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, type PropType, ref, watch } from "vue";
+import { computed, nextTick, onMounted, ref, watch } from "vue";
 import type { DatabaseRelationship, RelationshipType } from "@/types/relationships.ts";
 import { useDesignStore } from "@/store/design.ts";
 import type { Table } from "@/types/table.ts";
 import { clamp } from "@/utils/utils.ts";
 import { storeToRefs } from "pinia";
 import {
-    RELATION_BASE_CIRCLE_SIZE,
-    RELATION_CIRCLE_SIZE_MULTIPLIER,
-    RELATION_MAX_CIRCLE_SIZE,
-    RELATION_BASE_TRIANGLE_RADIUS,
-    RELATION_TRIANGLE_RADIUS_MULTIPLIER,
-    RELATION_MAX_TRIANGLE_RADIUS,
-    RELATION_BASE_LINE_WIDTH,
-    RELATION_LINE_WIDTH_MULTIPLIER,
-    RELATION_MAX_LINE_WIDTH,
-    RELATION_DASH_PATTERN,
-    RELATION_LINE_OFFSET
+  RELATION_BASE_CIRCLE_SIZE,
+  RELATION_CIRCLE_SIZE_MULTIPLIER,
+  RELATION_MAX_CIRCLE_SIZE,
+  RELATION_BASE_TRIANGLE_RADIUS,
+  RELATION_TRIANGLE_RADIUS_MULTIPLIER,
+  RELATION_MAX_TRIANGLE_RADIUS,
+  RELATION_BASE_LINE_WIDTH,
+  RELATION_LINE_WIDTH_MULTIPLIER,
+  RELATION_MAX_LINE_WIDTH,
+  RELATION_DASH_PATTERN,
+  RELATION_LINE_OFFSET
 } from "@/types/constants.ts";
 
-const props = defineProps({
-  relation: {
-    type: Object as PropType<DatabaseRelationship>,
-    required: true
-  },
-  scaleFactor: {
-    type: Number,
-    required: true
-  },
-  offsetX: {
-    type: Number,
-    required: true
-  },
-  offsetY: {
-    type: Number,
-    required: true
-  }
-});
+const props = defineProps<{
+  relation: DatabaseRelationship
+  scaleFactor: number
+  offsetX: number
+  offsetY: number
+}>();
 
 const nonIdentifyingTypes: RelationshipType[] = [
-    'notm',
-    'noto'
+  'notm',
+  'noto'
 ];
 
 const manyRelationshipTypes: RelationshipType[] = [
-    'notm',
-    'iotm',
-    'mtm'
+  'notm',
+  'iotm',
+  'mtm'
 ];
 
 const isManyRelationship = computed(() => manyRelationshipTypes.includes(props.relation.type));
 
 // Increase circle size on zooming out
 const circleRadius = computed(() => clamp(
-    RELATION_BASE_CIRCLE_SIZE + RELATION_BASE_CIRCLE_SIZE * RELATION_CIRCLE_SIZE_MULTIPLIER * (1 - props.scaleFactor),
-    RELATION_BASE_CIRCLE_SIZE,
-    RELATION_MAX_CIRCLE_SIZE)
-);
+  RELATION_BASE_CIRCLE_SIZE + RELATION_BASE_CIRCLE_SIZE * RELATION_CIRCLE_SIZE_MULTIPLIER * (1 - props.scaleFactor),
+  RELATION_BASE_CIRCLE_SIZE,
+  RELATION_MAX_CIRCLE_SIZE
+));
 
 // Increase triangle size on zooming out
 const triangleRadius = computed(() => clamp(
-    RELATION_BASE_TRIANGLE_RADIUS + RELATION_BASE_TRIANGLE_RADIUS * RELATION_TRIANGLE_RADIUS_MULTIPLIER * (1 - props.scaleFactor),
-    RELATION_BASE_TRIANGLE_RADIUS,
-    RELATION_MAX_TRIANGLE_RADIUS)
-);
+  RELATION_BASE_TRIANGLE_RADIUS + RELATION_BASE_TRIANGLE_RADIUS * RELATION_TRIANGLE_RADIUS_MULTIPLIER * (1 - props.scaleFactor),
+  RELATION_BASE_TRIANGLE_RADIUS,
+  RELATION_MAX_TRIANGLE_RADIUS
+));
 
 // Increase line width on zooming out
 const lineWidth = computed(() => clamp(
-    RELATION_BASE_LINE_WIDTH + RELATION_BASE_LINE_WIDTH * RELATION_LINE_WIDTH_MULTIPLIER * (1 - props.scaleFactor),
-    RELATION_BASE_LINE_WIDTH,
-    RELATION_MAX_LINE_WIDTH)
-);
+  RELATION_BASE_LINE_WIDTH + RELATION_BASE_LINE_WIDTH * RELATION_LINE_WIDTH_MULTIPLIER * (1 - props.scaleFactor),
+  RELATION_BASE_LINE_WIDTH,
+  RELATION_MAX_LINE_WIDTH
+));
 
 // Make the line come out of the triangle tip / circle center
 const x1offset = computed(() =>
-    (isManyRelationship.value ? triangleRadius.value : circleRadius.value) *
-    (anchor1side.value == 'r' ? -1 : 1)
-);
+  (isManyRelationship.value ? triangleRadius.value : circleRadius.value) *
+    (anchor1side.value == 'r' ? -1 : 1));
 
 // Non-identifying are dashed
 const lineDash = computed(() => nonIdentifyingTypes.includes(props.relation.type) ? RELATION_DASH_PATTERN : undefined);
@@ -113,12 +100,11 @@ const lineDash = computed(() => nonIdentifyingTypes.includes(props.relation.type
 const { tables, selectedTable } = storeToRefs(useDesignStore());
 
 const lineColor = computed(() => selectedTable.value && props.relation.firstTableId == selectedTable.value.id ?
-    'var(--color-monolithicCyanTsunami)' :
-    'var(--color-lycheeIce)'
-);
+  'var(--color-monolithicCyanTsunami)' :
+  'var(--color-lycheeIce)');
 
-const firstTable = ref<Table>(tables.value.find(it => it.id == props.relation.firstTableId)!)
-const secondTable = ref<Table>(tables.value.find(it => it.id == props.relation.secondTableId)!)
+const firstTable = ref<Table>(tables.value.find(it => it.id == props.relation.firstTableId)!);
+const secondTable = ref<Table>(tables.value.find(it => it.id == props.relation.secondTableId)!);
 
 const x1 = ref<number>(0);
 const y1 = ref<number>(0);
@@ -167,28 +153,28 @@ const calculateLineCoordinates = () => {
       y2.value = secondPos.y / props.scaleFactor - props.offsetY;
     }
   }
-}
+};
 
 watch(
-    () => [
-        firstTable.value.posX,
-        firstTable.value.posY,
-        secondTable.value.posX,
-        secondTable.value.posY,
-        firstTable.value.widthPx,
-        secondTable.value.widthPx
-    ],
-    async () => {
-      await nextTick();
-      calculateLineCoordinates();
-    },
-    { deep: true }
+  () => [
+    firstTable.value.posX,
+    firstTable.value.posY,
+    secondTable.value.posX,
+    secondTable.value.posY,
+    firstTable.value.widthPx,
+    secondTable.value.widthPx
+  ],
+  async () => {
+    await nextTick();
+    calculateLineCoordinates();
+  },
+  { deep: true }
 );
 
 onMounted(async () => {
   await nextTick();
   calculateLineCoordinates();
-})
+});
 
 </script>
 

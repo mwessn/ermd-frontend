@@ -1,20 +1,20 @@
 <template>
-  <div
+    <div
       class="absolute border border-lycheeIce rounded-lg z-1 opacity-75"
       :class="props.isTemporary ? 'min-w-0.5 min-h-0.5' : 'min-w-24 min-h-24'"
       :style="{ top: area.posY + 'px', left: area.posX + 'px',
-       width: area.size.width + 'px', height: area.size.height + 'px',
-        background: area.color}"
-  >
-<!--  Header  -->
-    <div
+                width: area.size.width + 'px', height: area.size.height + 'px',
+                background: area.color}"
+    >
+      <!--  Header  -->
+      <div
         class="comment-area-header w-full relative
           text-lycheeIce bg-accentDarkGray p-2 flex items-center justify-between
             rounded-t-lg"
         :style="{ fontSize: headerFontSize + 'px' }"
-    >
-      <div class="flex items-center gap-2">
-        <FontAwesomeIcon
+      >
+        <div class="flex items-center gap-2">
+          <FontAwesomeIcon
             :icon="faPalette"
             class="cursor-pointer hover:opacity-50"
             :style="{ color: area.color }"
@@ -22,43 +22,43 @@
 
             @mouseenter="colorSelectorIconHovered = true"
             @mouseleave="colorSelectorIconHovered = false"
-        />
-        <DoubleClickFocusInput
+          />
+          <DoubleClickFocusInput
             v-model="area.name"
 
             class="max-w-52"
 
             :placeholder="$t('new comment area')"
 
-            @valueChange="onChange"
+            @value-change="onChange"
             @enter-key="resetFocus"
-        />
-      </div>
-      <div class="flex items-center gap-4 overflow-hidden">
-        <FontAwesomeIcon
+          />
+        </div>
+        <div class="flex items-center gap-4 overflow-hidden">
+          <FontAwesomeIcon
             :icon="faTrashCan"
             class="cursor-pointer text-accentGray hover:opacity-50"
             @mouseup.left="deleteCommentArea(area)"
-        />
-        <div
+          />
+          <div
             class="h-6 w-6 bg-accentDarkGray radial-accentGray cursor-move"
             @mousedown.left="setMovedCommentArea(area)"
-        />
-      </div>
+          />
+        </div>
 
-      <!-- Color picker -->
-      <AreaColorSelector
+        <!-- Color picker -->
+        <AreaColorSelector
           v-if="showColorSelector"
-          class="absolute bottom-full left-0"
           v-model="area.color"
+          class="absolute bottom-full left-0"
           @focusout="onColorSelectorFocusOut"
 
           @change="onChange"
-      />
-    </div>
+        />
+      </div>
 
-<!--  Comment box  -->
-    <div
+      <!--  Comment box  -->
+      <div
         class="mt-3 w-fit h-fit ml-3 max-h-10/12 max-w-10/12
           min-h-6 min-w-6 origin-top-left
         text-accentDarkGray rounded mb-3 relative"
@@ -66,13 +66,13 @@
         @mousedown.stop
         @keydown.stop
         @keyup.stop
-    >
-      <FontAwesomeIcon
+      >
+        <FontAwesomeIcon
           :icon="area.showComment ? faChevronUp : faChevronDown"
           class="cursor-pointer absolute right-1 top-1 bg-accentGray rounded p-1 shadow-lg"
           @mouseup.left="area.showComment = !area.showComment"
-      />
-      <textarea
+        />
+        <textarea
           v-if="area.showComment"
           v-model="area.comment"
           :placeholder="$t('Comment')"
@@ -80,17 +80,16 @@
           class="resize max-h-26 max-w-full box-border bg-accentGray p-1 rounded"
 
           @change="onChange"
-      />
-    </div>
+        />
+      </div>
 
-<!--  Resize handle  -->
-    <div
+      <!--  Resize handle  -->
+      <div
         class="absolute bottom-0 right-0 rounded-br-lg rounded-tl
           h-4 w-4 bg-accentDarkGray radial-accentGray cursor-nw-resize"
         @mousedown.left="setResizedCommentArea(area)"
-    />
-  </div>
-
+      />
+    </div>
 </template>
 
 <script setup lang="ts">
@@ -104,10 +103,10 @@ import { faChevronDown, faChevronUp, faPalette, faTrashCan } from "@fortawesome/
 import { useDesignStore } from "@/store/design.ts";
 import AreaColorSelector from "@/components/core/AreaColorSelector.vue";
 import {
-    COMMENT_AREA_FONT_SIZES,
-    COMMENT_AREA_DEFAULT_FONT_SIZE,
-    COMMENT_AREA_MIN_SCALE,
-    COMMENT_AREA_MAX_SCALE
+  COMMENT_AREA_FONT_SIZES,
+  COMMENT_AREA_DEFAULT_FONT_SIZE,
+  COMMENT_AREA_MIN_SCALE,
+  COMMENT_AREA_MAX_SCALE
 } from "@/types/constants.ts";
 
 const area = defineModel<CommentArea>('area', { required: true });
@@ -121,10 +120,10 @@ const props = withDefaults(defineProps<{
 });
 
 const {
-    setResizedCommentArea,
-    setMovedCommentArea,
-    deleteCommentArea,
-    bufferLogCommentAreaChange
+  setResizedCommentArea,
+  setMovedCommentArea,
+  deleteCommentArea,
+  bufferLogCommentAreaChange
 } = useDesignStore();
 
 const oldVal = ref<CommentArea>(cloneDeep(area.value));
@@ -147,7 +146,7 @@ const onChange = () => {
 
   bufferLogCommentAreaChange(oldVal.value);
   oldVal.value = cloneDeep(area.value);
-}
+};
 
 const colorSelectorIconHovered = ref<boolean>(false);
 
@@ -155,7 +154,7 @@ const onColorSelectorFocusOut = () => {
   if (!colorSelectorIconHovered.value) {
     showColorSelector.value = false;
   }
-}
+};
 </script>
 
 <style scoped>

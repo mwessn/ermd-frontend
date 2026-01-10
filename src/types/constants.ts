@@ -13,10 +13,10 @@ export const COMMENT_AREA_COLLAPSE_HEIGHT = 80;
 
 // Comment Area Font Size Breakpoints (scale -> font size)
 export const COMMENT_AREA_FONT_SIZES = [
-    { maxScale: 0.4, fontSize: 32 },
-    { maxScale: 0.6, fontSize: 28 },
-    { maxScale: 0.8, fontSize: 24 },
-    { maxScale: 1.0, fontSize: 20 },
+  { maxScale: 0.4, fontSize: 32 },
+  { maxScale: 0.6, fontSize: 28 },
+  { maxScale: 0.8, fontSize: 24 },
+  { maxScale: 1.0, fontSize: 20 },
 ] as const;
 export const COMMENT_AREA_DEFAULT_FONT_SIZE = 16;
 export const COMMENT_AREA_MIN_SCALE = 1;

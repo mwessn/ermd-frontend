@@ -1,14 +1,14 @@
 <template>
-  <div>
-    <input
-        type="file"
+    <div>
+      <input
         ref="fileInput"
+        type="file"
         name="json"
         accept="application/json"
         hidden
         @change="onFileChange"
-    >
-    <div
+      >
+      <div
         v-if="!fileObj"
         class="border border-dashed border-accentGray
         bg-accentDarkGray w-full text-center text-lycheeIce py-4
@@ -18,22 +18,28 @@
         @dragleave="handleDragLeave"
         @drop.prevent="handleDrop"
         @click="openFilePicker"
-    >
-      <FontAwesomeIcon :icon="faFileArrowUp" class="h-8" />
-      <div class="font-bold">
-        {{ $t('Drop a file here') }}
+      >
+        <FontAwesomeIcon :icon="faFileArrowUp" class="h-8" />
+        <div class="font-bold">
+          {{ $t('Drop a file here') }}
+        </div>
+        <div>
+          {{ $t('or click to select') }}
+        </div>
       </div>
-      <div>
-        {{ $t('or click to select') }}
+      <div v-else class="flex justify-between items-center p-1.5 border-b border-b-accentGray">
+        <div class="flex gap-2 items-center">
+          <div class="font-bold">
+            {{ fileObj.name }}
+          </div>
+        </div>
+        <FontAwesomeIcon
+          :icon="faTrashCan"
+          class="cursor-pointer h-6"
+          @click="onFileRemove"
+        />
       </div>
     </div>
-    <div v-else class="flex justify-between items-center p-1.5 border-b border-b-accentGray">
-      <div class="flex gap-2 items-center">
-        <div class="font-bold">{{ fileObj.name }}</div>
-      </div>
-      <FontAwesomeIcon :icon="faTrashCan" class="cursor-pointer h-6" @click="onFileRemove" />
-    </div>
-  </div>
 </template>
 
 <script setup lang="ts">
@@ -61,7 +67,7 @@ const handleDragLeave = () => {
 const handleDrop = (event: Event) => {
   isDragging.value = false;
   const droppedFiles: File[] = Array.from(
-      assertDefined((event as InputEvent).dataTransfer).files
+    assertDefined((event as InputEvent).dataTransfer).files
   );
   if (droppedFiles.length > 0) {
     _file.value = droppedFiles[0];
@@ -77,11 +83,11 @@ const openFilePicker = () => {
 
 const onFileRemove = () => {
   fileInput.value!.value = '';
-  _file.value = undefined
+  _file.value = undefined;
   fileObj.value = undefined;
 
   emit('onFileChange');
-}
+};
 
 const onFileChange = async (event: Event | undefined = undefined) => {
   if (event) {
@@ -91,7 +97,7 @@ const onFileChange = async (event: Event | undefined = undefined) => {
   fileObj.value = assertDefined(_file.value);
 
   emit('onFileChange', fileObj.value);
-}
+};
 
 const emit = defineEmits(['onFileChange']);
 

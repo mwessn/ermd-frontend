@@ -1,71 +1,70 @@
 <template>
-  <div
+    <div
       class="fixed right-0 h-full p-4 mt-12 w-64
           bg-accentDarkGray text-center z-50
           text-textColor overflow-auto pb-24
             transition-transform duration-300"
       :class="visible ? 'translate-x-0' : 'translate-x-full'"
-  >
-    <DBEngineChangeSelect
+    >
+      <DBEngineChangeSelect
         :init-value="currentSettings.databaseEngine"
-        @engineChange="onEngineChange"
-    />
+        @engine-change="onEngineChange"
+      />
 
-    <CustomSelect
+      <CustomSelect
         v-model="currentSettings.namingConvention"
         :label="$t('Naming convention')"
         :options="conventionSelectOptions"
         :hint="$t('Will only apply to newly created tables')"
-    />
+      />
 
-    <CustomSelect
-        v-model="currentSettings.defaultPrimaryType"
+      <CustomSelect
+        v-model="defaultPrimaryTypeName"
         :label="$t('Default Primary Key')"
         :options="primaryColumnOptions"
-    />
+      />
 
-    <Separator />
+      <Separator />
 
-    <CustomCheckbox
+      <CustomCheckbox
         v-model="currentSettings.generateMtMPrimaryKey"
         :label="$t('Generate primary key for MtM tables')"
-    />
+      />
 
-    <template v-if="currentSettings.generateMtMPrimaryKey">
-      <CustomSelect
-          v-model="currentSettings.mtmPrimaryKeyType"
+      <template v-if="currentSettings.generateMtMPrimaryKey">
+        <CustomSelect
+          v-model="mtmPrimaryKeyTypeName"
           :label="$t('Default MtM Primary Key')"
           :options="primaryColumnOptions"
-      />
-    </template>
+        />
+      </template>
 
-    <Separator />
+      <Separator />
 
-    <CustomSelect
+      <CustomSelect
         v-model="currentSettings.dragCanvasButton"
         :label="$t('Drag canvas button')"
         :options="dragButtonSelectOptions"
-    />
+      />
 
-    <CustomCheckbox
+      <CustomCheckbox
         v-model="currentSettings.snapToGrid"
         :label="$t('Snap to grid')"
         :hint="$t('Experimental, may be broken')"
-    />
+      />
 
-    <ClampedNumberInput
+      <ClampedNumberInput
         v-model="currentSettings.undoActionBufferSize"
         :label="$t('Action buffer size')"
         :min-value="0"
         :max-value="MAX_UNDO_BUFFER_SIZE"
         :hint="$t('Capped to {max} to prevent performance issues', { max: MAX_UNDO_BUFFER_SIZE })"
-    />
+      />
 
-    <Separator />
+      <Separator />
 
-    <UserDefinedColumnTypeDisplay />
-
-  </div>
+      <UserDefinedColumnTypeDisplay />
+    </div>
 </template>
 
 <script setup lang="ts">
@@ -83,12 +82,9 @@ import ClampedNumberInput from "@/components/core/inputs/ClampedNumberInput.vue"
 import UserDefinedColumnTypeDisplay from "@/components/settings/UserDefinedColumnTypeDisplay.vue";
 import { MAX_UNDO_BUFFER_SIZE } from "@/types/constants.ts";
 
-defineProps({
-  visible: {
-    type: Boolean,
-    required: true,
-  }
-});
+defineProps<{
+  visible: boolean
+}>();
 
 const i18n = useI18n();
 
@@ -119,21 +115,35 @@ const dragButtonSelectOptions: SelectOption[] = [
 ];
 
 const primaryColumnOptions = computed((): SelectOption[] =>
-    currentDatabaseColumnTypes.value
-        .filter(t => t.flags.canBePrimaryKey)
-        .map(type => {
-          return {
-            label: type.displayName,
-            value: type
-          }
-        })
-);
+  currentDatabaseColumnTypes.value
+    .filter(t => t.flags.canBePrimaryKey)
+    .map(type => {
+      return {
+        label: type.displayName,
+        value: type.displayName
+      };
+    }));
+
+const defaultPrimaryTypeName = computed({
+  get: () => currentSettings.value.defaultPrimaryType.displayName,
+  set: (name: string) => {
+    const type = currentDatabaseColumnTypes.value.find(t => t.displayName === name);
+    if (type) currentSettings.value.defaultPrimaryType = type;
+  }
+});
+
+const mtmPrimaryKeyTypeName = computed({
+  get: () => currentSettings.value.mtmPrimaryKeyType.displayName,
+  set: (name: string) => {
+    const type = currentDatabaseColumnTypes.value.find(t => t.displayName === name);
+    if (type) currentSettings.value.mtmPrimaryKeyType = type;
+  }
+});
 
 const onEngineChange = (val: DatabaseEngine) => {
   // Sanity check
   if (!DatabaseEngines.includes(val)) { return; }
-  console.log(val);
   settingsStore.setCurrentEngine(val);
-}
+};
 
 </script>

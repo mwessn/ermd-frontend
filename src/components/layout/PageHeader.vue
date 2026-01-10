@@ -1,35 +1,35 @@
 <template>
-  <div class="absolute top-0 w-full h-12 bg-headerBlack flex justify-between items-center px-4 text-monolithicCyanTsunami z-50">
-    <div class="flex gap-3 items-center">
-      <div
+    <div class="absolute top-0 w-full h-12 bg-headerBlack flex justify-between items-center px-4 text-monolithicCyanTsunami z-50">
+      <div class="flex gap-3 items-center">
+        <div
           class="cursor-pointer"
           tabindex="0"
           :aria-label="$t('Open functions menu')"
           @keydown.enter="onClick('functions')"
           @click="onClick('functions')"
-      >
-        <FontAwesomeIcon :icon="faBars" />
-      </div>
-      <div class="text-lycheeIce">
-        <DoubleClickFocusInput
+        >
+          <FontAwesomeIcon :icon="faBars" />
+        </div>
+        <div class="text-lycheeIce">
+          <DoubleClickFocusInput
             v-model="projectName"
             class="placeholder:text-accentDarkGray"
             :placeholder="`${$t('enter project name')}...`"
             @enter-key="resetFocus"
-        />
+          />
+        </div>
+        <p>The tool is still in development, this is a staging page. What are you doing here?</p>
       </div>
-      <p>The tool is still in development, this is a staging page. What are you doing here?</p>
-    </div>
-    <div
+      <div
         class="cursor-pointer"
         tabindex="0"
         :aria-label="$t('Open settings menu')"
         @keydown.enter="onClick('settings')"
         @click="onClick('settings')"
-    >
-      <FontAwesomeIcon :icon="faCog" />
+      >
+        <FontAwesomeIcon :icon="faCog" />
+      </div>
     </div>
-  </div>
 </template>
 
 <script setup lang="ts">
@@ -48,8 +48,8 @@ const {
 } = storeToRefs(useExportStore());
 
 const onClick = (menu: 'functions' | 'settings') => {
-  emit('menuToggle', menu)
-}
+  emit('menuToggle', menu);
+};
 </script>
 
 <style scoped>

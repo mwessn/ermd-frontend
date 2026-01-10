@@ -1,5 +1,5 @@
 <template>
-  <div
+    <div
       class="full relative bg-grid overflow-hidden"
       :style="{ cursor: cursorStyle, backgroundPosition: bgPos, backgroundSize: bgSize }"
       :class="{ 'select-none' : isDragging }"
@@ -11,25 +11,25 @@
       @mousemove="onMouseMove"
       @mouseleave="onMouseLeave"
       @wheel.prevent="onScroll"
-  >
-    <div
+    >
+      <div
         class="full relative origin-top-left"
         :style="{ scale: scaleFactor, transform: `translate(${ translatePos })` }"
-    >
-      <DesignerTable
+      >
+        <DesignerTable
           v-for="(table, index) in designStore.tables"
-          v-model:table="designStore.tables[index]"
-          :key="table.id"
           :id="`table-${table.id}`"
+          :key="table.id"
+          v-model:table="designStore.tables[index]"
           :is-name-duplicate="isTableNameDuplicate(table.name)"
-      />
+        />
 
-      <svg
+        <svg
           ref="relationshipsRef"
           class="fixed top-0 left-0 full z-2 origin-top-left pointer-events-none"
           overflow="visible"
-      >
-        <DesignerRelation
+        >
+          <DesignerRelation
             v-for="relation in designStore.relations"
             :key="relation.id"
             :relation="relation"
@@ -38,48 +38,59 @@
             :offset-y="translateOffsetY"
             @mousedown.stop
             @mouseup.stop
-        />
-      </svg>
+          />
+        </svg>
 
-      <DesignerCommentArea
+        <DesignerCommentArea
           v-for="(area, index) in designStore.commentAreas"
-          v-model:area="designStore.commentAreas[index]"
           :key="area.id"
+          v-model:area="designStore.commentAreas[index]"
           :scale-value="scaleFactor"
-      />
+        />
 
-      <DesignerCommentArea
+        <DesignerCommentArea
           v-if="designStore.tempCommentArea"
-          v-model:area="designStore.tempCommentArea"
           key="temp-area"
+          v-model:area="designStore.tempCommentArea"
           is-temporary
-      />
-    </div>
+        />
+      </div>
 
-    <div
+      <div
         class="absolute bottom-0 right-2/5 m-2 flex items-center gap-2 text-accentDarkGray"
         @mousedown.stop
         @mouseup.stop
-    >
-      <div
-          class="bg-accentGray rounded px-4 h-7 text-accentDarkGray flex items-center gap-2"
       >
-        <input v-model.number="scaleFactor" class="slider bg-accentDarkGray slider-thumb-lycheeIce" type="range" min="0.2" max="1.5" step="0.02">
-        <FontAwesomeIcon :icon="faMagnifyingGlass" />
-      </div>
+        <div
+          class="bg-accentGray rounded px-4 h-7 text-accentDarkGray flex items-center gap-2"
+        >
+          <input
+            v-model.number="scaleFactor"
+            class="slider bg-accentDarkGray slider-thumb-lycheeIce"
+            type="range"
+            min="0.2"
+            max="1.5"
+            step="0.02"
+          >
+          <FontAwesomeIcon :icon="faMagnifyingGlass" />
+        </div>
 
-      <div
+        <div
           class="bg-accentGray rounded w-7 h-7"
           @mouseup.left="centerView(0, 0)"
-      >
-        <Tooltip text="Center view" button="X" class="full">
-          <div class="flex items-center justify-center full">
-            <FontAwesomeIcon :icon="faArrowsToDot" />
-          </div>
-        </Tooltip>
+        >
+          <Tooltip
+            text="Center view"
+            button="X"
+            class="full"
+          >
+            <div class="flex items-center justify-center full">
+              <FontAwesomeIcon :icon="faArrowsToDot" />
+            </div>
+          </Tooltip>
+        </div>
       </div>
     </div>
-  </div>
 </template>
 
 <script setup lang="ts">
@@ -112,7 +123,7 @@ const isTableNameDuplicate = (name: string) => designStore.duplicateTableNames.h
 const onMouseLeave = () => {
   onMouseUp();
   resetFocus();
-}
+};
 
 const {
   scaleFactor,

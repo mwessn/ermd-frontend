@@ -1,9 +1,9 @@
-import { createApp } from 'vue'
+import { createApp } from 'vue';
 import { createPinia } from "pinia";
-import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
-import App from '@/App.vue'
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
+import App from '@/App.vue';
 
-import '@/styles/style.css'
+import '@/styles/style.css';
 
 import { router } from "@/router.ts";
 import i18n from "@/utils/i18n.ts";
@@ -12,14 +12,14 @@ import { useSettingsStore } from "@/store/settings.ts";
 
 const pinia = createPinia();
 
-pinia.use(piniaPluginPersistedstate)
+pinia.use(piniaPluginPersistedstate);
 
 const app = createApp(App);
 
 app.config.errorHandler = (err) => {
-    console.warn('Something terrible has happened', err)
-    useSettingsStore().setCriticalError(err as Error);
-}
+  console.warn('Something terrible has happened', err);
+  useSettingsStore().setCriticalError(err as Error);
+};
 
 app.use(router);
 app.use(i18n);
