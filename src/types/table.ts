@@ -1,5 +1,6 @@
 import { generateId, unpluralize } from "@/utils/utils.ts";
 import { type ColumnType, getDefaultModifierParams } from "@/types/TableColumnTypes/tableField.ts";
+import { useSettingsStore } from "@/store/settings.ts";
 
 export interface TableCol {
   id: string,
@@ -53,6 +54,13 @@ export const generateNewTableCol = (colType: ColumnType): TableCol => {
   };
 };
 
+// Map of SERIAL types to their integer equivalents
+const serialToIntegerMap: Record<string, string> = {
+  'SMALLSERIAL': 'SMALLINT',
+  'SERIAL': 'INTEGER',
+  'BIGSERIAL': 'BIGINT'
+};
+
 export const generateNewForeignKey = (
   otherTable: Table,
   fkUnique: boolean = false,
@@ -62,16 +70,31 @@ export const generateNewForeignKey = (
   const otherPrimary = otherTable.cols.find(it => it.primaryKey);
 
   if (otherPrimary) {
-    const col = generateNewTableCol(
-      otherPrimary.type
-    );
+    let fkType = otherPrimary.type;
+
+    // Convert SERIAL types to their integer equivalents for FK columns
+    if (otherPrimary.type.primitive === 'serial') {
+      const settingsStore = useSettingsStore();
+      const integerTypeName = serialToIntegerMap[otherPrimary.type.displayName];
+
+      if (integerTypeName) {
+        const intType = settingsStore.currentDatabaseColumnTypes.find(
+          it => it.displayName === integerTypeName
+        );
+        if (intType) {
+          fkType = intType;
+        }
+      }
+    }
+
+    const col = generateNewTableCol(fkType);
 
     const postfix = namingCon == 'snake' ? '_id' : 'Id';
     col.name = `${unpluralize(otherTable.name)}${postfix}`;
 
     col.foreignKey = true;
 
-    col.type = otherPrimary.type;
+    col.type = fkType;
     col.modifierValues = otherPrimary.modifierValues;
 
     // Identifying and MtM FK must be not null

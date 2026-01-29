@@ -42,7 +42,6 @@
         </div>
       </div>
 
-
       <div
         v-if="dropdownVisible"
         ref="rootDiv"

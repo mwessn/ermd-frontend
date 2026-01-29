@@ -1,6 +1,6 @@
 import { defineStore, storeToRefs } from "pinia";
 import { generateNewForeignKey, generateNewTable, type Table, type TableCol } from "@/types/table.ts";
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { useActionBuffer } from "@/store/actionBuffer.ts";
 import { type AreaSize, type CursorPos } from "@/components/designer/scripts/useDesignCanvas.ts";
 import { cloneDeep } from "lodash";
@@ -27,11 +27,13 @@ export const useDesignStore = defineStore('design', () => {
   const bufferStore = useActionBuffer();
   const actionStore = useActionsStore();
 
+  const settingsStore = useSettingsStore();
   const {
     currentSettings,
     defaultPrimaryKey,
     defaultTableName,
-  } = storeToRefs(useSettingsStore());
+    currentDatabaseColumnTypes,
+  } = storeToRefs(settingsStore);
 
   // Primary storage as Maps for O(1) lookups
   const tablesMap = ref<Map<string, Table>>(new Map());
@@ -954,6 +956,153 @@ export const useDesignStore = defineStore('design', () => {
     commentAreasMap.value.clear();
     newAreas.forEach(area => commentAreasMap.value.set(area.id, area));
   }
+
+  // Helper function to update relation type based on FK column properties
+  function updateRelationTypeFromColumn(relation: DatabaseRelationship, fkColumn: TableCol): RelationshipType | null {
+    // Skip MTM relations as they have different rules
+    if (relation.type === 'mtm') return null;
+
+    const isIdentifying = fkColumn.notNull;
+    const isOneToOne = fkColumn.unique;
+
+    // Determine new type based on column properties
+    if (isOneToOne) {
+      return isIdentifying ? 'ioto' : 'noto';
+    } else {
+      return isIdentifying ? 'iotm' : 'notm';
+    }
+  }
+
+  // Monitor FK columns and update relation types accordingly
+  watch(
+    () => tables.value.flatMap(table =>
+      table.cols
+        .filter(col => col.foreignKey)
+        .map(col => ({
+          tableId: table.id,
+          colId: col.id,
+          notNull: col.notNull,
+          unique: col.unique
+        }))
+    ),
+    (newFKStates, oldFKStates) => {
+      if (!oldFKStates) return; // Skip initial run
+
+      // Check each FK column for changes
+      newFKStates.forEach(newState => {
+        const oldState = oldFKStates.find(
+          s => s.tableId === newState.tableId && s.colId === newState.colId
+        );
+
+        // If notNull or unique changed, update the relation
+        if (oldState && (oldState.notNull !== newState.notNull || oldState.unique !== newState.unique)) {
+          const relation = relations.value.find(r => r.firstTableColId === newState.colId);
+
+          if (relation) {
+            const table = tablesMap.value.get(newState.tableId);
+            const fkColumn = table?.cols.find(c => c.id === newState.colId);
+
+            if (fkColumn) {
+              const newType = updateRelationTypeFromColumn(relation, fkColumn);
+
+              if (newType && newType !== relation.type) {
+                // Log the change to the buffer
+                bufferStore.addUndoBufferAction({
+                  entities: [{
+                    action: 'change',
+                    type: 'relation',
+                    entityId: relation.id,
+                    oldVal: cloneDeep(relation)
+                  }]
+                });
+
+                // Update the relation type
+                relation.type = newType;
+              }
+            }
+          }
+        }
+      });
+    },
+    { deep: true }
+  );
+
+  // Monitor PK column type changes and update corresponding FK columns
+  watch(
+    () => tables.value.flatMap(table =>
+      table.cols
+        .filter(col => col.primaryKey)
+        .map(col => ({
+          tableId: table.id,
+          colId: col.id,
+          typeName: col.type.displayName,
+          modifierValues: col.modifierValues
+        }))
+    ),
+    (newPKStates, oldPKStates) => {
+      if (!oldPKStates || !currentSettings.value.updateForeignKeysOnPrimaryChange) return;
+
+      // Check each PK column for type changes
+      newPKStates.forEach(newState => {
+        const oldState = oldPKStates.find(
+          s => s.tableId === newState.tableId && s.colId === newState.colId
+        );
+
+        // If type changed, update all FK columns that reference this PK
+        if (oldState && oldState.typeName !== newState.typeName) {
+          // Find all relations that reference this PK
+          const affectedRelations = relations.value.filter(
+            r => r.secondTableColId === newState.colId
+          );
+
+          affectedRelations.forEach(relation => {
+            const fkTable = tablesMap.value.get(relation.firstTableId);
+            const fkColumn = fkTable?.cols.find(c => c.id === relation.firstTableColId);
+            const pkTable = tablesMap.value.get(newState.tableId);
+            const pkColumn = pkTable?.cols.find(c => c.id === newState.colId);
+
+            if (fkColumn && pkColumn && fkTable) {
+              const fkIndex = fkTable.cols.indexOf(fkColumn);
+
+              // Convert SERIAL types to their integer equivalents for FK columns
+              let fkType = pkColumn.type;
+              if (pkColumn.type.primitive === 'serial') {
+                const serialToIntMap: Record<string, string> = {
+                  'SMALLSERIAL': 'SMALLINT',
+                  'SERIAL': 'INTEGER',
+                  'BIGSERIAL': 'BIGINT'
+                };
+                const intTypeName = serialToIntMap[pkColumn.type.displayName];
+                if (intTypeName) {
+                  const intType = currentDatabaseColumnTypes.value.find(
+                    t => t.displayName === intTypeName
+                  );
+                  if (intType) {
+                    fkType = intType;
+                  }
+                }
+              }
+
+              // Log the change to the buffer
+              bufferStore.addUndoBufferAction({
+                entities: [{
+                  action: 'change',
+                  type: 'tableCol',
+                  entityId: `${fkTable.id}.${fkColumn.id}.${fkIndex}`,
+                  oldVal: cloneDeep(fkColumn)
+                }]
+              });
+
+              // Update FK column type and modifiers to match PK
+              fkColumn.type = fkType;
+              fkColumn.modifierValues = pkColumn.modifierValues;
+            }
+          });
+        }
+      });
+    },
+    { deep: true }
+  );
 
 
   return {

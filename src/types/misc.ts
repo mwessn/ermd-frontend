@@ -14,6 +14,7 @@ export interface UserSettings {
   // Relationships
   generateMtMPrimaryKey: boolean;
   mtmPrimaryKeyType: ColumnType;
+  updateForeignKeysOnPrimaryChange: boolean;
 
   // Functional
   dragCanvasButton: 'middle' | 'left';
@@ -29,6 +30,7 @@ export const defaultSettings: UserSettings = {
 
   generateMtMPrimaryKey: false,
   mtmPrimaryKeyType: defaultPrimaryTypes['postgres'],
+  updateForeignKeysOnPrimaryChange: true,
 
   dragCanvasButton: 'left',
   undoActionBufferSize: 20,
