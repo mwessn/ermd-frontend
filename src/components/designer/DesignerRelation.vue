@@ -162,7 +162,13 @@ watch(
     secondTable.value.posX,
     secondTable.value.posY,
     firstTable.value.widthPx,
-    secondTable.value.widthPx
+    secondTable.value.widthPx,
+    // Watch column arrays to detect reordering or additions/deletions
+    firstTable.value.cols.length,
+    secondTable.value.cols.length,
+    // Watch the specific columns involved in the relation
+    firstTable.value.cols.findIndex(c => c.id === props.relation.firstTableColId),
+    secondTable.value.cols.findIndex(c => c.id === props.relation.secondTableColId)
   ],
   async () => {
     await nextTick();

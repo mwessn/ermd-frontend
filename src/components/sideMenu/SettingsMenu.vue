@@ -39,6 +39,18 @@
         />
       </template>
 
+      <CustomCheckbox
+        v-model="currentSettings.updateForeignKeysOnPrimaryChange"
+        :label="$t('Update FK types when PK type changes')"
+        :hint="$t('Automatically sync FK column types with their referenced PK')"
+      />
+
+      <CustomCheckbox
+        v-model="currentSettings.deleteForeignKeyColumnOnRelationDelete"
+        :label="$t('Delete FK column when relation is deleted')"
+        :hint="$t('If disabled, FK column becomes a regular column')"
+      />
+
       <Separator />
 
       <CustomSelect

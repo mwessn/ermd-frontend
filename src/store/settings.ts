@@ -1,17 +1,18 @@
-import { defineStore } from "pinia";
-import { computed, ref } from "vue";
-import type { UserSettings } from "@/types/misc.ts";
-import { defaultSettings } from "@/types/misc.ts";
-import { cloneDeep } from "lodash";
+import {defineStore} from "pinia";
+import {computed, ref} from "vue";
+import type {UserSettings} from "@/types/misc.ts";
+import {defaultSettings} from "@/types/misc.ts";
+import {cloneDeep} from "lodash";
 import {
   type ColumnType,
   type DatabaseEngine,
-  DatabaseEngines, defaultCustomTypes,
+  DatabaseEngines,
+  defaultCustomTypes,
   getDefaultModifierParams
 } from "@/types/TableColumnTypes/tableField.ts";
-import { mysqlTypes } from "@/types/TableColumnTypes/mysqlTypes.ts";
-import { useDesignStore } from "@/store/design.ts";
-import { postgresTypes } from "@/types/TableColumnTypes/postgresTypes.ts";
+import {mysqlTypes} from "@/types/TableColumnTypes/mysqlTypes.ts";
+import {useDesignStore} from "@/store/design.ts";
+import {postgresTypes} from "@/types/TableColumnTypes/postgresTypes.ts";
 
 interface ErrorDetails {
   datetime: Date,
@@ -22,9 +23,21 @@ export const useSettingsStore = defineStore('settings', () => {
 
   const criticalError = ref<ErrorDetails | undefined>(undefined);
 
+  const loadSettings = (): UserSettings => {
+    const json: UserSettings | null = JSON.parse(localStorage.getItem("__ermd_settings") ?? "null");
+
+    if (json) {
+      return {
+        ...cloneDeep(defaultSettings),
+        ...json
+      };
+    } else {
+      return cloneDeep(defaultSettings);
+    }
+  };
+
   const currentSettings = ref<UserSettings>(
-    JSON.parse(localStorage.getItem("__ermd_settings") ?? "null")
-        ?? cloneDeep(defaultSettings)
+    loadSettings()
   );
 
   const defaultTableName = computed(() => currentSettings.value.namingConvention == 'snake' ? 'new_table_' : 'NewTable');
