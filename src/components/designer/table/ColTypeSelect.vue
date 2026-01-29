@@ -10,9 +10,11 @@
 
           v-model="inputValue"
           class="cursor-inherit p-1 overflow-ellipsis w-full"
+          :class="{ 'opacity-50 cursor-not-allowed': isTypeDisabled }"
           tabindex="-1"
 
-          :title="inputValue"
+          :title="disabledTitle"
+          :disabled="isTypeDisabled"
 
           autocomplete="off"
 
@@ -98,7 +100,8 @@ const emit = defineEmits<{
 
 const inputRef = useTemplateRef('inputRef');
 
-const { columnTypeNames, currentDatabaseColumnTypes } = storeToRefs(useSettingsStore());
+const settingsStore = useSettingsStore();
+const { columnTypeNames, currentDatabaseColumnTypes, currentSettings } = storeToRefs(settingsStore);
 
 const selectAll = () => {
   inputRef.value?.select();
@@ -110,6 +113,8 @@ const deselectAll = () => {
 };
 
 const focusSelectAll = () => {
+  if (isTypeDisabled.value) return;
+
   emit('focus');
 
   deselectAll();
@@ -121,6 +126,15 @@ const focusSelectAll = () => {
 };
 
 const inputValue = ref<string>(col.value.type.displayName);
+
+// FK columns cannot have their type manually edited when auto-sync is enabled
+const isTypeDisabled = computed(() =>
+  col.value.foreignKey && currentSettings.value.updateForeignKeysOnPrimaryChange);
+
+const disabledTitle = computed(() =>
+  isTypeDisabled.value
+    ? 'FK type is managed by its referenced PK. Disable "Update FK types when PK type changes" in settings to edit manually.'
+    : inputValue.value);
 
 // Pre-compute lowercase names for faster filtering/sorting
 const columnTypeNamesLower = computed(() =>
@@ -152,6 +166,8 @@ const matchedNames = computed(() => {
 const selectedOption = ref<number | undefined>(undefined);
 
 const selectTypeOption = (_index: number) => {
+  if (isTypeDisabled.value) return;
+
   dropdownVisible.value = true;
 
   const index = clamp(_index, 0, matchedNames.value.length - 1);

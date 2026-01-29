@@ -45,6 +45,17 @@ export const useDesignStore = defineStore('design', () => {
   const relations = computed(() => [...relationsMap.value.values()]);
   const commentAreas = computed(() => [...commentAreasMap.value.values()]);
 
+  // Map relations by PK column ID for fast lookup
+  const relationsByPKColumnId = computed(() => {
+    const map = new Map<string, DatabaseRelationship[]>();
+    for (const relation of relationsMap.value.values()) {
+      const existing = map.get(relation.secondTableColId) || [];
+      existing.push(relation);
+      map.set(relation.secondTableColId, existing);
+    }
+    return map;
+  });
+
   const newTableIndex = ref<number>(1);
 
   const gridSize = computed(() => currentSettings.value.snapToGrid ? GRID_SNAP_SIZE : 1);
@@ -204,10 +215,15 @@ export const useDesignStore = defineStore('design', () => {
           }
         ];
 
-        const existingRelations = relations.value.filter(it => it.firstTableColId == col.id);
-
-        existingRelations.forEach(rel =>
+        // Delete relations where this column is the FK
+        const fkRelations = relations.value.filter(it => it.firstTableColId == col.id);
+        fkRelations.forEach(rel =>
           bufferEntries.push(...deleteRelationship(rel, false)));
+
+        // Delete relations where this column is the PK
+        const pkRelations = relations.value.filter(it => it.secondTableColId == col.id);
+        pkRelations.forEach(rel =>
+          bufferEntries.push(...deleteRelationship(rel, currentSettings.value.deleteForeignKeyColumnOnRelationDelete)));
 
         bufferStore.addUndoBufferAction({
           entities: bufferEntries
@@ -679,16 +695,70 @@ export const useDesignStore = defineStore('design', () => {
   }
 
   function bufferLogColChange(col: TableCol, oldVal: TableCol) {
-    if (selectedTable.value) {
-      bufferStore.addUndoBufferAction({
-        entities: [{
-          action: 'change',
-          type: "tableCol",
-          entityId: `${selectedTable.value.id}.${col.id}`,
-          oldVal: oldVal,
-        }]
+    if (!selectedTable.value) return;
+
+    const bufferEntries: BufferEntity[] = [];
+
+    // Log the column change
+    bufferEntries.push({
+      action: 'change',
+      type: "tableCol",
+      entityId: `${selectedTable.value.id}.${col.id}`,
+      oldVal: oldVal,
+    });
+
+    // If PK type changed and auto-sync is enabled, update all FK columns that reference it
+    if (col.primaryKey &&
+        currentSettings.value.updateForeignKeysOnPrimaryChange &&
+        oldVal.type.displayName !== col.type.displayName) {
+
+      const affectedRelations = relationsByPKColumnId.value.get(col.id) || [];
+
+      affectedRelations.forEach(relation => {
+        const fkTable = tablesMap.value.get(relation.firstTableId);
+        const fkColumn = fkTable?.cols.find(c => c.id === relation.firstTableColId);
+
+        if (fkColumn && fkTable) {
+          const fkIndex = fkTable.cols.indexOf(fkColumn);
+
+          // Save old FK state before updating
+          bufferEntries.push({
+            action: 'change',
+            type: 'tableCol',
+            entityId: `${fkTable.id}.${fkColumn.id}.${fkIndex}`,
+            oldVal: cloneDeep(fkColumn)
+          });
+
+          // Convert SERIAL types to their integer equivalents for FK columns
+          let fkType = col.type;
+          if (col.type.primitive === 'serial') {
+            const serialToIntMap: Record<string, string> = {
+              'SMALLSERIAL': 'SMALLINT',
+              'SERIAL': 'INTEGER',
+              'BIGSERIAL': 'BIGINT'
+            };
+            const intTypeName = serialToIntMap[col.type.displayName];
+            if (intTypeName) {
+              const intType = currentDatabaseColumnTypes.value.find(
+                (t: ColumnType) => t.displayName === intTypeName
+              );
+              if (intType) {
+                fkType = intType;
+              }
+            }
+          }
+
+          // Update FK column type and modifiers to match PK
+          fkColumn.type = fkType;
+          fkColumn.modifierValues = col.modifierValues;
+        }
       });
     }
+
+    // Log all changes (PK + FKs) as a single batch
+    bufferStore.addUndoBufferAction({
+      entities: bufferEntries
+    });
   }
 
   function bufferLogTableChange(oldVal: Table) {
@@ -983,8 +1053,7 @@ export const useDesignStore = defineStore('design', () => {
           colId: col.id,
           notNull: col.notNull,
           unique: col.unique
-        }))
-    ),
+        }))),
     (newFKStates, oldFKStates) => {
       if (!oldFKStates) return; // Skip initial run
 
@@ -1027,77 +1096,46 @@ export const useDesignStore = defineStore('design', () => {
     { deep: true }
   );
 
-  // Monitor PK column type changes and update corresponding FK columns
+  // Monitor when PK flag is removed from a column and delete corresponding relations
   watch(
     () => tables.value.flatMap(table =>
-      table.cols
-        .filter(col => col.primaryKey)
-        .map(col => ({
-          tableId: table.id,
-          colId: col.id,
-          typeName: col.type.displayName,
-          modifierValues: col.modifierValues
-        }))
-    ),
-    (newPKStates, oldPKStates) => {
-      if (!oldPKStates || !currentSettings.value.updateForeignKeysOnPrimaryChange) return;
+      table.cols.map(col => ({
+        tableId: table.id,
+        colId: col.id,
+        isPrimaryKey: col.primaryKey
+      }))),
+    (newStates, oldStates) => {
+      if (!oldStates) return; // Skip initial run
 
-      // Check each PK column for type changes
-      newPKStates.forEach(newState => {
-        const oldState = oldPKStates.find(
+      // Check for columns that lost their PK flag
+      newStates.forEach(newState => {
+        const oldState = oldStates.find(
           s => s.tableId === newState.tableId && s.colId === newState.colId
         );
 
-        // If type changed, update all FK columns that reference this PK
-        if (oldState && oldState.typeName !== newState.typeName) {
-          // Find all relations that reference this PK
+        // If a column lost its PK flag, delete all relations that reference it as PK
+        if (oldState && oldState.isPrimaryKey && !newState.isPrimaryKey) {
           const affectedRelations = relations.value.filter(
             r => r.secondTableColId === newState.colId
           );
 
-          affectedRelations.forEach(relation => {
-            const fkTable = tablesMap.value.get(relation.firstTableId);
-            const fkColumn = fkTable?.cols.find(c => c.id === relation.firstTableColId);
-            const pkTable = tablesMap.value.get(newState.tableId);
-            const pkColumn = pkTable?.cols.find(c => c.id === newState.colId);
+          if (affectedRelations.length > 0) {
+            const bufferEntries: BufferEntity[] = [];
 
-            if (fkColumn && pkColumn && fkTable) {
-              const fkIndex = fkTable.cols.indexOf(fkColumn);
+            affectedRelations.forEach(relation => {
+              bufferEntries.push(...deleteRelationship(
+                relation,
+                currentSettings.value.deleteForeignKeyColumnOnRelationDelete
+              ));
+            });
 
-              // Convert SERIAL types to their integer equivalents for FK columns
-              let fkType = pkColumn.type;
-              if (pkColumn.type.primitive === 'serial') {
-                const serialToIntMap: Record<string, string> = {
-                  'SMALLSERIAL': 'SMALLINT',
-                  'SERIAL': 'INTEGER',
-                  'BIGSERIAL': 'BIGINT'
-                };
-                const intTypeName = serialToIntMap[pkColumn.type.displayName];
-                if (intTypeName) {
-                  const intType = currentDatabaseColumnTypes.value.find(
-                    t => t.displayName === intTypeName
-                  );
-                  if (intType) {
-                    fkType = intType;
-                  }
-                }
-              }
-
-              // Log the change to the buffer
+            // Log all relation deletions as a single undo action
+            if (bufferEntries.length > 0) {
               bufferStore.addUndoBufferAction({
-                entities: [{
-                  action: 'change',
-                  type: 'tableCol',
-                  entityId: `${fkTable.id}.${fkColumn.id}.${fkIndex}`,
-                  oldVal: cloneDeep(fkColumn)
-                }]
+                entities: bufferEntries
               });
-
-              // Update FK column type and modifiers to match PK
-              fkColumn.type = fkType;
-              fkColumn.modifierValues = pkColumn.modifierValues;
             }
-          });
+          }
         }
       });
     },
