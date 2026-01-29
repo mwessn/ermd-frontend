@@ -13,7 +13,7 @@
           :class="{ 'opacity-50 cursor-not-allowed': isTypeDisabled }"
           tabindex="-1"
 
-          :title="disabledTitle"
+          :title="$t(disabledTitle)"
           :disabled="isTypeDisabled"
 
           autocomplete="off"

@@ -237,6 +237,9 @@ const onColTypeChange = (oldVal: TableCol) => {
     // Focus table to be able to add log entry
     emit('mouseDown');
     bufferLogColChange(col.value, oldVal);
+
+    // Return the focus to the row to properly handle focusout later
+    rowRef.value?.focus();
   }
 };
 
