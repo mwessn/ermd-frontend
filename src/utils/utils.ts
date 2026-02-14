@@ -1,6 +1,6 @@
 import { irregularPlurals } from "@/types/irregularPlurals.ts";
 
-type IdScope = 'col' | 'table' | 'relation' | 'commentArea';
+type IdScope = 'col' | 'table' | 'relation' | 'group' | 'comment';
 
 export function generateId(scope: IdScope): string {
   const random = Math.random().toString(36).substring(2, 8); // 6-char random

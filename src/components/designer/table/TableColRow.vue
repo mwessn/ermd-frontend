@@ -1,5 +1,6 @@
 <template>
     <div
+      :id="`col-${col.id}`"
       ref="rowRef"
       class="flex items-center w-full not-last:border-b relative group/cols"
 

@@ -39,20 +39,34 @@
             @mousedown.stop
             @mouseup.stop
           />
+          <DesignerCommentLink
+            v-for="comment in designStore.comments"
+            :key="comment.id"
+            :comment="comment"
+            :scale-factor="scaleFactor"
+            :offset-x="translateOffsetX"
+            :offset-y="translateOffsetY"
+          />
         </svg>
 
-        <DesignerCommentArea
-          v-for="area in designStore.commentAreas"
+        <DesignerGroup
+          v-for="area in designStore.groups"
           :key="area.id"
           :area="area"
           :scale-value="scaleFactor"
         />
 
-        <DesignerCommentArea
-          v-if="designStore.tempCommentArea"
+        <DesignerGroup
+          v-if="designStore.tempGroup"
           key="temp-area"
-          :area="designStore.tempCommentArea"
+          :area="designStore.tempGroup"
           is-temporary
+        />
+
+        <DesignerComment
+          v-for="comment in designStore.comments"
+          :key="comment.id"
+          :comment="comment"
         />
       </div>
 
@@ -105,7 +119,9 @@ import { useDesignStore } from "@/store/design.ts";
 import DesignerTable from "@/components/designer/DesignerTable.vue";
 import { resetFocus } from "@/utils/utils.ts";
 import DesignerRelation from "@/components/designer/DesignerRelation.vue";
-import DesignerCommentArea from "@/components/designer/DesignerCommentArea.vue";
+import DesignerGroup from "@/components/designer/DesignerGroup.vue";
+import DesignerComment from "@/components/designer/DesignerComment.vue";
+import DesignerCommentLink from "@/components/designer/DesignerCommentLink.vue";
 import { CANVAS_GRID_BG_SIZE } from "@/types/constants.ts";
 
 const actionsStore = useActionsStore();

@@ -51,6 +51,12 @@
         :hint="$t('If disabled, FK column becomes a regular column')"
       />
 
+      <CustomCheckbox
+        v-model="currentSettings.deleteLinkedCommentsWithEntity"
+        :label="$t('Delete linked comments with entity')"
+        :hint="$t('When enabled, comments linked to entities are deleted when the entity is deleted. Otherwise, they become standalone.')"
+      />
+
       <Separator />
 
       <CustomSelect

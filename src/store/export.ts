@@ -15,7 +15,8 @@ export const useExportStore = defineStore('export', () => {
   const {
     tables,
     relations,
-    commentAreas,
+    groups,
+    comments,
     isManualCreation,
     newTableIndex
   } = storeToRefs(designStore);
@@ -23,7 +24,8 @@ export const useExportStore = defineStore('export', () => {
   const {
     setAllTables,
     setAllRelations,
-    setAllCommentAreas,
+    setAllGroups,
+    setAllComments,
   } = designStore;
 
   const {
@@ -53,7 +55,8 @@ export const useExportStore = defineStore('export', () => {
     const data: ExportJson = {
       tables: tables.value.map(Table2ExportType),
       relations: relations.value,
-      commentAreas: commentAreas.value,
+      groups: groups.value,
+      comments: comments.value,
       engine: currentSettings.value.databaseEngine,
       userTypes: userDefinedColumnTypes.value,
       exportVersion: appConfig.appVersion
@@ -149,7 +152,8 @@ export const useExportStore = defineStore('export', () => {
       newTableIndex.value = importedTables.length + 1;
 
       setAllRelations(validatedJson.relations);
-      setAllCommentAreas(validatedJson.commentAreas);
+      setAllGroups(validatedJson.groups ?? []);
+      setAllComments(validatedJson.comments ?? []);
 
     } catch (err) {
       console.error("Failed to import JSON:", err);
@@ -197,7 +201,11 @@ export const useExportStore = defineStore('export', () => {
     );
 
     errors.push(
-      ...validateJsonCommentAreas(data.commentAreas)
+      ...validateJsonGroups(data.groups ?? [])
+    );
+
+    errors.push(
+      ...validateJsonComments(data.comments ?? [])
     );
 
     if (!data.exportVersion || typeof data.exportVersion != 'number') {
@@ -396,9 +404,9 @@ export const useExportStore = defineStore('export', () => {
     return errors;
   }
 
-  function validateJsonCommentAreas(areas: unknown) {
+  function validateJsonGroups(areas: unknown) {
     if (!Array.isArray(areas)) {
-      return ["'commentAreas' must be an array"];
+      return ["'groups' must be an array"];
     }
 
     const errors: string[] = [];
@@ -409,8 +417,6 @@ export const useExportStore = defineStore('export', () => {
       { name: 'posY', type: 'number' },
       { name: 'color', type: 'string' },
       { name: 'name', type: 'string' },
-      { name: 'comment', type: 'string' },
-      { name: 'showComment', type: 'boolean' },
       { name: 'size', type: 'object' },
     ];
 
@@ -421,7 +427,7 @@ export const useExportStore = defineStore('export', () => {
       }
 
       errors.push(
-        ...validateObjectKeys(areaKeys, area, 'commentArea', index)
+        ...validateObjectKeys(areaKeys, area, 'group', index)
       );
 
       if (isObject(area.size)) {
@@ -433,6 +439,56 @@ export const useExportStore = defineStore('export', () => {
             index
           )
         );
+      }
+    }
+
+    return errors;
+  }
+
+  function validateJsonComments(comments: unknown) {
+    if (!Array.isArray(comments)) {
+      return ["'comments' must be an array"];
+    }
+
+    const errors: string[] = [];
+
+    const commentKeys: ObjectKeyValue[] = [
+      { name: 'id', type: 'string' },
+      { name: 'text', type: 'string' },
+      { name: 'posX', type: 'number' },
+      { name: 'posY', type: 'number' },
+      { name: 'color', type: 'string' },
+      { name: 'linkedTo', type: 'object', nullable: true },
+    ];
+
+    for (const { index, comment } of comments.map((c, index) => ({ index, comment: c }))) {
+      if (!isObject(comment)) {
+        errors.push(`Comment ${index} is not an object`);
+        continue;
+      }
+
+      errors.push(
+        ...validateObjectKeys(commentKeys, comment, 'comment', index)
+      );
+
+      // Validate linkedTo structure
+      if (comment.linkedTo && isObject(comment.linkedTo)) {
+        const linkedToKeys: ObjectKeyValue[] = [
+          { name: 'type', type: 'string' },
+          { name: 'entityId', type: 'string' },
+          { name: 'offsetX', type: 'number' },
+          { name: 'offsetY', type: 'number' }
+        ];
+
+        errors.push(
+          ...validateObjectKeys(linkedToKeys, comment.linkedTo, 'linkedTo', index)
+        );
+
+        // Validate type enum
+        if (typeof comment.linkedTo.type === 'string' &&
+                  !['group', 'table', 'column'].includes(comment.linkedTo.type)) {
+          errors.push(`Invalid linkedTo type in comment ${index}: ${comment.linkedTo.type}`);
+        }
       }
     }
 

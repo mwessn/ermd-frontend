@@ -8,7 +8,8 @@
     >
       <!--  Header  -->
       <div
-        class="comment-area-header w-full relative
+        :id="`group-header-${area.id}`"
+        class="group-header w-full relative
           text-lycheeIce bg-accentDarkGray p-2 flex items-center justify-between
             rounded-t-lg"
         :style="{ fontSize: headerFontSize + 'px' }"
@@ -28,7 +29,7 @@
 
             class="max-w-52"
 
-            :placeholder="$t('new comment area')"
+            :placeholder="$t('new group')"
 
             @value-change="onChange"
             @enter-key="resetFocus"
@@ -38,11 +39,11 @@
           <FontAwesomeIcon
             :icon="faTrashCan"
             class="cursor-pointer text-accentGray hover:opacity-50"
-            @mouseup.left="deleteCommentArea(area)"
+            @mouseup.left="deleteGroup(area)"
           />
           <div
             class="h-6 w-6 bg-accentDarkGray radial-accentGray cursor-move"
-            @mousedown.left="setMovedCommentArea(area)"
+            @mousedown.left="setMovedGroup(area)"
           />
         </div>
 
@@ -55,62 +56,40 @@
 
           @change="onChange"
         />
-      </div>
 
-      <!--  Comment box  -->
-      <div
-        class="mt-3 w-fit h-fit ml-3 max-h-10/12 max-w-10/12
-          min-h-6 min-w-6 origin-top-left
-        text-accentDarkGray rounded mb-3 relative"
-        :style="{ scale: commentAreaScale }"
-        @mousedown.stop
-        @keydown.stop
-        @keyup.stop
-      >
-        <FontAwesomeIcon
-          :icon="area.showComment ? faChevronUp : faChevronDown"
-          class="cursor-pointer absolute right-1 top-1 bg-accentGray rounded p-1 shadow-lg"
-          @mouseup.left="area.showComment = !area.showComment"
-        />
-        <textarea
-          v-if="area.showComment"
-          v-model="area.comment"
-          :placeholder="$t('Comment')"
-          rows="3"
-          class="resize max-h-26 max-w-full box-border bg-accentGray p-1 rounded"
-
-          @change="onChange"
-        />
+        <!-- Left/right anchors for comment links (on header) -->
+        <div class="absolute inset-0 flex items-center justify-between pointer-events-none">
+          <div :id="`anchor-group-${area.id}-l`" class="w-0 h-0" />
+          <div :id="`anchor-group-${area.id}-r`" class="w-0 h-0" />
+        </div>
       </div>
 
       <!--  Resize handle  -->
       <div
         class="absolute bottom-0 right-0 rounded-br-lg rounded-tl
           h-4 w-4 bg-accentDarkGray radial-accentGray cursor-nw-resize"
-        @mousedown.left="setResizedCommentArea(area)"
+        @mousedown.left="setResizedGroup(area)"
       />
     </div>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import type { CommentArea } from "@/types/misc.ts";
+import type { Group } from "@/types/misc.ts";
 import { cloneDeep } from "lodash";
 import DoubleClickFocusInput from "@/components/core/DoubleClickFocusInput.vue";
 import { resetFocus } from "@/utils/utils.ts";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import { faChevronDown, faChevronUp, faPalette, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { faPalette, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { useDesignStore } from "@/store/design.ts";
 import AreaColorSelector from "@/components/core/AreaColorSelector.vue";
 import {
-  COMMENT_AREA_FONT_SIZES,
-  COMMENT_AREA_DEFAULT_FONT_SIZE,
-  COMMENT_AREA_MIN_SCALE,
-  COMMENT_AREA_MAX_SCALE
+  GROUP_FONT_SIZES,
+  GROUP_DEFAULT_FONT_SIZE
 } from "@/types/constants.ts";
 
 const props = withDefaults(defineProps<{
-  area: CommentArea
+  area: Group
   isTemporary?: boolean
   scaleValue?: number
 }>(), {
@@ -121,22 +100,20 @@ const props = withDefaults(defineProps<{
 const area = computed(() => props.area);
 
 const {
-  setResizedCommentArea,
-  setMovedCommentArea,
-  deleteCommentArea,
-  bufferLogCommentAreaChange
+  setResizedGroup,
+  setMovedGroup,
+  deleteGroup,
+  bufferLogGroupChange
 } = useDesignStore();
 
-const oldVal = ref<CommentArea>(cloneDeep(area.value));
+const oldVal = ref<Group>(cloneDeep(area.value));
 
 const headerFontSize = computed(() => {
-  for (const { maxScale, fontSize } of COMMENT_AREA_FONT_SIZES) {
+  for (const { maxScale, fontSize } of GROUP_FONT_SIZES) {
     if (props.scaleValue < maxScale) return fontSize;
   }
-  return COMMENT_AREA_DEFAULT_FONT_SIZE;
+  return GROUP_DEFAULT_FONT_SIZE;
 });
-
-const commentAreaScale = computed(() => Math.max(COMMENT_AREA_MAX_SCALE - props.scaleValue, COMMENT_AREA_MIN_SCALE));
 
 const showColorSelector = ref<boolean>(false);
 const onChange = () => {
@@ -145,7 +122,7 @@ const onChange = () => {
   oldVal.value.posY = area.value.posY;
   oldVal.value.size = area.value.size;
 
-  bufferLogCommentAreaChange(oldVal.value);
+  bufferLogGroupChange(oldVal.value);
   oldVal.value = cloneDeep(area.value);
 };
 
@@ -159,7 +136,7 @@ const onColorSelectorFocusOut = () => {
 </script>
 
 <style scoped>
-.comment-area-header {
+.group-header {
   transition: font-size .2s ease;
 }
 </style>

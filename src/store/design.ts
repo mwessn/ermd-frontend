@@ -10,14 +10,16 @@ import { useActionsStore } from "@/store/action.ts";
 import { useSettingsStore } from "@/store/settings.ts";
 import { createNewRelationship } from "@/types/relationships.ts";
 import { unpluralize } from "@/utils/utils.ts";
-import { type CommentArea } from "@/types/misc.ts";
+import { type Group } from "@/types/misc.ts";
+import type { Comment } from "@/types/comments.ts";
 import { useExportStore } from "@/store/export.ts";
 import { GRID_SNAP_SIZE, DEFAULT_GRID_SIZE } from "@/types/constants.ts";
 
 import { createTableOperations } from "./design/tables.ts";
 import { createColumnOperations } from "./design/columns.ts";
 import { createRelationOperations } from "./design/relations.ts";
-import { createCommentAreaOperations } from "./design/commentAreas.ts";
+import { createGroupOperations } from "./design/groups.ts";
+import { createCommentOperations } from "./design/comments.ts";
 
 export const useDesignStore = defineStore('design', () => {
   const bufferStore = useActionBuffer();
@@ -31,12 +33,14 @@ export const useDesignStore = defineStore('design', () => {
   // Primary storage as Maps for O(1) lookups
   const tablesMap = ref<Map<string, Table>>(new Map());
   const relationsMap = ref<Map<string, DatabaseRelationship>>(new Map());
-  const commentAreasMap = ref<Map<string, CommentArea>>(new Map());
+  const groupsMap = ref<Map<string, Group>>(new Map());
+  const commentsMap = ref<Map<string, Comment>>(new Map());
 
   // Computed arrays for component iteration
   const tables = computed(() => [...tablesMap.value.values()]);
   const relations = computed(() => [...relationsMap.value.values()]);
-  const commentAreas = computed(() => [...commentAreasMap.value.values()]);
+  const groups = computed(() => [...groupsMap.value.values()]);
+  const comments = computed(() => [...commentsMap.value.values()]);
 
   // Map relations by PK column ID for fast lookup
   const relationsByPKColumnId = computed(() => {
@@ -59,9 +63,12 @@ export const useDesignStore = defineStore('design', () => {
   // Determine which table should have the highest z-offset
   const focusedTable = ref<Table | undefined>(undefined);
 
-  const tempCommentArea = ref<CommentArea | undefined>(undefined);
-  const resizedCommentArea = ref<CommentArea | undefined>(undefined);
-  const movedCommentArea = ref<CommentArea | undefined>(undefined);
+  const tempGroup = ref<Group | undefined>(undefined);
+  const resizedGroup = ref<Group | undefined>(undefined);
+  const movedGroup = ref<Group | undefined>(undefined);
+
+  const movedComment = ref<Comment | undefined>(undefined);
+  const linkingComment = ref<Comment | undefined>(undefined);
 
   const relationFirstTableId = ref<string | undefined>(undefined);
 
@@ -92,16 +99,20 @@ export const useDesignStore = defineStore('design', () => {
   const getState = () => ({
     tablesMap,
     relationsMap,
-    commentAreasMap,
+    groupsMap,
+    commentsMap,
     tables,
     relations,
-    commentAreas,
+    groups,
+    comments,
     selectedTable,
+    movedComment,
+    linkingComment,
     resizedTable,
     focusedTable,
-    tempCommentArea,
-    resizedCommentArea,
-    movedCommentArea,
+    tempGroup,
+    resizedGroup,
+    movedGroup,
     relationFirstTableId,
     newTableIndex,
     isManualCreation,
@@ -111,7 +122,8 @@ export const useDesignStore = defineStore('design', () => {
   const tableOps = createTableOperations(getState, { bufferStore, settingsStore }, gridSize);
   const columnOps = createColumnOperations(getState, { bufferStore, settingsStore });
   const relationOps = createRelationOperations(getState);
-  const commentAreaOps = createCommentAreaOperations(getState, { bufferStore }, gridSize);
+  const groupOps = createGroupOperations(getState, { bufferStore }, gridSize, currentSettings);
+  const commentOps = createCommentOperations(getState, { bufferStore });
 
   // ==================== CROSS-DOMAIN OPERATIONS ====================
 
@@ -175,19 +187,20 @@ export const useDesignStore = defineStore('design', () => {
   };
 
 
-  const moveCommentArea = (
+  const moveGroup = (
     deltaX: number,
     deltaY: number,
     tableIdsInside: string[],
-    areaIdsInside: string[]
+    areaIdsInside: string[],
+    commentIdsInside: string[]
   ) => {
-    if (movedCommentArea.value) {
-      const area = movedCommentArea.value;
+    if (movedGroup.value) {
+      const area = movedGroup.value;
       area.posX = snapToGrid(area.posX + deltaX, gridSize.value);
       area.posY = snapToGrid(area.posY + deltaY, gridSize.value);
 
       for (const areaId of areaIdsInside) {
-        const _area = commentAreasMap.value.get(areaId);
+        const _area = groupsMap.value.get(areaId);
         if (_area) {
           _area.posX = snapToGrid(_area.posX + deltaX, gridSize.value);
           _area.posY = snapToGrid(_area.posY + deltaY, gridSize.value);
@@ -200,6 +213,15 @@ export const useDesignStore = defineStore('design', () => {
         if (table) {
           table.posX = snapToGrid(table.posX + deltaX, gridSize.value);
           table.posY = snapToGrid(table.posY + deltaY, gridSize.value);
+        }
+      }
+
+      // Move standalone comments inside group
+      for (const commentId of commentIdsInside) {
+        const comment = commentsMap.value.get(commentId);
+        if (comment) {
+          comment.posX = snapToGrid(comment.posX + deltaX, gridSize.value);
+          comment.posY = snapToGrid(comment.posY + deltaY, gridSize.value);
         }
       }
     }
@@ -359,21 +381,22 @@ export const useDesignStore = defineStore('design', () => {
     }
   }
 
-  function bufferLogCommentAreaMove(
+  function bufferLogGroupMove(
     oldVal: CursorPos,
     tableIdsInside: string[],
-    areaIdsInside: string[]
+    areaIdsInside: string[],
+    commentIdsInside: string[]
   ) {
-    if (movedCommentArea.value != undefined) {
+    if (movedGroup.value != undefined) {
       const entities: BufferEntity[] = [];
       entities.push({
         action: 'move',
-        type: "commentArea",
-        entityId: movedCommentArea.value.id,
+        type: "group",
+        entityId: movedGroup.value.id,
         oldVal: oldVal,
       });
 
-      const area = movedCommentArea.value;
+      const area = movedGroup.value;
 
       const deltaX = area.posX - oldVal.x;
       const deltaY = area.posY - oldVal.y;
@@ -394,15 +417,30 @@ export const useDesignStore = defineStore('design', () => {
       }
 
       for (const areaId of areaIdsInside) {
-        const _area = commentAreasMap.value.get(areaId);
+        const _area = groupsMap.value.get(areaId);
         if (_area) {
           entities.push({
             action: 'move',
-            type: "commentArea",
+            type: "group",
             entityId: _area.id,
             oldVal: {
               x: _area.posX - deltaX,
               y: _area.posY - deltaY
+            },
+          });
+        }
+      }
+
+      for (const commentId of commentIdsInside) {
+        const comment = commentsMap.value.get(commentId);
+        if (comment) {
+          entities.push({
+            action: 'move',
+            type: "comment",
+            entityId: comment.id,
+            oldVal: {
+              x: comment.posX - deltaX,
+              y: comment.posY - deltaY
             },
           });
         }
@@ -531,6 +569,48 @@ export const useDesignStore = defineStore('design', () => {
     existingRelations.forEach( it =>
       bufferEntities.push(...deleteRelationship(it, false)));
 
+    // Handle linked comments based on setting
+    const linkedComments = comments.value.filter(c => {
+      if (!c.linkedTo) return false;
+
+      // Table-linked comments
+      if (c.linkedTo.type === 'table' && c.linkedTo.entityId === table.id) {
+        return true;
+      }
+
+      // Column-linked comments
+      if (c.linkedTo.type === 'column') {
+        const [tableId] = c.linkedTo.entityId.split('.');
+        return tableId === table.id;
+      }
+
+      return false;
+    });
+
+    if (currentSettings.value.deleteLinkedCommentsWithEntity) {
+      // Delete linked comments
+      for (const comment of linkedComments) {
+        bufferEntities.push({
+          action: 'delete',
+          type: 'comment',
+          entityId: comment.id,
+          oldVal: cloneDeep(comment)
+        });
+        commentsMap.value.delete(comment.id);
+      }
+    } else {
+      // Unlink comments
+      for (const comment of linkedComments) {
+        bufferEntities.push({
+          action: 'change',
+          type: 'comment',
+          entityId: comment.id,
+          oldVal: cloneDeep(comment)
+        });
+        comment.linkedTo = null;
+      }
+    }
+
     tablesMap.value.delete(table.id);
 
     return bufferEntities;
@@ -543,11 +623,20 @@ export const useDesignStore = defineStore('design', () => {
     newTableIndex.value = 1;
 
     relationsMap.value.clear();
-    commentAreasMap.value.clear();
+    groupsMap.value.clear();
+    commentsMap.value.clear();
 
     bufferStore.clearState();
 
     useExportStore().resetProjectInfo();
+  };
+
+  const setMovedComment = (comment: Comment | undefined = undefined) => {
+    movedComment.value = comment;
+  };
+
+  const setLinkingComment = (comment: Comment | undefined = undefined) => {
+    linkingComment.value = comment;
   };
 
   // Import helpers for setting all data at once (used by export store)
@@ -561,9 +650,14 @@ export const useDesignStore = defineStore('design', () => {
     newRelations.forEach(rel => relationsMap.value.set(rel.id, rel));
   }
 
-  function setAllCommentAreas(newAreas: CommentArea[]) {
-    commentAreasMap.value.clear();
-    newAreas.forEach(area => commentAreasMap.value.set(area.id, area));
+  function setAllGroups(newGroups: Group[]) {
+    groupsMap.value.clear();
+    newGroups.forEach(group => groupsMap.value.set(group.id, group));
+  }
+
+  function setAllComments(newComments: Comment[]) {
+    commentsMap.value.clear();
+    newComments.forEach(comment => commentsMap.value.set(comment.id, comment));
   }
 
   // ==================== WATCHERS ====================
@@ -690,13 +784,16 @@ export const useDesignStore = defineStore('design', () => {
     // State
     tables,
     relations,
-    commentAreas,
+    groups,
+    comments,
     selectedTable,
+    movedComment,
+    linkingComment,
     resizedTable,
     focusedTable,
-    tempCommentArea,
-    resizedCommentArea,
-    movedCommentArea,
+    tempGroup,
+    resizedGroup,
+    movedGroup,
     newTableIndex,
     duplicateTableNames,
     isManualCreation,
@@ -714,10 +811,15 @@ export const useDesignStore = defineStore('design', () => {
     ...relationOps,
     createRelationship,
 
-    // Comment area operations (from module + cross-domain)
-    ...commentAreaOps,
-    moveCommentArea,
-    bufferLogCommentAreaMove,
+    // Group operations (from module + cross-domain)
+    ...groupOps,
+    moveGroup,
+    bufferLogGroupMove,
+
+    // Comment operations (from module)
+    ...commentOps,
+    setMovedComment,
+    setLinkingComment,
 
     // Canvas operations
     snapToGrid,
@@ -726,18 +828,20 @@ export const useDesignStore = defineStore('design', () => {
     // Import helpers
     setAllTables,
     setAllRelations,
-    setAllCommentAreas,
+    setAllGroups,
+    setAllComments,
 
     // Expose maps for direct access when needed
     tablesMap,
     relationsMap,
-    commentAreasMap,
+    groupsMap,
+    commentsMap,
   };
 }, {
   persist: {
     key: `__ermd_design`,
     pick: [
-      'tablesMap', 'newTableIndex', 'relationsMap', 'commentAreasMap'
+      'tablesMap', 'newTableIndex', 'relationsMap', 'groupsMap', 'commentsMap'
     ],
     serializer: {
       serialize: (state) => {
@@ -745,7 +849,8 @@ export const useDesignStore = defineStore('design', () => {
         const toSave = {
           tables: [...(state.tablesMap as Map<string, Table>).values()],
           relations: [...(state.relationsMap as Map<string, DatabaseRelationship>).values()],
-          commentAreas: [...(state.commentAreasMap as Map<string, CommentArea>).values()],
+          groups: [...(state.groupsMap as Map<string, Group>).values()],
+          comments: [...(state.commentsMap as Map<string, Comment>).values()],
           newTableIndex: state.newTableIndex
         };
         return JSON.stringify(toSave, (_key, value) => {
@@ -766,7 +871,8 @@ export const useDesignStore = defineStore('design', () => {
         return {
           tablesMap: new Map(parsed.tables?.map((t: Table) => [t.id, t]) ?? []),
           relationsMap: new Map(parsed.relations?.map((r: DatabaseRelationship) => [r.id, r]) ?? []),
-          commentAreasMap: new Map(parsed.commentAreas?.map((a: CommentArea) => [a.id, a]) ?? []),
+          groupsMap: new Map(parsed.groups?.map((g: Group) => [g.id, g]) ?? []),
+          commentsMap: new Map(parsed.comments?.map((c: Comment) => [c.id, c]) ?? []),
           newTableIndex: parsed.newTableIndex ?? 0
         };
       }

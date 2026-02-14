@@ -43,6 +43,7 @@ import {
   faFile,
   faFileArrowDown,
   faFileArrowUp,
+  faObjectGroup,
   faTable
 } from "@fortawesome/free-solid-svg-icons";
 import { useActionsStore } from "@/store/action.ts";
@@ -86,7 +87,7 @@ const functionsMenuTopItems: readonly MenuItem[] = [
   {
     pic: faArrowRight,
     hint: 'Non-identifying One-to-One relation',
-    button: 'G',
+    button: 'H',
     action: () => {
       actionStore.setAction('noto');
     }
@@ -102,7 +103,7 @@ const functionsMenuTopItems: readonly MenuItem[] = [
   {
     pic: faChevronRight,
     hint: 'Non-identifying One-to-Many relation',
-    button: 'H',
+    button: 'J',
     action: () => {
       actionStore.setAction('notm');
     }
@@ -125,10 +126,18 @@ const functionsMenuTopItems: readonly MenuItem[] = [
   },
   {
     pic: faComment,
-    hint: 'Comment area',
+    hint: 'Comment',
     button: 'C',
     action: () => {
-      actionStore.setAction('commentArea');
+      actionStore.setAction('comment');
+    }
+  },
+  {
+    pic: faObjectGroup,
+    hint: 'Group',
+    button: 'G',
+    action: () => {
+      actionStore.setAction('group');
     }
   },
 ];

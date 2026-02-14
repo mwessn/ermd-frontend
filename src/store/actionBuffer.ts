@@ -68,12 +68,18 @@ export const useActionBuffer = defineStore('actionBuffer', () => {
       delete: e => designStore.bufferDeleteRelation(e),
       change: e => designStore.bufferChangeRelation(e),
     },
-    commentArea: {
-      create: e => designStore.bufferRestoreCommentArea(e),
-      delete: e => designStore.bufferDeleteCommentArea(e),
-      change: e => designStore.bufferSetCommentAreaValues(e),
-      move: e => designStore.bufferSetCommentAreaPos(e),
-      resize: e => designStore.bufferSetCommentAreaSize(e),
+    group: {
+      create: e => designStore.bufferRestoreGroup(e),
+      delete: e => designStore.bufferDeleteGroup(e),
+      change: e => designStore.bufferSetGroupValues(e),
+      move: e => designStore.bufferSetGroupPos(e),
+      resize: e => designStore.bufferSetGroupSize(e),
+    },
+    comment: {
+      create: e => designStore.bufferRestoreComment(e),
+      delete: e => designStore.bufferDeleteComment(e),
+      change: e => designStore.bufferSetCommentVal(e),
+      move: e => designStore.bufferSetCommentPos(e),
     }
   };
 
