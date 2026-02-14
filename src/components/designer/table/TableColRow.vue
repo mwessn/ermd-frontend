@@ -27,7 +27,7 @@
 
         :name="`colName-${col.id}`"
 
-        class="w-full group-last/cols:rounded-b-xl"
+        class="w-1/2 group-last/cols:rounded-b-xl"
         :class="[{ 'border-r' : !props.nonFocusableRow }, highlightColumnClass]"
 
         :title="col.name"
@@ -40,7 +40,7 @@
 
         @value-change="onColNameChange"
       />
-      <div v-if="showColType" class="min-w-1/2 flex items-center pr-2">
+      <div v-if="showColType" class="w-1/2 flex items-center pr-2">
         <ColTypeSelect
           v-if="rowRef"
           ref="colTypeRef"
