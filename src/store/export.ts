@@ -457,7 +457,6 @@ export const useExportStore = defineStore('export', () => {
       { name: 'text', type: 'string' },
       { name: 'posX', type: 'number' },
       { name: 'posY', type: 'number' },
-      { name: 'color', type: 'string' },
       { name: 'linkedTo', type: 'object', nullable: true },
     ];
 
