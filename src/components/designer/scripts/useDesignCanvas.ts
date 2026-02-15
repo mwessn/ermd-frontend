@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue';
 import { useActionsStore } from "@/store/action.ts";
 import { useDesignStore } from "@/store/design.ts";
-import { clamp } from "@/utils/utils.ts";
+import { clamp, resetFocus } from "@/utils/utils.ts";
 import { storeToRefs } from "pinia";
 import { useSettingsStore } from "@/store/settings.ts";
 import { cloneDeep } from "lodash";
@@ -53,9 +53,9 @@ export function useDesignCanvas() {
   const lastGroupPosition = ref<CursorPos | undefined>(undefined);
   const lastCommentPosition = ref<CursorPos | undefined>(undefined);
 
-  // Comment area moving binding (store IDs to avoid mutating objects)
+  // Group moving binding (store IDs to avoid mutating objects)
   const intersectingTableIds = ref<string[]>([]);
-  const intersectingAreaIds = ref<string[]>([]);
+  const intersectingGroupIds = ref<string[]>([]);
   const intersectingCommentIds = ref<string[]>([]);
 
   const isDragging = computed(() =>
@@ -86,13 +86,7 @@ export function useDesignCanvas() {
           lastSize.value = cloneDeep(resizedGroup.value.size);
         }
         if (movedGroup.value != undefined) {
-          lastGroupPosition.value = {
-            x: movedGroup.value.posX,
-            y: movedGroup.value.posY
-          };
-          intersectingTableIds.value = designStore.getTablesInsideGroup(movedGroup.value).map(t => t.id);
-          intersectingAreaIds.value = designStore.getGroupsInsideGroup(movedGroup.value).map(a => a.id);
-          intersectingCommentIds.value = designStore.getCommentsInsideGroup(movedGroup.value).map(c => c.id);
+          createGroupSnapshot();
         }
         if (movedComment.value != undefined) {
           lastCommentPosition.value = {
@@ -147,6 +141,7 @@ export function useDesignCanvas() {
               offsetY: 0
             }
           );
+          resetFocus();
           actionStore.setAction(undefined);
           break;
         }
@@ -164,6 +159,7 @@ export function useDesignCanvas() {
               offsetY: 0
             }
           );
+          resetFocus();
           actionStore.setAction(undefined);
           break;
         }
@@ -181,6 +177,7 @@ export function useDesignCanvas() {
               offsetY: 0
             }
           );
+          resetFocus();
           actionStore.setAction(undefined);
           break;
         }
@@ -226,6 +223,7 @@ export function useDesignCanvas() {
             };
             designStore.bufferLogCommentChange(oldVal);
           }
+          resetFocus();
           designStore.setLinkingComment(undefined);
           actionStore.setAction(undefined);
           break;
@@ -255,6 +253,7 @@ export function useDesignCanvas() {
             };
             designStore.bufferLogCommentChange(oldVal);
           }
+          resetFocus();
           designStore.setLinkingComment(undefined);
           actionStore.setAction(undefined);
           break;
@@ -284,12 +283,14 @@ export function useDesignCanvas() {
             };
             designStore.bufferLogCommentChange(oldVal);
           }
+          resetFocus();
           designStore.setLinkingComment(undefined);
           actionStore.setAction(undefined);
           break;
         }
 
         // If clicked elsewhere, cancel linking
+        resetFocus();
         designStore.setLinkingComment(undefined);
         actionStore.setAction(undefined);
         break;
@@ -332,13 +333,11 @@ export function useDesignCanvas() {
         designStore.bufferLogGroupMove(
           lastGroupPosition.value,
           intersectingTableIds.value,
-          intersectingAreaIds.value,
+          intersectingGroupIds.value,
           intersectingCommentIds.value
         );
         designStore.setMovedGroup();
-        intersectingTableIds.value = [];
-        intersectingAreaIds.value = [];
-        intersectingCommentIds.value = [];
+        clearGroupSnapshot();
       }
 
       if (lastCommentPosition.value && movedComment.value) {
@@ -382,7 +381,7 @@ export function useDesignCanvas() {
     const deltaX = evt.movementX / scaleFactor.value;
     const deltaY = evt.movementY / scaleFactor.value;
 
-    // Handle comment areas
+    // Handle groups
     const group = tempGroup.value
             ?? resizedGroup.value;
     if (group) {
@@ -393,7 +392,7 @@ export function useDesignCanvas() {
         deltaX,
         deltaY,
         intersectingTableIds.value,
-        intersectingAreaIds.value,
+        intersectingGroupIds.value,
         intersectingCommentIds.value
       );
     }
@@ -513,6 +512,25 @@ export function useDesignCanvas() {
       }
     }
     return null;
+  };
+
+  const createGroupSnapshot = () => {
+    if (!movedGroup.value) return;
+
+    lastGroupPosition.value = {
+      x: movedGroup.value.posX,
+      y: movedGroup.value.posY
+    };
+    intersectingTableIds.value = designStore.getTablesInsideGroup(movedGroup.value).map(t => t.id);
+    intersectingGroupIds.value = designStore.getGroupsInsideGroup(movedGroup.value).map(a => a.id);
+    intersectingCommentIds.value = designStore.getCommentsInsideGroup(movedGroup.value).map(c => c.id);
+  };
+
+  const clearGroupSnapshot = () => {
+    lastGroupPosition.value = undefined;
+    intersectingTableIds.value = [];
+    intersectingGroupIds.value = [];
+    intersectingCommentIds.value = [];
   };
 
   const centerView = (x = 0, y = 0) => {

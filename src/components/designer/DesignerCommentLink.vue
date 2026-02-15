@@ -31,7 +31,7 @@ const commentY = ref(0);
 const entityX = ref(0);
 const entityY = ref(0);
 
-// Highlight when linked table/column is selected (NOT for groups)
+// Highlight when linked table/column is selected
 const isHighlighted = computed(() => {
   if (!props.comment.linkedTo) return false;
 

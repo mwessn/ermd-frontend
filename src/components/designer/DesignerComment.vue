@@ -105,7 +105,7 @@ const isSelected = computed(() => {
   return designStore.movedComment?.id === props.comment.id;
 });
 
-// Highlight when linked table/column is selected (NOT for groups)
+// Highlight when linked table/column is selected
 const isLinkedEntitySelected = computed(() => {
   if (!props.comment.linkedTo) return false;
 
