@@ -123,13 +123,14 @@ import DesignerGroup from "@/components/designer/DesignerGroup.vue";
 import DesignerComment from "@/components/designer/DesignerComment.vue";
 import DesignerCommentLink from "@/components/designer/DesignerCommentLink.vue";
 import { CANVAS_GRID_BG_SIZE } from "@/types/constants.ts";
+import { getCursorForAction } from "@/utils/cursorUtils.ts";
 
 const actionsStore = useActionsStore();
 const designStore = useDesignStore();
 
 const cursorStyle = computed(() => {
-  const cursor = isDragging.value ? 'move' : actionsStore.currentAction ?? 'default';
-  return `url(/cursors/${cursor}.cur) 0 0, auto`;
+  const action = isDragging.value ? 'move' : actionsStore.currentAction ?? 'default';
+  return getCursorForAction(action);
 });
 
 const bgSize = computed(() => `${ CANVAS_GRID_BG_SIZE * scaleFactor.value }px ${ CANVAS_GRID_BG_SIZE * scaleFactor.value }px`);

@@ -27,16 +27,8 @@
             v-if="!comment.linkedTo"
             :icon="faLink"
             class="cursor-pointer text-xs hover:opacity-60"
-            title="Link to entity (click here, then click table/group/column)"
+            title="Link to entity"
             @click.stop="onStartLinking"
-          />
-
-          <!-- Linked indicator -->
-          <FontAwesomeIcon
-            v-if="comment.linkedTo"
-            :icon="faLink"
-            class="text-blue-800 text-xs"
-            title="Linked comment"
           />
 
           <!-- Unlink button -->
