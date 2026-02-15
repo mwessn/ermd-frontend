@@ -99,9 +99,11 @@ const lineDash = computed(() => nonIdentifyingTypes.includes(props.relation.type
 
 const { tables, selectedTable } = storeToRefs(useDesignStore());
 
-const lineColor = computed(() => selectedTable.value && props.relation.firstTableId == selectedTable.value.id ?
-  'var(--color-monolithicCyanTsunami)' :
-  'var(--color-lycheeIce)');
+const lineColor = computed(
+    () => selectedTable.value &&
+    props.relation.firstTableId == selectedTable.value.id ?
+      'var(--color-monolithicCyanTsunami)' :
+      'var(--color-lycheeIce)');
 
 const firstTable = ref<Table>(tables.value.find(it => it.id == props.relation.firstTableId)!);
 const secondTable = ref<Table>(tables.value.find(it => it.id == props.relation.secondTableId)!);

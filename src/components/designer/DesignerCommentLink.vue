@@ -52,9 +52,11 @@ const isHighlighted = computed(() => {
   return false;
 });
 
-const lineColor = computed(() => {
-  return isHighlighted.value ? '#3b82f6' : props.comment.color;
-});
+const lineColor = computed(() =>
+    isHighlighted.value ?
+        'var(--color-monolithicCyanTsunami)' :
+        'var(--color-lycheeIce)'
+);
 
 function updateCoordinates() {
   if (!props.comment.linkedTo) return;

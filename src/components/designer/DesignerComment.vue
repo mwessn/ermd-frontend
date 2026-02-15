@@ -2,46 +2,48 @@
     <div
       :id="`comment-${comment.id}`"
       ref="commentRef"
-      class="absolute rounded-lg overflow-hidden"
+      class="absolute rounded-lg overflow-hidden
+            slashed-accentDarkGray text-lycheeIce
+            border border-accentDarkGray"
       :class="[
         COMMENT_SIZE_CLASSES,
-        { 'ring-2 ring-blue-500': isSelected || isLinkedEntitySelected }
+        { 'ring-2 ring-monolithicCyanTsunami': isSelected || isLinkedEntitySelected }
       ]"
       :style="{
         top: comment.posY + 'px',
         left: comment.posX + 'px',
-        backgroundColor: comment.color,
-        borderWidth: '2px',
-        borderStyle: 'solid',
-        borderColor: getBorderColor(),
         zIndex: isSelected ? 60 : 50
       }"
     >
       <!-- Header -->
-      <div class="flex items-center justify-between p-1 bg-black/20 relative">
+      <div
+          class="flex items-center
+              justify-between p-1
+            bg-accentDarkGray relative"
+      >
         <div class="flex items-center gap-2">
-          <!-- Link button (only for standalone comments) -->
+          <!-- Link button -->
           <FontAwesomeIcon
             v-if="!comment.linkedTo"
             :icon="faLink"
-            class="cursor-pointer text-xs hover:text-blue-400"
+            class="cursor-pointer text-xs hover:opacity-60"
             title="Link to entity (click here, then click table/group/column)"
             @click.stop="onStartLinking"
           />
 
-          <!-- Linked indicator (only show if linked) -->
+          <!-- Linked indicator -->
           <FontAwesomeIcon
             v-if="comment.linkedTo"
             :icon="faLink"
-            class="text-blue-400 text-xs"
+            class="text-blue-800 text-xs"
             title="Linked comment"
           />
 
-          <!-- Unlink button (only for linked comments) -->
+          <!-- Unlink button -->
           <FontAwesomeIcon
             v-if="comment.linkedTo"
             :icon="faLinkSlash"
-            class="cursor-pointer text-xs hover:text-red-400"
+            class="cursor-pointer text-xs hover:opacity-60"
             title="Unlink from entity"
             @click.stop="onUnlink"
           />
@@ -51,14 +53,14 @@
           <!-- Delete button -->
           <FontAwesomeIcon
             :icon="faTrashCan"
-            class="cursor-pointer text-xs hover:text-red-400"
+            class="cursor-pointer text-xs hover:opacity-60"
             title="Delete comment"
             @click.stop="onDelete"
           />
 
           <!-- Drag handle -->
           <div
-            class="h-4 w-4 bg-black/20 radial-accentGray cursor-move"
+            class="h-6 w-6 radial-accentGray cursor-move"
             title="Drag to move comment"
             @mousedown.left="onMouseDown"
           />
@@ -71,7 +73,7 @@
         </div>
       </div>
 
-      <!-- Text area (auto-sizes within constraints) -->
+      <!-- Comment body -->
       <textarea
         v-model="commentText"
         placeholder="Enter comment..."
@@ -131,12 +133,6 @@ const isLinkedEntitySelected = computed(() => {
 
   return false;
 });
-
-function getBorderColor(): string {
-  if (isLinkedEntitySelected.value) return '#3b82f6'; // Highlight color
-  if (props.comment.linkedTo) return '#3b82f6'; // Linked (blue)
-  return '#6b7280'; // Standalone (gray)
-}
 
 function onMouseDown() {
   designStore.setMovedComment(props.comment);

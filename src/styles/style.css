@@ -65,6 +65,17 @@ Tailwind
   background-size: 0.5rem 0.5rem;
 }
 
+@utility slashed-* {
+  background-image:
+          repeating-linear-gradient(
+            45deg,
+            transparent,
+            transparent 10px,
+            --value(--color-*) 10px,
+            --value(--color-*) 20px
+          );
+}
+
 .cursor-inherit {
   cursor: inherit;
 }
