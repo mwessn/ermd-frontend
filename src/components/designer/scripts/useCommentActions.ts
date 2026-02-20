@@ -27,7 +27,6 @@ export function useCommentActions() {
 
     if (actionStore.currentAction === 'comment') {
       // Create comment linked to entity
-      // Note: addComment will calculate the actual position based on the entity
       designStore.addComment(
         clickX,
         clickY,
