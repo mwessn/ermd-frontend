@@ -51,6 +51,7 @@ import { faGithub } from "@fortawesome/free-brands-svg-icons";
 import { appConfig } from "@/app.config.ts";
 import Tooltip from "@/components/core/Tooltip.vue";
 import { resetFocus } from "@/utils/utils.ts";
+import { useI18n } from "vue-i18n";
 
 withDefaults(defineProps<{
   visible: boolean
@@ -62,6 +63,7 @@ withDefaults(defineProps<{
 const emit = defineEmits(['openImportModal', 'openExportModal', 'openNewProjectModal']);
 
 const actionStore = useActionsStore();
+const { t } = useI18n();
 
 interface MenuItem {
   pic: IconDefinition;
@@ -78,7 +80,7 @@ const execAction = (action: () => void) => {
 const functionsMenuTopItems: readonly MenuItem[] = [
   {
     pic: faTable,
-    hint: 'Create table',
+    hint: t('actions.createTable'),
     button: 'T',
     action: () => {
       actionStore.setAction('table');
@@ -86,7 +88,7 @@ const functionsMenuTopItems: readonly MenuItem[] = [
   },
   {
     pic: faArrowRight,
-    hint: 'Non-identifying One-to-One relation',
+    hint: t('actions.nonIdentifyingOneToOne'),
     button: 'H',
     action: () => {
       actionStore.setAction('noto');
@@ -94,7 +96,7 @@ const functionsMenuTopItems: readonly MenuItem[] = [
   },
   {
     pic: faCircleArrowRight,
-    hint: 'Identifying One-to-One relation',
+    hint: t('actions.identifyingOneToOne'),
     button: 'B',
     action: () => {
       actionStore.setAction('ioto');
@@ -102,7 +104,7 @@ const functionsMenuTopItems: readonly MenuItem[] = [
   },
   {
     pic: faChevronRight,
-    hint: 'Non-identifying One-to-Many relation',
+    hint: t('actions.nonIdentifyingOneToMany'),
     button: 'J',
     action: () => {
       actionStore.setAction('notm');
@@ -110,7 +112,7 @@ const functionsMenuTopItems: readonly MenuItem[] = [
   },
   {
     pic: faChevronCircleRight,
-    hint: 'Identifying One-to-Many relation',
+    hint: t('actions.identifyingOneToMany'),
     button: 'N',
     action: () => {
       actionStore.setAction('iotm');
@@ -118,7 +120,7 @@ const functionsMenuTopItems: readonly MenuItem[] = [
   },
   {
     pic: faArrowsUpDownLeftRight,
-    hint: 'Many-to-Many relation',
+    hint: t('actions.manyToMany'),
     button: 'M',
     action: () => {
       actionStore.setAction('mtm');
@@ -129,7 +131,7 @@ const functionsMenuTopItems: readonly MenuItem[] = [
 const functionsCommentItems: readonly MenuItem[] = [
   {
     pic: faComment,
-    hint: 'Comment',
+    hint: t('actions.comment'),
     button: 'C',
     action: () => {
       actionStore.setAction('comment');
@@ -137,7 +139,7 @@ const functionsCommentItems: readonly MenuItem[] = [
   },
   {
     pic: faObjectGroup,
-    hint: 'Group',
+    hint: t('actions.group'),
     button: 'G',
     action: () => {
       actionStore.setAction('group');
@@ -148,21 +150,21 @@ const functionsCommentItems: readonly MenuItem[] = [
 const functionsMenuProjectItems: readonly MenuItem[] = [
   {
     pic: faFile,
-    hint: 'New project',
+    hint: t('actions.newProject'),
     action: () => {
       emit('openNewProjectModal');
     }
   },
   {
     pic: faFileArrowDown,
-    hint: 'Save as JSON',
+    hint: t('actions.saveAsJson'),
     action: () => {
       emit('openExportModal');
     }
   },
   {
     pic: faFileArrowUp,
-    hint: 'Upload JSON',
+    hint: t('actions.uploadJson'),
     action: () => {
       emit('openImportModal');
     }
@@ -172,14 +174,14 @@ const functionsMenuProjectItems: readonly MenuItem[] = [
 const functionsMenuMiscItems: readonly MenuItem[] = [
   {
     pic: faCircleInfo,
-    hint: 'Info',
+    hint: t('actions.info'),
     action: () => {
       //
     }
   },
   {
     pic: faGithub,
-    hint: 'Project GitHub',
+    hint: t('actions.projectGitHub'),
     action: () => {
       window.open(appConfig.appGitHub);
     }

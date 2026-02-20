@@ -145,7 +145,6 @@ function onDelete() {
 }
 
 function onTextChange() {
-  // @change fires on blur only if value changed
   const oldVal = cloneDeep(props.comment);
 
   // Update the comment in the store
