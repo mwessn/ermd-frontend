@@ -88,10 +88,12 @@ import { SQL_IDENTIFIER_REGEX } from "@/types/misc.ts";
 import ColTypeSelect from "@/components/designer/table/ColTypeSelect.vue";
 import { resetFocus } from "@/utils/utils.ts";
 import { type ColumnType, getDefaultModifierParams } from "@/types/TableColumnTypes/tableField.ts";
+import { COMMENT_LINK_OFFSET } from "@/types/constants.ts";
 import ColumnProperties from "@/components/designer/table/ColumnProperties/ColumnProperties.vue";
 
-const { bufferLogColChange, addComment, linkCommentTo } = useDesignStore();
-const { linkingComment } = storeToRefs(useDesignStore());
+const designStore = useDesignStore();
+const { bufferLogColChange, addComment, linkCommentTo, tablesMap } = designStore;
+const { linkingComment } = storeToRefs(designStore);
 const actionStore = useActionsStore();
 
 const col = defineModel<TableCol>('col', { required: true });
@@ -185,10 +187,24 @@ const rowIndicatorStyles = computed(() => {
 
 const onMouseDown = (evt: MouseEvent) => {
   if (!props.nonFocusableRow) {
-    const linkedTo = { type: 'column' as const, entityId: `${props.tableId}.${col.value.id}`, offsetX: 0, offsetY: 0 };
+    const entityId = `${props.tableId}.${col.value.id}`;
 
     if (actionStore.currentAction === 'comment') {
-      addComment(0, 0, linkedTo);
+      const tableData = tablesMap.get(props.tableId);
+      const headerEl = document.getElementById(`table-header-${props.tableId}`);
+      const rect = headerEl?.getBoundingClientRect();
+
+      if (rect && tableData) {
+        const scale = rect.width / tableData.widthPx;
+        const isOnLeft = evt.clientX < (rect.left + rect.right) / 2;
+        const canvasY = tableData.posY + (evt.clientY - rect.top) / scale;
+        const canvasX = isOnLeft
+          ? tableData.posX - COMMENT_LINK_OFFSET
+          : tableData.posX + tableData.widthPx + COMMENT_LINK_OFFSET;
+
+        addComment(canvasX, canvasY, { type: 'column', entityId, offsetX: 0, offsetY: 0 });
+      }
+
       resetFocus();
       actionStore.setAction(undefined);
       evt.stopPropagation();
@@ -196,7 +212,7 @@ const onMouseDown = (evt: MouseEvent) => {
     }
 
     if (linkingComment.value) {
-      linkCommentTo('column', linkedTo.entityId);
+      linkCommentTo('column', entityId);
       resetFocus();
       actionStore.setAction(undefined);
       evt.stopPropagation();

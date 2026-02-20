@@ -18,15 +18,13 @@ export function createCommentOperations(
     let posX = clickX;
     let posY = clickY;
 
-    // If linkedTo provided, position at parent + width + offset
     if (linkedTo) {
       const parent = getLinkedEntity(linkedTo);
       if (parent) {
-        posX = parent.posX + parent.width + COMMENT_LINK_OFFSET;
-        posY = parent.posY;
-
-        // Update linkedTo with calculated offsets
-        linkedTo.offsetX = posX - parent.posX - parent.width;
+        const isOnLeft = posX < parent.posX + parent.width / 2;
+        linkedTo.offsetX = isOnLeft
+          ? posX - parent.posX
+          : posX - parent.posX - parent.width;
         linkedTo.offsetY = posY - parent.posY;
       }
     }
@@ -142,14 +140,10 @@ export function createCommentOperations(
         const table = tablesMap.value.get(linkedTo.entityId);
         if (!table) return null;
 
-        // Get table element to calculate width
-        const tableEl = document.getElementById(`table-${table.id}`);
-        const width = tableEl?.getBoundingClientRect().width || 200; // fallback
-
         return {
           posX: table.posX,
           posY: table.posY,
-          width
+          width: table.widthPx
         };
       }
       case 'column': {
@@ -157,14 +151,10 @@ export function createCommentOperations(
         const table = tablesMap.value.get(tableId);
         if (!table) return null;
 
-        // Use table position for column-linked comments
-        const tableEl = document.getElementById(`table-${table.id}`);
-        const width = tableEl?.getBoundingClientRect().width || 200;
-
         return {
           posX: table.posX,
           posY: table.posY,
-          width
+          width: table.widthPx
         };
       }
       default:

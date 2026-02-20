@@ -95,7 +95,7 @@ import { SQL_IDENTIFIER_REGEX } from "@/types/misc.ts";
 import { useSettingsStore } from "@/store/settings.ts";
 import { storeToRefs } from "pinia";
 import { defaultPrimaryTypes } from "@/types/TableColumnTypes/tableField.ts";
-import { FOCUS_DELAY_MS } from "@/types/constants.ts";
+import { FOCUS_DELAY_MS, COMMENT_LINK_OFFSET } from "@/types/constants.ts";
 
 const designStore = useDesignStore();
 const {
@@ -138,7 +138,20 @@ const focusTable = () => {
 
 const onHeaderMouseDown = (evt: MouseEvent) => {
   if (actionStore.currentAction === 'comment') {
-    addComment(0, 0, { type: 'table', entityId: table.value.id, offsetX: 0, offsetY: 0 });
+    const headerEl = document.getElementById(`table-header-${table.value.id}`);
+    const rect = headerEl?.getBoundingClientRect();
+
+    if (rect) {
+      const scale = rect.width / table.value.widthPx;
+      const isOnLeft = evt.clientX < (rect.left + rect.right) / 2;
+      const canvasY = table.value.posY + (evt.clientY - rect.top) / scale;
+      const canvasX = isOnLeft
+        ? table.value.posX - COMMENT_LINK_OFFSET
+        : table.value.posX + table.value.widthPx + COMMENT_LINK_OFFSET;
+
+      addComment(canvasX, canvasY, { type: 'table', entityId: table.value.id, offsetX: 0, offsetY: 0 });
+    }
+
     resetFocus();
     actionStore.setAction(undefined);
     evt.stopPropagation();
