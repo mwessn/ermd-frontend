@@ -89,7 +89,8 @@ import AreaColorSelector from "@/components/core/AreaColorSelector.vue";
 import {
   GROUP_FONT_SIZES,
   GROUP_DEFAULT_FONT_SIZE,
-  COMMENT_LINK_OFFSET
+  COMMENT_LINK_OFFSET,
+  COMMENT_WIDTH
 } from "@/types/constants.ts";
 
 const props = withDefaults(defineProps<{
@@ -146,7 +147,7 @@ const onHeaderMouseDown = (evt: MouseEvent) => {
       const isOnLeft = evt.clientX < (rect.left + rect.right) / 2;
       const canvasY = area.value.posY + (evt.clientY - rect.top) / scale;
       const canvasX = isOnLeft
-        ? area.value.posX - COMMENT_LINK_OFFSET
+        ? area.value.posX - COMMENT_LINK_OFFSET - COMMENT_WIDTH
         : area.value.posX + area.value.size.width + COMMENT_LINK_OFFSET;
 
       addComment(canvasX, canvasY, { type: 'group', entityId: area.value.id, offsetX: 0, offsetY: 0 });

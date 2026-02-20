@@ -88,7 +88,7 @@ import { SQL_IDENTIFIER_REGEX } from "@/types/misc.ts";
 import ColTypeSelect from "@/components/designer/table/ColTypeSelect.vue";
 import { resetFocus } from "@/utils/utils.ts";
 import { type ColumnType, getDefaultModifierParams } from "@/types/TableColumnTypes/tableField.ts";
-import { COMMENT_LINK_OFFSET } from "@/types/constants.ts";
+import { COMMENT_LINK_OFFSET, COMMENT_WIDTH } from "@/types/constants.ts";
 import ColumnProperties from "@/components/designer/table/ColumnProperties/ColumnProperties.vue";
 
 const designStore = useDesignStore();
@@ -199,7 +199,7 @@ const onMouseDown = (evt: MouseEvent) => {
         const isOnLeft = evt.clientX < (rect.left + rect.right) / 2;
         const canvasY = tableData.posY + (evt.clientY - rect.top) / scale;
         const canvasX = isOnLeft
-          ? tableData.posX - COMMENT_LINK_OFFSET
+          ? tableData.posX - COMMENT_LINK_OFFSET - COMMENT_WIDTH
           : tableData.posX + tableData.widthPx + COMMENT_LINK_OFFSET;
 
         addComment(canvasX, canvasY, { type: 'column', entityId, offsetX: 0, offsetY: 0 });

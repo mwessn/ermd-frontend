@@ -20,6 +20,7 @@ export const GROUP_DEFAULT_FONT_SIZE = 16;
 
 // Comment Dimensions
 export const COMMENT_LINK_OFFSET = 20; // px offset for linked comment positioning
+export const COMMENT_WIDTH = 192; // px (matches min-w-48 = 12rem)
 export const COMMENT_SIZE_CLASSES = 'min-w-48 min-h-20 max-w-128 max-h-56';
 
 // Canvas

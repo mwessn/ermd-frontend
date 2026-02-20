@@ -95,7 +95,7 @@ import { SQL_IDENTIFIER_REGEX } from "@/types/misc.ts";
 import { useSettingsStore } from "@/store/settings.ts";
 import { storeToRefs } from "pinia";
 import { defaultPrimaryTypes } from "@/types/TableColumnTypes/tableField.ts";
-import { FOCUS_DELAY_MS, COMMENT_LINK_OFFSET } from "@/types/constants.ts";
+import { FOCUS_DELAY_MS, COMMENT_LINK_OFFSET, COMMENT_WIDTH } from "@/types/constants.ts";
 
 const designStore = useDesignStore();
 const {
@@ -146,7 +146,7 @@ const onHeaderMouseDown = (evt: MouseEvent) => {
       const isOnLeft = evt.clientX < (rect.left + rect.right) / 2;
       const canvasY = table.value.posY + (evt.clientY - rect.top) / scale;
       const canvasX = isOnLeft
-        ? table.value.posX - COMMENT_LINK_OFFSET
+        ? table.value.posX - COMMENT_LINK_OFFSET - COMMENT_WIDTH
         : table.value.posX + table.value.widthPx + COMMENT_LINK_OFFSET;
 
       addComment(canvasX, canvasY, { type: 'table', entityId: table.value.id, offsetX: 0, offsetY: 0 });
