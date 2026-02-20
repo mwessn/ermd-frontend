@@ -13,14 +13,14 @@
 
       <CustomSelect
         v-model="currentSettings.namingConvention"
-        :label="$t('Naming convention')"
+        :label="$t('settings.namingConvention.label')"
         :options="conventionSelectOptions"
-        :hint="$t('Will only apply to newly created tables')"
+        :hint="$t('settings.namingConvention.hint')"
       />
 
       <CustomSelect
         v-model="defaultPrimaryTypeName"
-        :label="$t('Default Primary Key')"
+        :label="$t('settings.defaultPrimaryKey')"
         :options="primaryColumnOptions"
       />
 
@@ -28,55 +28,55 @@
 
       <CustomCheckbox
         v-model="currentSettings.generateMtMPrimaryKey"
-        :label="$t('Generate primary key for MtM tables')"
+        :label="$t('settings.generateMtMPrimaryKey')"
       />
 
       <template v-if="currentSettings.generateMtMPrimaryKey">
         <CustomSelect
           v-model="mtmPrimaryKeyTypeName"
-          :label="$t('Default MtM Primary Key')"
+          :label="$t('settings.defaultMtMPrimaryKey')"
           :options="primaryColumnOptions"
         />
       </template>
 
       <CustomCheckbox
         v-model="currentSettings.updateForeignKeysOnPrimaryChange"
-        :label="$t('Update FK types when PK type changes')"
-        :hint="$t('Automatically sync FK column types with their referenced PK')"
+        :label="$t('settings.updateFKTypes.label')"
+        :hint="$t('settings.updateFKTypes.hint')"
       />
 
       <CustomCheckbox
         v-model="currentSettings.deleteForeignKeyColumnOnRelationDelete"
-        :label="$t('Delete FK column when relation is deleted')"
-        :hint="$t('If disabled, FK column becomes a regular column')"
+        :label="$t('settings.deleteFKColumn.label')"
+        :hint="$t('settings.deleteFKColumn.hint')"
       />
 
       <CustomCheckbox
         v-model="currentSettings.deleteLinkedCommentsWithEntity"
-        :label="$t('Delete linked comments with entity')"
-        :hint="$t('When enabled, comments linked to entities are deleted when the entity is deleted. Otherwise, they become standalone.')"
+        :label="$t('settings.deleteLinkedComments.label')"
+        :hint="$t('settings.deleteLinkedComments.hint')"
       />
 
       <Separator />
 
       <CustomSelect
         v-model="currentSettings.dragCanvasButton"
-        :label="$t('Drag canvas button')"
+        :label="$t('settings.dragCanvasButton')"
         :options="dragButtonSelectOptions"
       />
 
       <CustomCheckbox
         v-model="currentSettings.snapToGrid"
-        :label="$t('Snap to grid')"
-        :hint="$t('Experimental, may be broken')"
+        :label="$t('settings.snapToGrid.label')"
+        :hint="$t('settings.snapToGrid.hint')"
       />
 
       <ClampedNumberInput
         v-model="currentSettings.undoActionBufferSize"
-        :label="$t('Action buffer size')"
+        :label="$t('settings.actionBufferSize.label')"
         :min-value="0"
         :max-value="MAX_UNDO_BUFFER_SIZE"
-        :hint="$t('Capped to {max} to prevent performance issues', { max: MAX_UNDO_BUFFER_SIZE })"
+        :hint="$t('settings.actionBufferSize.hint', { max: MAX_UNDO_BUFFER_SIZE })"
       />
 
       <Separator />

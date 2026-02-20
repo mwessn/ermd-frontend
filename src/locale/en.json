@@ -1,4 +1,97 @@
 {
-  "message": "message",
-  "Main": "Main"
+  "mobile": {
+    "title": "THIS APP",
+    "notAvailable": "IS NOT AVAILABLE",
+    "devices": "ON MOBILE DEVICES"
+  },
+  "menu": {
+    "functions": {
+      "open": "Open functions menu"
+    },
+    "settings": {
+      "open": "Open settings menu"
+    }
+  },
+  "settings": {
+    "namingConvention": {
+      "label": "Naming convention",
+      "hint": "Will only apply to newly created tables"
+    },
+    "defaultPrimaryKey": "Default Primary Key",
+    "generateMtMPrimaryKey": "Generate primary key for MtM tables",
+    "defaultMtMPrimaryKey": "Default MtM Primary Key",
+    "updateFKTypes": {
+      "label": "Update FK types when PK type changes",
+      "hint": "Automatically sync FK column types with their referenced PK"
+    },
+    "deleteFKColumn": {
+      "label": "Delete FK column when relation is deleted",
+      "hint": "If disabled, FK column becomes a regular column"
+    },
+    "deleteLinkedComments": {
+      "label": "Delete linked comments with entity",
+      "hint": "When enabled, comments linked to entities are deleted when the entity is deleted. Otherwise, they become standalone."
+    },
+    "dragCanvasButton": "Drag canvas button",
+    "snapToGrid": {
+      "label": "Snap to grid",
+      "hint": "Experimental, may be broken"
+    },
+    "actionBufferSize": {
+      "label": "Action buffer size",
+      "hint": "Capped to {max} to prevent performance issues"
+    },
+    "databaseEngine": "Database Engine",
+    "customColumnTypes": "Custom column types"
+  },
+  "modal": {
+    "importJson": "Import JSON",
+    "exportJson": "Export JSON",
+    "addCustomType": "Add custom type",
+    "createNewProject": "Create new project",
+    "changingDatabaseEngine": "Changing Database Engine"
+  },
+  "project": {
+    "name": {
+      "label": "Project name",
+      "placeholder": "enter project name"
+    },
+    "version": {
+      "label": "Project version",
+      "optional": "Optional"
+    }
+  },
+  "group": {
+    "new": "new group"
+  },
+  "column": {
+    "type": {
+      "canBePrimaryKey": "Can be used as primary key",
+      "canAutoIncrement": "Can be autoincremented",
+      "canHaveDefault": "Can have a default value",
+      "typeAliases": "Type aliases"
+    },
+    "property": {
+      "default": "Default"
+    }
+  },
+  "file": {
+    "drop": "Drop a file here",
+    "clickToSelect": "or click to select"
+  },
+  "import": {
+    "errors": "Import errors"
+  },
+  "common": {
+    "add": "Add",
+    "save": "Save",
+    "import": "Import",
+    "export": "Export",
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "name": "Name"
+  },
+  "messages": {
+    "dbTypeChange": "You are about to change the database engine. ERMD will try its best with type coercion for the existing tables, but some data may be lost. Please confirm whether you want to continue."
+  }
 }

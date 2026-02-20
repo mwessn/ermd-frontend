@@ -23,10 +23,10 @@
 
       <YesNoModal
         v-if="newProjectModalVisible"
-        :modal-title="$t('Create new project')"
+        :modal-title="$t('modal.createNewProject')"
         :body-text="$t(newProjectModalBodyText)"
-        :confirm-text="$t('Confirm')"
-        :cancel-text="$t('Cancel')"
+        :confirm-text="$t('common.confirm')"
+        :cancel-text="$t('common.cancel')"
         @close="onNewProjectModalClose"
       />
 

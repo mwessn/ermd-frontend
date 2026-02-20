@@ -2,12 +2,12 @@
     <div class="w-full h-full flex bg-backgroundDark p-8">
       <div class="text-2xl font-bold text-textColor">
         <p class="text-5xl">
-          {{ $t('THIS APP') }}
+          {{ $t('mobile.title') }}
         </p>
         <p class="text-2xl">
-          {{ $t('IS NOT AVAILABLE') }}
+          {{ $t('mobile.notAvailable') }}
         </p>
-        <p>{{ $t('ON MOBILE DEVICES') }}</p>
+        <p>{{ $t('mobile.devices') }}</p>
       </div>
     </div>
 </template>

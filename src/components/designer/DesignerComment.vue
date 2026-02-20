@@ -70,7 +70,7 @@
         v-model="commentText"
         placeholder="Enter comment..."
         class="w-full h-full p-2 bg-transparent resize-none outline-none"
-        @input="onTextChange"
+        @change="onTextChange"
         @mousedown.stop
       />
     </div>
@@ -145,8 +145,10 @@ function onDelete() {
 }
 
 function onTextChange() {
+  // @change fires on blur only if value changed
   const oldVal = cloneDeep(props.comment);
-  // Update the comment in the store directly
+
+  // Update the comment in the store
   const comment = designStore.commentsMap.get(props.comment.id);
   if (comment) {
     comment.text = commentText.value;

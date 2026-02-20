@@ -1,7 +1,7 @@
 <template>
     <CustomSelect
       v-model="currentValue"
-      :label="$t('Database Engine')"
+      :label="$t('settings.databaseEngine')"
       :options="engineSelectOptions"
       @change="onDatabaseEngineChange"
     />
@@ -9,8 +9,8 @@
     <teleport to="body">
       <YesNoModal
         v-if="showEngineChangeModal"
-        :modal-title="$t('Changing Database Engine')"
-        :body-text="$t(ERMDMessages.dbTypeChange)"
+        :modal-title="$t('modal.changingDatabaseEngine')"
+        :body-text="$t('messages.dbTypeChange')"
         @close="onEngineChangeModalClose"
       />
     </teleport>
@@ -25,7 +25,6 @@ import { storeToRefs } from "pinia";
 import { useDesignStore } from "@/store/design.ts";
 import type { SelectOption } from "@/types/misc.ts";
 import YesNoModal from "@/components/layout/modal/YesNoModal.vue";
-import { ERMDMessages } from "@/types/messages.ts";
 
 const props = defineProps<{
   initValue: DatabaseEngine

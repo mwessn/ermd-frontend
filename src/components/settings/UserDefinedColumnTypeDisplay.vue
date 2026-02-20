@@ -2,7 +2,7 @@
     <div class="w-full max-h-96 overflow-hidden border border-backgroundDark rounded-lg p-1">
       <div class="full overflow-auto">
         <p class="text-accentGray mb-2">
-          {{ $t('Custom column types') }}
+          {{ $t('settings.customColumnTypes') }}
         </p>
         <!--   Button   -->
         <div
@@ -13,7 +13,7 @@
           @mouseup.left="customTypeModalVisible = true"
         >
           <FontAwesomeIcon :icon="faPlusCircle" />
-          <p>{{ $t('Add') }}</p>
+          <p>{{ $t('common.add') }}</p>
         </div>
         <!--   Types   -->
         <template v-for="type in userDefinedColumnTypes" :key="type.displayName">

@@ -1,5 +1,5 @@
 <template>
-    <ModalLayout :modal-name="$t('Import JSON')" @close="emit('close')">
+    <ModalLayout :modal-name="$t('modal.importJson')" @close="emit('close')">
       <div class="my-4">
         <FileUpload
           @on-file-change="onFileChange"
@@ -12,7 +12,7 @@
           overflow-hidden overscroll-y-auto
           p-2 bg-accentDarkGray rounded mb-2"
         >
-          <p>{{ $t('Import errors') }}:</p>
+          <p>{{ $t('import.errors') }}:</p>
           <p v-for="(error, index) in importErrors" :key="index">
             {{ error }}
           </p>
@@ -21,7 +21,7 @@
 
       <div class="w-full flex gap-3 justify-end">
         <ModalButton
-          :label="$t('Import')"
+          :label="$t('common.import')"
           :disabled="!canSave"
           @click="onImport"
         />
