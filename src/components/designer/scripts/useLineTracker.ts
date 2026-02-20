@@ -3,7 +3,7 @@ import { onBeforeUnmount, onMounted } from 'vue';
 type FrameCallback = () => void;
 
 const callbacks = new Set<FrameCallback>();
-let rafId: number | null = null;
+let rafId: number | undefined;
 
 function tick() {
   for (const cb of callbacks) {
@@ -13,15 +13,15 @@ function tick() {
 }
 
 function start() {
-  if (rafId === null) {
+  if (rafId === undefined) {
     rafId = requestAnimationFrame(tick);
   }
 }
 
 function stop() {
-  if (rafId !== null) {
+  if (rafId !== undefined) {
     cancelAnimationFrame(rafId);
-    rafId = null;
+    rafId = undefined;
   }
 }
 

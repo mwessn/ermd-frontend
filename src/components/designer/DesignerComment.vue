@@ -17,7 +17,7 @@
     >
       <!-- Header -->
       <div
-          class="flex items-center
+        class="flex items-center
               justify-between p-1
             bg-accentDarkGray relative"
       >

@@ -1,7 +1,6 @@
 <template type="svg">
     <g>
       <line
-        ref="lineRef"
         stroke-linecap="round"
         :stroke-width="lineWidth"
         :stroke="lineColor"
@@ -99,11 +98,10 @@ const lineDash = computed(() => nonIdentifyingTypes.includes(props.relation.type
 
 const { selectedTable } = storeToRefs(useDesignStore());
 
-const lineColor = computed(
-    () => selectedTable.value &&
-    props.relation.firstTableId == selectedTable.value.id ?
-      'var(--color-monolithicCyanTsunami)' :
-      'var(--color-lycheeIce)');
+const lineColor = computed(() =>
+  selectedTable.value && props.relation.firstTableId == selectedTable.value.id
+    ? 'var(--color-monolithicCyanTsunami)'
+    : 'var(--color-lycheeIce)');
 
 const x1 = ref<number>(0);
 const y1 = ref<number>(0);
@@ -112,7 +110,7 @@ const y2 = ref<number>(0);
 
 const trianglePoints = computed(() => {
   if (isManyRelationship.value) {
-    const points = [];
+    const points: string[] = [];
     const baseAngle = anchor1side.value == 'r' ? 0 : Math.PI; // 0° or 180°
     for (let i = 0; i < 3; i++) {
       const angle = baseAngle + (i * 2 * Math.PI / 3); // each 120° apart

@@ -30,7 +30,6 @@ export function useDesignCanvas() {
     resizedGroup,
     tempGroup,
     movedComment,
-    linkingComment,
   } = storeToRefs(designStore);
 
   // How much the canvas is dragged from its center

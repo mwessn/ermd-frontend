@@ -37,7 +37,7 @@ export function iconToCursorDataUri(
 }
 
 // Basic cursors
-const defaultCursor = iconToCursorDataUri(faCircleDot, CURSOR_COLOR, 8)
+const defaultCursor = iconToCursorDataUri(faCircleDot, CURSOR_COLOR, 8);
 const moveCursor = iconToCursorDataUri(faCompress);
 
 // User actions

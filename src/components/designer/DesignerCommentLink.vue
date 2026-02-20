@@ -27,10 +27,10 @@ const props = defineProps<{
 
 const designStore = useDesignStore();
 
-const commentX = ref(0);
-const commentY = ref(0);
-const entityX = ref(0);
-const entityY = ref(0);
+const commentX = ref<number>(0);
+const commentY = ref<number>(0);
+const entityX = ref<number>(0);
+const entityY = ref<number>(0);
 
 // Highlight when linked table/column is selected
 const isHighlighted = computed(() => {
@@ -54,26 +54,24 @@ const isHighlighted = computed(() => {
 });
 
 const lineColor = computed(() =>
-    isHighlighted.value ?
-        'var(--color-monolithicCyanTsunami)' :
-        'var(--color-lycheeIce)'
-);
+  isHighlighted.value
+    ? 'var(--color-monolithicCyanTsunami)'
+    : 'var(--color-lycheeIce)');
 
 function updateCoordinates() {
   if (!props.comment.linkedTo) return;
 
-  // Get entity element to determine relative positions
-  let entityEl: HTMLElement | null = null;
+  let entityEl: HTMLElement | undefined;
   switch (props.comment.linkedTo.type) {
     case 'group':
-      entityEl = document.getElementById(`group-header-${props.comment.linkedTo.entityId}`);
+      entityEl = document.getElementById(`group-header-${props.comment.linkedTo.entityId}`) ?? undefined;
       break;
     case 'table':
-      entityEl = document.getElementById(`table-header-${props.comment.linkedTo.entityId}`);
+      entityEl = document.getElementById(`table-header-${props.comment.linkedTo.entityId}`) ?? undefined;
       break;
     case 'column': {
       const [, colId] = props.comment.linkedTo.entityId.split('.');
-      entityEl = document.getElementById(`col-${colId}`);
+      entityEl = document.getElementById(`col-${colId}`) ?? undefined;
       break;
     }
   }

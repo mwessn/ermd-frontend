@@ -5,7 +5,6 @@ import type { BufferEntity } from "@/types/actionsBuffer.ts";
 import { generateComment } from "@/types/comments.ts";
 import { cloneDeep } from "lodash";
 import type { useActionBuffer } from "@/store/actionBuffer.ts";
-import { COMMENT_LINK_OFFSET } from "@/types/constants.ts";
 import { watch } from "vue";
 
 export function createCommentOperations(
@@ -15,8 +14,8 @@ export function createCommentOperations(
   }
 ) {
   const addComment = (clickX: number, clickY: number, linkedTo?: CommentLinkedTo) => {
-    let posX = clickX;
-    let posY = clickY;
+    const posX = clickX;
+    const posY = clickY;
 
     if (linkedTo) {
       const parent = getLinkedEntity(linkedTo);
