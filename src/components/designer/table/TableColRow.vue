@@ -69,10 +69,7 @@
         @keyup.delete.stop
       />
 
-      <div
-        v-if="col.foreignKey || col.primaryKey"
-        class="absolute full flex items-center justify-between z-0 pointer-events-none"
-      >
+      <div class="absolute full flex items-center justify-between z-0 pointer-events-none">
         <div :id="`anchor-${col.id}-l`" />
         <div :id="`anchor-${col.id}-r`" />
       </div>
