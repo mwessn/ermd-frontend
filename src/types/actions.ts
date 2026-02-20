@@ -5,5 +5,7 @@ export type UserAction =
     'notm' | // Create non-identifying One-to-Many relation
     'iotm' | // Create identifying One-to-Many relation
     'mtm' | // Create Many-to-Many relation
-    'commentArea' | // Create comment area
+    'group' | // Create group
+    'comment' | // Create comment
+    'linkComment' | // Link a standalone comment to an entity
     undefined;

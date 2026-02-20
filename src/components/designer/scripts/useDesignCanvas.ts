@@ -26,9 +26,10 @@ export function useDesignCanvas() {
   const {
     selectedTable,
     resizedTable,
-    movedCommentArea,
-    resizedCommentArea,
-    tempCommentArea,
+    movedGroup,
+    resizedGroup,
+    tempGroup,
+    movedComment,
   } = storeToRefs(designStore);
 
   // How much the canvas is dragged from its center
@@ -48,11 +49,13 @@ export function useDesignCanvas() {
 
   const lastWidth = ref<number| undefined>(undefined);
   const lastSize = ref<AreaSize | undefined>(undefined);
-  const lastCommentAreaPosition = ref<CursorPos | undefined>(undefined);
+  const lastGroupPosition = ref<CursorPos | undefined>(undefined);
+  const lastCommentPosition = ref<CursorPos | undefined>(undefined);
 
-  // Comment area moving binding (store IDs to avoid mutating objects)
+  // Group moving binding (store IDs to avoid mutating objects)
   const intersectingTableIds = ref<string[]>([]);
-  const intersectingAreaIds = ref<string[]>([]);
+  const intersectingGroupIds = ref<string[]>([]);
+  const intersectingCommentIds = ref<string[]>([]);
 
   const isDragging = computed(() =>
     !!lastClickPos.value && lastClickPos.value != currentMousePos.value);
@@ -78,16 +81,17 @@ export function useDesignCanvas() {
         lastClickType.value = "left";
         startTracking(evt);
 
-        if (resizedCommentArea.value != undefined) {
-          lastSize.value = cloneDeep(resizedCommentArea.value.size);
+        if (resizedGroup.value != undefined) {
+          lastSize.value = cloneDeep(resizedGroup.value.size);
         }
-        if (movedCommentArea.value != undefined) {
-          lastCommentAreaPosition.value = {
-            x: movedCommentArea.value.posX,
-            y: movedCommentArea.value.posY
+        if (movedGroup.value != undefined) {
+          createGroupSnapshot();
+        }
+        if (movedComment.value != undefined) {
+          lastCommentPosition.value = {
+            x: movedComment.value.posX,
+            y: movedComment.value.posY
           };
-          intersectingTableIds.value = designStore.getTablesInsideArea(movedCommentArea.value).map(t => t.id);
-          intersectingAreaIds.value = designStore.getAreasInsideArea(movedCommentArea.value).map(a => a.id);
         }
 
         break;
@@ -109,13 +113,30 @@ export function useDesignCanvas() {
         designStore.createRelationship(actionStore.currentAction);
         break;
       }
-      case 'commentArea': {
+      case 'group': {
         startTracking(evt);
-        designStore.startCreatingCommentArea({
+        designStore.startCreatingGroup({
           x: evt.clientX / scaleFactor.value - translateOffsetX.value,
           y: evt.clientY / scaleFactor.value - translateOffsetY.value
         });
 
+        actionStore.setAction(undefined);
+        break;
+      }
+      case 'comment': {
+        // Entity hits (column/table/group) are handled by component listeners
+        // via stopPropagation. This only fires for empty canvas clicks.
+        designStore.addComment(
+          evt.clientX / scaleFactor.value - translateOffsetX.value,
+          evt.clientY / scaleFactor.value - translateOffsetY.value
+        );
+        actionStore.setAction(undefined);
+        break;
+      }
+      case 'linkComment': {
+        // Entity hits are handled by component listeners via stopPropagation.
+        // Canvas click = cancel linking.
+        designStore.setLinkingComment(undefined);
         actionStore.setAction(undefined);
         break;
       }
@@ -144,28 +165,34 @@ export function useDesignCanvas() {
         lastWidth.value = undefined;
       }
 
-      if (tempCommentArea.value != undefined) {
-        designStore.storeCommentArea();
+      if (tempGroup.value != undefined) {
+        designStore.storeGroup();
       }
 
       if (lastSize.value) {
-        designStore.bufferLogCommentAreaResize(lastSize.value);
-        designStore.setResizedCommentArea();
+        designStore.bufferLogGroupResize(lastSize.value);
+        designStore.setResizedGroup();
       }
 
-      if (lastCommentAreaPosition.value) {
-        designStore.bufferLogCommentAreaMove(
-          lastCommentAreaPosition.value,
+      if (lastGroupPosition.value) {
+        designStore.bufferLogGroupMove(
+          lastGroupPosition.value,
           intersectingTableIds.value,
-          intersectingAreaIds.value
+          intersectingGroupIds.value,
+          intersectingCommentIds.value
         );
-        designStore.setMovedCommentArea();
-        intersectingTableIds.value = [];
-        intersectingAreaIds.value = [];
+        designStore.setMovedGroup();
+        clearGroupSnapshot();
+      }
+
+      if (lastCommentPosition.value && movedComment.value) {
+        designStore.bufferLogCommentMove(lastCommentPosition.value, movedComment.value.id);
+        lastCommentPosition.value = undefined;
       }
 
       // Reset references
       designStore.setResizedTable();
+      designStore.setMovedComment();
     }
   };
 
@@ -199,21 +226,46 @@ export function useDesignCanvas() {
     const deltaX = evt.movementX / scaleFactor.value;
     const deltaY = evt.movementY / scaleFactor.value;
 
-    // Handle comment areas
-    const commentArea = tempCommentArea.value
-            ?? resizedCommentArea.value;
-    if (commentArea) {
-      designStore.resizeCommentArea(commentArea.id, deltaX, deltaY);
+    // Handle groups
+    const group = tempGroup.value
+            ?? resizedGroup.value;
+    if (group) {
+      designStore.resizeGroup(group.id, deltaX, deltaY);
     }
-    else if (movedCommentArea.value) {
-      designStore.moveCommentArea(
+    else if (movedGroup.value) {
+      designStore.moveGroup(
         deltaX,
         deltaY,
         intersectingTableIds.value,
-        intersectingAreaIds.value
+        intersectingGroupIds.value,
+        intersectingCommentIds.value
       );
     }
 
+    // Handle comment movement
+    else if (movedComment.value) {
+      const comment = movedComment.value;
+      comment.posX += deltaX;
+      comment.posY += deltaY;
+
+      // If linked, recalculate offset from parent
+      if (comment.linkedTo) {
+        const parent = designStore.getLinkedEntity?.(comment.linkedTo);
+        if (parent) {
+          // Determine which side the comment is on
+          const isOnLeft = comment.posX < parent.posX + parent.width / 2;
+
+          if (isOnLeft) {
+            // Left side: offset from left edge
+            comment.linkedTo.offsetX = comment.posX - parent.posX;
+          } else {
+            // Right side: offset from right edge
+            comment.linkedTo.offsetX = comment.posX - parent.posX - parent.width;
+          }
+          comment.linkedTo.offsetY = comment.posY - parent.posY;
+        }
+      }
+    }
     // No table selected, drag canvas
     else if (!selectedTable.value) {
       if (currentSettings.value.dragCanvasButton == 'middle') { return; }
@@ -256,6 +308,25 @@ export function useDesignCanvas() {
     translateOffsetY.value -= (y/oldScale - y/newScale);
 
     scaleFactor.value = newScale;
+  };
+
+  const createGroupSnapshot = () => {
+    if (!movedGroup.value) return;
+
+    lastGroupPosition.value = {
+      x: movedGroup.value.posX,
+      y: movedGroup.value.posY
+    };
+    intersectingTableIds.value = designStore.getTablesInsideGroup(movedGroup.value).map(t => t.id);
+    intersectingGroupIds.value = designStore.getGroupsInsideGroup(movedGroup.value).map(a => a.id);
+    intersectingCommentIds.value = designStore.getCommentsInsideGroup(movedGroup.value).map(c => c.id);
+  };
+
+  const clearGroupSnapshot = () => {
+    lastGroupPosition.value = undefined;
+    intersectingTableIds.value = [];
+    intersectingGroupIds.value = [];
+    intersectingCommentIds.value = [];
   };
 
   const centerView = (x = 0, y = 0) => {

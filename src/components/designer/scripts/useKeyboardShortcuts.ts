@@ -14,7 +14,7 @@ export function useKeyboardShortcuts(centerView: () => void) {
   const setAction = (val: UserAction) => {
     actionsStore.setAction(val);
     if (!val) {
-      designStore.resetCreatingCommentArea();
+      designStore.resetCreatingGroup();
     }
   };
 
@@ -22,8 +22,8 @@ export function useKeyboardShortcuts(centerView: () => void) {
 
     // Alt key is reserved for table row flag hotkeys
     if (evt.altKey) { return; }
-    // If target is an input, ignore shortcuts
-    if (!(evt.target instanceof HTMLInputElement)) {
+    // If target is an input or textarea, ignore shortcuts
+    if (!(evt.target instanceof HTMLInputElement) && !(evt.target instanceof HTMLTextAreaElement)) {
       const key = evt.key.toLowerCase();
       if (!evt.ctrlKey) {
         switch (key) {
@@ -36,16 +36,16 @@ export function useKeyboardShortcuts(centerView: () => void) {
             // T = table creation mode
             setAction('table');
             break;
-          case 'g':
-            // G - Non-identifying one-to-one relation creation mode
+          case 'h':
+            // H - Non-identifying one-to-one relation creation mode
             setAction('noto');
             break;
           case 'b':
             // B - Identifying one-to-one relation creation mode
             setAction('ioto');
             break;
-          case 'h':
-            // H - Non-identifying one-to-many relation creation mode
+          case 'j':
+            // J - Non-identifying one-to-many relation creation mode
             setAction('notm');
             break;
           case 'n':
@@ -57,8 +57,12 @@ export function useKeyboardShortcuts(centerView: () => void) {
             setAction('mtm');
             break;
           case 'c':
-            // C - comment area creation mode
-            setAction('commentArea');
+            // C - comment creation mode
+            setAction('comment');
+            break;
+          case 'g':
+            // G - group creation mode
+            setAction('group');
             break;
           case 'x':
             // X - center canvas view

@@ -6,21 +6,22 @@ export const DEFAULT_GRID_SIZE = 10;
 export const TABLE_MIN_WIDTH = 120;
 export const TABLE_MAX_WIDTH = 480;
 
-// Comment Area Dimensions
-export const COMMENT_AREA_MIN_SIZE = 56;
-export const COMMENT_AREA_COLLAPSE_WIDTH = 180;
-export const COMMENT_AREA_COLLAPSE_HEIGHT = 80;
+// Group Dimensions
+export const GROUP_MIN_SIZE = 56;
 
-// Comment Area Font Size Breakpoints (scale -> font size)
-export const COMMENT_AREA_FONT_SIZES = [
+// Group Font Size Breakpoints (scale -> font size)
+export const GROUP_FONT_SIZES = [
   { maxScale: 0.4, fontSize: 32 },
   { maxScale: 0.6, fontSize: 28 },
   { maxScale: 0.8, fontSize: 24 },
   { maxScale: 1.0, fontSize: 20 },
 ] as const;
-export const COMMENT_AREA_DEFAULT_FONT_SIZE = 16;
-export const COMMENT_AREA_MIN_SCALE = 1;
-export const COMMENT_AREA_MAX_SCALE = 2;
+export const GROUP_DEFAULT_FONT_SIZE = 16;
+
+// Comment Dimensions
+export const COMMENT_LINK_OFFSET = 20; // px offset for linked comment positioning
+export const COMMENT_WIDTH = 192; // px (matches min-w-48 = 12rem)
+export const COMMENT_SIZE_CLASSES = 'min-w-48 min-h-20 max-w-128 max-h-56';
 
 // Canvas
 export const CANVAS_GRID_BG_SIZE = 50;

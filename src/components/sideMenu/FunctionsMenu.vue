@@ -43,6 +43,7 @@ import {
   faFile,
   faFileArrowDown,
   faFileArrowUp,
+  faObjectGroup,
   faTable
 } from "@fortawesome/free-solid-svg-icons";
 import { useActionsStore } from "@/store/action.ts";
@@ -86,7 +87,7 @@ const functionsMenuTopItems: readonly MenuItem[] = [
   {
     pic: faArrowRight,
     hint: 'Non-identifying One-to-One relation',
-    button: 'G',
+    button: 'H',
     action: () => {
       actionStore.setAction('noto');
     }
@@ -102,7 +103,7 @@ const functionsMenuTopItems: readonly MenuItem[] = [
   {
     pic: faChevronRight,
     hint: 'Non-identifying One-to-Many relation',
-    button: 'H',
+    button: 'J',
     action: () => {
       actionStore.setAction('notm');
     }
@@ -123,17 +124,28 @@ const functionsMenuTopItems: readonly MenuItem[] = [
       actionStore.setAction('mtm');
     }
   },
-  {
-    pic: faComment,
-    hint: 'Comment area',
-    button: 'C',
-    action: () => {
-      actionStore.setAction('commentArea');
-    }
-  },
 ];
 
-const functionsMenuMiddleItems: readonly MenuItem[] = [
+const functionsCommentItems: readonly MenuItem[] = [
+  {
+    pic: faComment,
+    hint: 'Comment',
+    button: 'C',
+    action: () => {
+      actionStore.setAction('comment');
+    }
+  },
+  {
+    pic: faObjectGroup,
+    hint: 'Group',
+    button: 'G',
+    action: () => {
+      actionStore.setAction('group');
+    }
+  },
+]
+
+const functionsMenuProjectItems: readonly MenuItem[] = [
   {
     pic: faFile,
     hint: 'New project',
@@ -157,7 +169,7 @@ const functionsMenuMiddleItems: readonly MenuItem[] = [
   },
 ];
 
-const functionsMenuBottomItems: readonly MenuItem[] = [
+const functionsMenuMiscItems: readonly MenuItem[] = [
   {
     pic: faCircleInfo,
     hint: 'Info',
@@ -176,8 +188,9 @@ const functionsMenuBottomItems: readonly MenuItem[] = [
 
 const sections = [
   { items: functionsMenuTopItems },
-  { items: functionsMenuMiddleItems },
-  { items: functionsMenuBottomItems },
+  { items: functionsCommentItems },
+  { items: functionsMenuProjectItems },
+  { items: functionsMenuMiscItems },
 ] as const;
 </script>
 

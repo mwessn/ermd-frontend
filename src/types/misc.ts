@@ -3,6 +3,7 @@ import type { AreaSize, CursorPos } from "@/components/designer/scripts/useDesig
 import { generateId } from "@/utils/utils.ts";
 import type { Table, TableCol } from "@/types/table.ts";
 import type { DatabaseRelationship } from "@/types/relationships.ts";
+import type { Comment } from "@/types/comments.ts";
 
 export interface UserSettings {
   databaseEngine: DatabaseEngine;
@@ -16,6 +17,9 @@ export interface UserSettings {
   mtmPrimaryKeyType: ColumnType;
   updateForeignKeysOnPrimaryChange: boolean;
   deleteForeignKeyColumnOnRelationDelete: boolean;
+
+  // Comments
+  deleteLinkedCommentsWithEntity: boolean;
 
   // Functional
   dragCanvasButton: 'middle' | 'left';
@@ -33,6 +37,8 @@ export const defaultSettings: UserSettings = {
   mtmPrimaryKeyType: defaultPrimaryTypes['postgres'],
   updateForeignKeysOnPrimaryChange: true,
   deleteForeignKeyColumnOnRelationDelete: false,
+
+  deleteLinkedCommentsWithEntity: true,
 
   dragCanvasButton: 'left',
   undoActionBufferSize: 20,
@@ -53,7 +59,7 @@ export const RESERVED_SQL_KEYWORDS = new Set([
   "UNIQUE", "UPDATE", "VALUES", "VIEW", "WHERE", "WITH"
 ]);
 
-export interface CommentArea {
+export interface Group {
   id: string,
 
   posX: number,
@@ -64,8 +70,6 @@ export interface CommentArea {
   color: string,
 
   name: string,
-  comment: string,
-  showComment: boolean,
 }
 
 export function randomPastelColor(): string {
@@ -75,9 +79,9 @@ export function randomPastelColor(): string {
   return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
 }
 
-export const generateCommentArea = (pos: CursorPos): CommentArea => {
+export const generateGroup = (pos: CursorPos): Group => {
   return {
-    id: generateId('commentArea'),
+    id: generateId('group'),
     posX: pos.x,
     posY: pos.y,
 
@@ -88,15 +92,14 @@ export const generateCommentArea = (pos: CursorPos): CommentArea => {
 
     color: randomPastelColor(),
     name: '',
-    comment: '',
-    showComment: false
   };
 };
 
 export interface ExportJson {
   tables: ExportTableType[],
   relations: DatabaseRelationship[],
-  commentAreas: CommentArea[],
+  groups?: Group[],
+  comments?: Comment[],
   engine: DatabaseEngine,
   userTypes: ColumnType[],
   exportVersion: number

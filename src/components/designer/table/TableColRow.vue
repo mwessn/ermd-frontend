@@ -1,5 +1,6 @@
 <template>
     <div
+      :id="`col-${col.id}`"
       ref="rowRef"
       class="flex items-center w-full not-last:border-b relative group/cols"
 
@@ -68,10 +69,7 @@
         @keyup.delete.stop
       />
 
-      <div
-        v-if="col.foreignKey || col.primaryKey"
-        class="absolute full flex items-center justify-between z-0 pointer-events-none"
-      >
+      <div class="absolute full flex items-center justify-between z-0 pointer-events-none">
         <div :id="`anchor-${col.id}-l`" />
         <div :id="`anchor-${col.id}-r`" />
       </div>
@@ -83,6 +81,8 @@ import { computed, nextTick, ref, useTemplateRef, watch } from "vue";
 import { colCanAutoIncrement, colCanBeNullable, colCanBePrimary, type TableCol } from "@/types/table.ts";
 import DoubleClickFocusInput from "@/components/core/DoubleClickFocusInput.vue";
 import { useDesignStore } from "@/store/design.ts";
+import { useActionsStore } from "@/store/action.ts";
+import { storeToRefs } from "pinia";
 import { cloneDeep } from "lodash";
 import { SQL_IDENTIFIER_REGEX } from "@/types/misc.ts";
 import ColTypeSelect from "@/components/designer/table/ColTypeSelect.vue";
@@ -90,11 +90,15 @@ import { resetFocus } from "@/utils/utils.ts";
 import { type ColumnType, getDefaultModifierParams } from "@/types/TableColumnTypes/tableField.ts";
 import ColumnProperties from "@/components/designer/table/ColumnProperties/ColumnProperties.vue";
 
-const { bufferLogColChange } = useDesignStore();
+const designStore = useDesignStore();
+const { bufferLogColChange, linkCommentTo } = designStore;
+const { linkingComment } = storeToRefs(designStore);
+const actionStore = useActionsStore();
 
 const col = defineModel<TableCol>('col', { required: true });
 
 const props = withDefaults(defineProps<{
+  tableId: string
   isColNameDuplicate?: boolean
   nonFocusableRow?: boolean
 }>(), {
@@ -142,6 +146,7 @@ const emit = defineEmits<{
   mouseDown: []
   deleteCol: []
   focusOut: []
+  colCommentClick: [evt: MouseEvent, colId: string]
 }>();
 
 const rowRef = useTemplateRef<HTMLDivElement>('rowRef');
@@ -180,7 +185,27 @@ const rowIndicatorStyles = computed(() => {
   return [border, bg];
 });
 
-const onMouseDown = () => {
+const onMouseDown = (evt: MouseEvent) => {
+  if (!props.nonFocusableRow) {
+    const entityId = `${props.tableId}.${col.value.id}`;
+
+    if (actionStore.currentAction === 'comment') {
+      emit('colCommentClick', evt, col.value.id);
+      resetFocus();
+      actionStore.setAction(undefined);
+      evt.stopPropagation();
+      return;
+    }
+
+    if (linkingComment.value) {
+      linkCommentTo('column', entityId);
+      resetFocus();
+      actionStore.setAction(undefined);
+      evt.stopPropagation();
+      return;
+    }
+  }
+
   emit('mouseDown');
   rowRef.value?.focus();
 };

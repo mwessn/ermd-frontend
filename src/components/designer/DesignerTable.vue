@@ -14,7 +14,11 @@
       @focusout="onFocusOut"
     >
       <div class="z-20 bg-accentGray rounded-b-lg">
-        <div class="w-full border-b border-b-accentDarkGray flex items-center justify-between bg-monolithicCyanTsunami">
+        <div
+          :id="`table-header-${table.id}`"
+          class="w-full border-b border-b-accentDarkGray flex items-center justify-between bg-monolithicCyanTsunami relative"
+          @mousedown.left="onHeaderMouseDown"
+        >
           <DoubleClickFocusInput
             :id="`name-${table.id}`"
             ref="nameInputRef"
@@ -35,6 +39,12 @@
             @mousedown.left="setResizedTable(table)"
             @mouseup.left="setResizedTable()"
           />
+
+          <!-- Left/right anchors for comment links -->
+          <div class="absolute inset-0 flex items-center justify-between pointer-events-none">
+            <div :id="`anchor-table-${table.id}-l`" class="w-0 h-0" />
+            <div :id="`anchor-table-${table.id}-r`" class="w-0 h-0" />
+          </div>
         </div>
         <div class="w-full min-h-4">
           <TableColRow
@@ -42,9 +52,11 @@
             :key="col.id"
             ref="tableColumns"
             v-model:col="table.cols[index]"
+            :table-id="table.id"
             :is-col-name-duplicate="duplicateColNames.has(col.name.toLowerCase())"
             @focus-next="focusNextInput(index + 1)"
             @mouse-down="selectTable(table)"
+            @col-comment-click="onColCommentClick"
 
             @keydown.delete.stop
             @keyup.delete.stop
@@ -54,6 +66,7 @@
           <TableColRow
             ref="newColRef"
             v-model:col="newTableCol"
+            :table-id="table.id"
             non-focusable-row
             @focus-next="storeNewCol"
             @focus-out="storeNewCol(false)"
@@ -74,6 +87,7 @@
 import { computed, nextTick, onMounted, ref, useTemplateRef } from "vue";
 import { generateNewTableCol, type Table, type TableCol } from "@/types/table.ts";
 import { useDesignStore } from "@/store/design.ts";
+import { useActionsStore } from "@/store/action.ts";
 import DoubleClickFocusInput from "@/components/core/DoubleClickFocusInput.vue";
 import { notBlankOrEmpty, resetFocus, sleep } from "@/utils/utils.ts";
 import TableColRow from "@/components/designer/table/TableColRow.vue";
@@ -82,21 +96,29 @@ import { SQL_IDENTIFIER_REGEX } from "@/types/misc.ts";
 import { useSettingsStore } from "@/store/settings.ts";
 import { storeToRefs } from "pinia";
 import { defaultPrimaryTypes } from "@/types/TableColumnTypes/tableField.ts";
-import { FOCUS_DELAY_MS } from "@/types/constants.ts";
+import { FOCUS_DELAY_MS, COMMENT_LINK_OFFSET, COMMENT_WIDTH } from "@/types/constants.ts";
 
+const designStore = useDesignStore();
 const {
   selectTable,
   setResizedTable,
   addTableCol,
   deleteTableCol,
   bufferLogTableChange,
-} = useDesignStore();
+  addComment,
+  linkCommentTo,
+} = designStore;
 
-const { focusedTable, isManualCreation } = storeToRefs(useDesignStore());
+const actionStore = useActionsStore();
+
+const { focusedTable, isManualCreation, linkingComment } = storeToRefs(designStore);
 
 const props = defineProps<{
   table: Table
   isNameDuplicate: boolean
+  scaleFactor: number
+  offsetX: number
+  offsetY: number
 }>();
 
 const table = computed(() => props.table);
@@ -116,6 +138,49 @@ const tableRef = useTemplateRef('tableRef');
 
 const focusTable = () => {
   tableRef.value?.focus();
+};
+
+const onHeaderMouseDown = (evt: MouseEvent) => {
+  if (actionStore.currentAction === 'comment') {
+    // Convert screen coordinates to canvas coordinates
+    const canvasX = (evt.clientX / props.scaleFactor) - props.offsetX;
+    const canvasY = (evt.clientY / props.scaleFactor) - props.offsetY;
+
+    const isOnLeft = canvasX < table.value.posX + table.value.widthPx / 2;
+    const commentX = isOnLeft
+      ? table.value.posX - COMMENT_LINK_OFFSET - COMMENT_WIDTH
+      : table.value.posX + table.value.widthPx + COMMENT_LINK_OFFSET;
+
+    addComment(commentX, canvasY, { type: 'table', entityId: table.value.id, offsetX: 0, offsetY: 0 });
+
+    resetFocus();
+    actionStore.setAction(undefined);
+    evt.stopPropagation();
+    return;
+  }
+
+  if (linkingComment.value) {
+    linkCommentTo('table', table.value.id);
+    resetFocus();
+    actionStore.setAction(undefined);
+    evt.stopPropagation();
+    return;
+  }
+};
+
+const onColCommentClick = (evt: MouseEvent, colId: string) => {
+  const entityId = `${table.value.id}.${colId}`;
+
+  // Convert screen coordinates to canvas coordinates
+  const canvasX = (evt.clientX / props.scaleFactor) - props.offsetX;
+  const canvasY = (evt.clientY / props.scaleFactor) - props.offsetY;
+
+  const isOnLeft = canvasX < table.value.posX + table.value.widthPx / 2;
+  const commentX = isOnLeft
+    ? table.value.posX - COMMENT_LINK_OFFSET - COMMENT_WIDTH
+    : table.value.posX + table.value.widthPx + COMMENT_LINK_OFFSET;
+
+  addComment(commentX, canvasY, { type: 'column', entityId, offsetX: 0, offsetY: 0 });
 };
 
 const onFocusOut = () => {
