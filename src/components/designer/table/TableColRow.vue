@@ -88,11 +88,10 @@ import { SQL_IDENTIFIER_REGEX } from "@/types/misc.ts";
 import ColTypeSelect from "@/components/designer/table/ColTypeSelect.vue";
 import { resetFocus } from "@/utils/utils.ts";
 import { type ColumnType, getDefaultModifierParams } from "@/types/TableColumnTypes/tableField.ts";
-import { COMMENT_LINK_OFFSET, COMMENT_WIDTH } from "@/types/constants.ts";
 import ColumnProperties from "@/components/designer/table/ColumnProperties/ColumnProperties.vue";
 
 const designStore = useDesignStore();
-const { bufferLogColChange, addComment, linkCommentTo, tablesMap } = designStore;
+const { bufferLogColChange, linkCommentTo } = designStore;
 const { linkingComment } = storeToRefs(designStore);
 const actionStore = useActionsStore();
 
@@ -147,6 +146,7 @@ const emit = defineEmits<{
   mouseDown: []
   deleteCol: []
   focusOut: []
+  colCommentClick: [evt: MouseEvent, colId: string]
 }>();
 
 const rowRef = useTemplateRef<HTMLDivElement>('rowRef');
@@ -190,21 +190,7 @@ const onMouseDown = (evt: MouseEvent) => {
     const entityId = `${props.tableId}.${col.value.id}`;
 
     if (actionStore.currentAction === 'comment') {
-      const tableData = tablesMap.get(props.tableId);
-      const headerEl = document.getElementById(`table-header-${props.tableId}`);
-      const rect = headerEl?.getBoundingClientRect();
-
-      if (rect && tableData) {
-        const scale = rect.width / tableData.widthPx;
-        const isOnLeft = evt.clientX < (rect.left + rect.right) / 2;
-        const canvasY = tableData.posY + (evt.clientY - rect.top) / scale;
-        const canvasX = isOnLeft
-          ? tableData.posX - COMMENT_LINK_OFFSET - COMMENT_WIDTH
-          : tableData.posX + tableData.widthPx + COMMENT_LINK_OFFSET;
-
-        addComment(canvasX, canvasY, { type: 'column', entityId, offsetX: 0, offsetY: 0 });
-      }
-
+      emit('colCommentClick', evt, col.value.id);
       resetFocus();
       actionStore.setAction(undefined);
       evt.stopPropagation();

@@ -124,6 +124,9 @@ const functionsMenuTopItems: readonly MenuItem[] = [
       actionStore.setAction('mtm');
     }
   },
+];
+
+const functionsCommentItems: readonly MenuItem[] = [
   {
     pic: faComment,
     hint: 'Comment',
@@ -140,9 +143,9 @@ const functionsMenuTopItems: readonly MenuItem[] = [
       actionStore.setAction('group');
     }
   },
-];
+]
 
-const functionsMenuMiddleItems: readonly MenuItem[] = [
+const functionsMenuProjectItems: readonly MenuItem[] = [
   {
     pic: faFile,
     hint: 'New project',
@@ -166,7 +169,7 @@ const functionsMenuMiddleItems: readonly MenuItem[] = [
   },
 ];
 
-const functionsMenuBottomItems: readonly MenuItem[] = [
+const functionsMenuMiscItems: readonly MenuItem[] = [
   {
     pic: faCircleInfo,
     hint: 'Info',
@@ -185,8 +188,9 @@ const functionsMenuBottomItems: readonly MenuItem[] = [
 
 const sections = [
   { items: functionsMenuTopItems },
-  { items: functionsMenuMiddleItems },
-  { items: functionsMenuBottomItems },
+  { items: functionsCommentItems },
+  { items: functionsMenuProjectItems },
+  { items: functionsMenuMiscItems },
 ] as const;
 </script>
 

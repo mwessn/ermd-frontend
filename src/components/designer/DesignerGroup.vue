@@ -97,9 +97,13 @@ const props = withDefaults(defineProps<{
   area: Group
   isTemporary?: boolean
   scaleValue?: number
+  offsetX?: number
+  offsetY?: number
 }>(), {
   isTemporary: false,
-  scaleValue: 1
+  scaleValue: 1,
+  offsetX: 0,
+  offsetY: 0
 });
 
 const area = computed(() => props.area);
@@ -139,19 +143,16 @@ const onChange = () => {
 
 const onHeaderMouseDown = (evt: MouseEvent) => {
   if (actionStore.currentAction === 'comment') {
-    const headerEl = document.getElementById(`group-header-${area.value.id}`);
-    const rect = headerEl?.getBoundingClientRect();
+    // Convert screen coordinates to canvas coordinates
+    const canvasX = (evt.clientX / props.scaleValue) - props.offsetX;
+    const canvasY = (evt.clientY / props.scaleValue) - props.offsetY;
 
-    if (rect) {
-      const scale = rect.width / area.value.size.width;
-      const isOnLeft = evt.clientX < (rect.left + rect.right) / 2;
-      const canvasY = area.value.posY + (evt.clientY - rect.top) / scale;
-      const canvasX = isOnLeft
-        ? area.value.posX - COMMENT_LINK_OFFSET - COMMENT_WIDTH
-        : area.value.posX + area.value.size.width + COMMENT_LINK_OFFSET;
+    const isOnLeft = canvasX < area.value.posX + area.value.size.width / 2;
+    const commentX = isOnLeft
+      ? area.value.posX - COMMENT_LINK_OFFSET - COMMENT_WIDTH
+      : area.value.posX + area.value.size.width + COMMENT_LINK_OFFSET;
 
-      addComment(canvasX, canvasY, { type: 'group', entityId: area.value.id, offsetX: 0, offsetY: 0 });
-    }
+    addComment(commentX, canvasY, { type: 'group', entityId: area.value.id, offsetX: 0, offsetY: 0 });
 
     resetFocus();
     actionStore.setAction(undefined);

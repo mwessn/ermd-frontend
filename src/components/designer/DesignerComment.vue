@@ -128,7 +128,6 @@ const isLinkedEntitySelected = computed(() => {
 
 function onMouseDown() {
   designStore.setMovedComment(props.comment);
-  // Drag handling will be implemented via parent component (DesignCanvas)
 }
 
 function onUnlink() {

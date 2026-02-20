@@ -56,6 +56,7 @@
             :is-col-name-duplicate="duplicateColNames.has(col.name.toLowerCase())"
             @focus-next="focusNextInput(index + 1)"
             @mouse-down="selectTable(table)"
+            @col-comment-click="onColCommentClick"
 
             @keydown.delete.stop
             @keyup.delete.stop
@@ -115,6 +116,9 @@ const { focusedTable, isManualCreation, linkingComment } = storeToRefs(designSto
 const props = defineProps<{
   table: Table
   isNameDuplicate: boolean
+  scaleFactor: number
+  offsetX: number
+  offsetY: number
 }>();
 
 const table = computed(() => props.table);
@@ -138,19 +142,16 @@ const focusTable = () => {
 
 const onHeaderMouseDown = (evt: MouseEvent) => {
   if (actionStore.currentAction === 'comment') {
-    const headerEl = document.getElementById(`table-header-${table.value.id}`);
-    const rect = headerEl?.getBoundingClientRect();
+    // Convert screen coordinates to canvas coordinates
+    const canvasX = (evt.clientX / props.scaleFactor) - props.offsetX;
+    const canvasY = (evt.clientY / props.scaleFactor) - props.offsetY;
 
-    if (rect) {
-      const scale = rect.width / table.value.widthPx;
-      const isOnLeft = evt.clientX < (rect.left + rect.right) / 2;
-      const canvasY = table.value.posY + (evt.clientY - rect.top) / scale;
-      const canvasX = isOnLeft
-        ? table.value.posX - COMMENT_LINK_OFFSET - COMMENT_WIDTH
-        : table.value.posX + table.value.widthPx + COMMENT_LINK_OFFSET;
+    const isOnLeft = canvasX < table.value.posX + table.value.widthPx / 2;
+    const commentX = isOnLeft
+      ? table.value.posX - COMMENT_LINK_OFFSET - COMMENT_WIDTH
+      : table.value.posX + table.value.widthPx + COMMENT_LINK_OFFSET;
 
-      addComment(canvasX, canvasY, { type: 'table', entityId: table.value.id, offsetX: 0, offsetY: 0 });
-    }
+    addComment(commentX, canvasY, { type: 'table', entityId: table.value.id, offsetX: 0, offsetY: 0 });
 
     resetFocus();
     actionStore.setAction(undefined);
@@ -165,6 +166,21 @@ const onHeaderMouseDown = (evt: MouseEvent) => {
     evt.stopPropagation();
     return;
   }
+};
+
+const onColCommentClick = (evt: MouseEvent, colId: string) => {
+  const entityId = `${table.value.id}.${colId}`;
+
+  // Convert screen coordinates to canvas coordinates
+  const canvasX = (evt.clientX / props.scaleFactor) - props.offsetX;
+  const canvasY = (evt.clientY / props.scaleFactor) - props.offsetY;
+
+  const isOnLeft = canvasX < table.value.posX + table.value.widthPx / 2;
+  const commentX = isOnLeft
+    ? table.value.posX - COMMENT_LINK_OFFSET - COMMENT_WIDTH
+    : table.value.posX + table.value.widthPx + COMMENT_LINK_OFFSET;
+
+  addComment(commentX, canvasY, { type: 'column', entityId, offsetX: 0, offsetY: 0 });
 };
 
 const onFocusOut = () => {

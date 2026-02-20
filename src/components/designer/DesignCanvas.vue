@@ -22,6 +22,9 @@
           :key="table.id"
           :table="table"
           :is-name-duplicate="isTableNameDuplicate(table.name)"
+          :scale-factor="scaleFactor"
+          :offset-x="translateOffsetX"
+          :offset-y="translateOffsetY"
         />
 
         <svg
@@ -54,6 +57,8 @@
           :key="area.id"
           :area="area"
           :scale-value="scaleFactor"
+          :offset-x="translateOffsetX"
+          :offset-y="translateOffsetY"
         />
 
         <DesignerGroup

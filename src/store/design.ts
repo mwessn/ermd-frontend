@@ -177,6 +177,36 @@ export const useDesignStore = defineStore('design', () => {
         pkRelations.forEach(rel =>
           bufferEntries.push(...deleteRelationship(rel, currentSettings.value.deleteForeignKeyColumnOnRelationDelete)));
 
+        // Handle linked comments based on setting
+        const columnEntityId = `${selectedTable.value.id}.${col.id}`;
+        const linkedComments = comments.value.filter(c =>
+          c.linkedTo?.type === 'column' && c.linkedTo.entityId === columnEntityId
+        );
+
+        if (currentSettings.value.deleteLinkedCommentsWithEntity) {
+          // Delete linked comments
+          for (const comment of linkedComments) {
+            bufferEntries.push({
+              action: 'delete',
+              type: 'comment',
+              entityId: comment.id,
+              oldVal: cloneDeep(comment)
+            });
+            commentsMap.value.delete(comment.id);
+          }
+        } else {
+          // Unlink comments
+          for (const comment of linkedComments) {
+            bufferEntries.push({
+              action: 'change',
+              type: 'comment',
+              entityId: comment.id,
+              oldVal: cloneDeep(comment)
+            });
+            comment.linkedTo = null;
+          }
+        }
+
         bufferStore.addUndoBufferAction({
           entities: bufferEntries
         });
