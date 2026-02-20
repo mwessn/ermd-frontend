@@ -48,7 +48,7 @@
           class="p-2 border-l border-l-accentDarkGray grid gap-2"
         >
           <p class="wrap-break-word w-12">
-            {{ $t('Default') }}
+            {{ $t('column.property.default') }}
           </p>
           <div class="flex items-center gap-1">
             <template v-if="col.defaultValue != undefined">

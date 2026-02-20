@@ -30,7 +30,7 @@
 
             class="max-w-52"
 
-            :placeholder="$t('new group')"
+            :placeholder="$t('group.new')"
 
             @value-change="onChange"
             @enter-key="resetFocus"

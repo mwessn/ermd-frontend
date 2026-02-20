@@ -1,9 +1,9 @@
 <template>
-    <ModalLayout :modal-name="$t('Export JSON')" @close="emit('close')">
+    <ModalLayout :modal-name="$t('modal.exportJson')" @close="emit('close')">
       <div class="my-4 flex gap-4 items-center text-accentDarkGray">
         <div>
           <p class="cursor-default">
-            {{ $t('Project name') }}
+            {{ $t('project.name.label') }}
           </p>
           <input
             v-model="projectName"
@@ -13,9 +13,9 @@
         </div>
         <div>
           <div class="flex items-center gap-2 cursor-default">
-            <p>{{ $t('Project version') }}</p>
+            <p>{{ $t('project.version.label') }}</p>
             <p class="text-tinted">
-              ({{ $t('Optional') }})
+              ({{ $t('project.version.optional') }})
             </p>
           </div>
           <input
@@ -28,7 +28,7 @@
 
       <div class="w-full flex gap-3 justify-end">
         <ModalButton
-          :label="$t('Export')"
+          :label="$t('common.export')"
           @click="onExportClick"
         />
       </div>

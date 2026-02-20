@@ -7,7 +7,7 @@
       >
         <div class="flex justify-between items-center border-b border-accentDarkGray">
           <div class="text-accentDarkGray font-bold text-lg cursor-default">
-            {{ $t(modalName) }}
+            {{ modalName }}
           </div>
           <div class="cursor-pointer p-1 bg-accentGray rounded-lg" @click="emit('close')">
             <FontAwesomeIcon :icon="faXmark" class="h-5 select-none" />

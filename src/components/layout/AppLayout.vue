@@ -23,10 +23,10 @@
 
       <YesNoModal
         v-if="newProjectModalVisible"
-        :modal-title="$t('Create new project')"
-        :body-text="$t(newProjectModalBodyText)"
-        :confirm-text="$t('Confirm')"
-        :cancel-text="$t('Cancel')"
+        :modal-title="$t('modal.createNewProject')"
+        :body-text="newProjectModalBodyText"
+        :confirm-text="$t('common.confirm')"
+        :cancel-text="$t('common.cancel')"
         @close="onNewProjectModalClose"
       />
 
@@ -44,6 +44,7 @@ import { storeToRefs } from "pinia";
 import ExportJsonModal from "@/components/layout/modal/ExportJsonModal.vue";
 import ImportJsonModal from "@/components/layout/modal/ImportJsonModal.vue";
 import YesNoModal from "@/components/layout/modal/YesNoModal.vue";
+import { useI18n } from "vue-i18n";
 
 const { tables } = storeToRefs(useDesignStore());
 
@@ -68,7 +69,8 @@ const importModalVisible = ref<boolean>(false);
 
 const newProjectModalVisible = ref<boolean>(false);
 
-const newProjectModalBodyText = "Creating a new project will permanently delete all existing data. Please confirm you want to proceed.";
+const { t } = useI18n();
+const newProjectModalBodyText = t('messages.newProjectConfirm');
 
 const onNewProjectModalClose = (val: boolean | undefined) => {
   newProjectModalVisible.value = false;

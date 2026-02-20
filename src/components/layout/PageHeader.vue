@@ -4,7 +4,7 @@
         <div
           class="cursor-pointer"
           tabindex="0"
-          :aria-label="$t('Open functions menu')"
+          :aria-label="$t('menu.functions.open')"
           @keydown.enter="onClick('functions')"
           @click="onClick('functions')"
         >
@@ -14,7 +14,7 @@
           <DoubleClickFocusInput
             v-model="projectName"
             class="placeholder:text-accentDarkGray"
-            :placeholder="`${$t('enter project name')}...`"
+            :placeholder="`${$t('project.name.placeholder')}...`"
             @enter-key="resetFocus"
           />
         </div>
@@ -23,7 +23,7 @@
       <div
         class="cursor-pointer"
         tabindex="0"
-        :aria-label="$t('Open settings menu')"
+        :aria-label="$t('menu.settings.open')"
         @keydown.enter="onClick('settings')"
         @click="onClick('settings')"
       >

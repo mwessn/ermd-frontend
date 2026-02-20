@@ -21,10 +21,10 @@
       >
         <FontAwesomeIcon :icon="faFileArrowUp" class="h-8" />
         <div class="font-bold">
-          {{ $t('Drop a file here') }}
+          {{ $t('file.drop') }}
         </div>
         <div>
-          {{ $t('or click to select') }}
+          {{ $t('file.clickToSelect') }}
         </div>
       </div>
       <div v-else class="flex justify-between items-center p-1.5 border-b border-b-accentGray">

@@ -1,31 +1,31 @@
 <template>
-    <ModalLayout :modal-name="$t('Add custom type')" @close="emit('close')">
+    <ModalLayout :modal-name="$t('modal.addCustomType')" @close="emit('close')">
       <div class="my-4 flex gap-2">
         <div class="w-2/5">
           <TextInput
             v-model="currentValue.displayName"
-            :label="$t('Name')"
+            :label="$t('common.name')"
           />
 
           <CustomCheckbox
             v-model="currentValue.flags.canBePrimaryKey"
-            :label="$t('Can be used as primary key')"
+            :label="$t('column.type.canBePrimaryKey')"
           />
 
           <CustomCheckbox
             v-model="currentValue.flags.canAutoIncrement"
-            :label="$t('Can be autoincremented')"
+            :label="$t('column.type.canAutoIncrement')"
           />
 
           <CustomCheckbox
             v-model="currentValue.flags.canHaveDefault"
-            :label="$t('Can have a default value')"
+            :label="$t('column.type.canHaveDefault')"
           />
         </div>
 
         <div class="w-3/5 border-l border-l-accentDarkGray pl-2">
           <p class="text-xl text-accentDarkGray my-2">
-            {{ $t('Type aliases') }}
+            {{ $t('column.type.typeAliases') }}
           </p>
           <Separator />
 
@@ -43,7 +43,7 @@
       <div class="w-full flex gap-3 justify-end">
         <ModalButton
           :disabled="!canSave"
-          :label="$t('Save')"
+          :label="$t('common.save')"
           @click="onSave"
         />
       </div>
