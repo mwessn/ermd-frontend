@@ -13,6 +13,7 @@
           text-lycheeIce bg-accentDarkGray p-2 flex items-center justify-between
             rounded-t-lg"
         :style="{ fontSize: headerFontSize + 'px' }"
+        @mousedown.left="onHeaderMouseDown"
       >
         <div class="flex items-center gap-2">
           <FontAwesomeIcon
@@ -82,6 +83,8 @@ import { resetFocus } from "@/utils/utils.ts";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { faPalette, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { useDesignStore } from "@/store/design.ts";
+import { useActionsStore } from "@/store/action.ts";
+import { storeToRefs } from "pinia";
 import AreaColorSelector from "@/components/core/AreaColorSelector.vue";
 import {
   GROUP_FONT_SIZES,
@@ -99,12 +102,18 @@ const props = withDefaults(defineProps<{
 
 const area = computed(() => props.area);
 
+const designStore = useDesignStore();
 const {
   setResizedGroup,
   setMovedGroup,
   deleteGroup,
-  bufferLogGroupChange
-} = useDesignStore();
+  bufferLogGroupChange,
+  addComment,
+  linkCommentTo,
+} = designStore;
+
+const actionStore = useActionsStore();
+const { linkingComment } = storeToRefs(designStore);
 
 const oldVal = ref<Group>(cloneDeep(area.value));
 
@@ -124,6 +133,24 @@ const onChange = () => {
 
   bufferLogGroupChange(oldVal.value);
   oldVal.value = cloneDeep(area.value);
+};
+
+const onHeaderMouseDown = (evt: MouseEvent) => {
+  if (actionStore.currentAction === 'comment') {
+    addComment(0, 0, { type: 'group', entityId: area.value.id, offsetX: 0, offsetY: 0 });
+    resetFocus();
+    actionStore.setAction(undefined);
+    evt.stopPropagation();
+    return;
+  }
+
+  if (linkingComment.value) {
+    linkCommentTo('group', area.value.id);
+    resetFocus();
+    actionStore.setAction(undefined);
+    evt.stopPropagation();
+    return;
+  }
 };
 
 const colorSelectorIconHovered = ref<boolean>(false);

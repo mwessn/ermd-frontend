@@ -1,4 +1,4 @@
-import type { Comment, CommentLinkedTo } from "@/types/comments.ts";
+import type { Comment, CommentLinkedTo, CommentLinkType } from "@/types/comments.ts";
 import type { CursorPos } from "@/components/designer/scripts/useDesignCanvas.ts";
 import type { DesignState } from "./tables.ts";
 import type { BufferEntity } from "@/types/actionsBuffer.ts";
@@ -51,6 +51,27 @@ export function createCommentOperations(
       comment.linkedTo = null;
       bufferLogCommentChange(oldVal);
     }
+  };
+
+  const linkCommentTo = (type: CommentLinkType, entityId: string) => {
+    const comment = state().linkingComment.value;
+    if (!comment) return;
+
+    const oldVal = cloneDeep(comment);
+    const linkedTo: CommentLinkedTo = { type, entityId, offsetX: 0, offsetY: 0 };
+    const parent = getLinkedEntity(linkedTo);
+
+    if (parent) {
+      const isOnLeft = comment.posX < parent.posX + parent.width / 2;
+      linkedTo.offsetX = isOnLeft
+        ? comment.posX - parent.posX
+        : comment.posX - parent.posX - parent.width;
+      linkedTo.offsetY = comment.posY - parent.posY;
+    }
+
+    comment.linkedTo = linkedTo;
+    bufferLogCommentChange(oldVal);
+    state().linkingComment.value = undefined;
   };
 
   const updateCommentPosition = (commentId: string, newX: number, newY: number) => {
@@ -282,6 +303,7 @@ export function createCommentOperations(
     addComment,
     deleteComment,
     unlinkComment,
+    linkCommentTo,
     updateCommentPosition,
     syncLinkedCommentPosition,
     getLinkedEntity,

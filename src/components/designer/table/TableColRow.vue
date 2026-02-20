@@ -81,6 +81,8 @@ import { computed, nextTick, ref, useTemplateRef, watch } from "vue";
 import { colCanAutoIncrement, colCanBeNullable, colCanBePrimary, type TableCol } from "@/types/table.ts";
 import DoubleClickFocusInput from "@/components/core/DoubleClickFocusInput.vue";
 import { useDesignStore } from "@/store/design.ts";
+import { useActionsStore } from "@/store/action.ts";
+import { storeToRefs } from "pinia";
 import { cloneDeep } from "lodash";
 import { SQL_IDENTIFIER_REGEX } from "@/types/misc.ts";
 import ColTypeSelect from "@/components/designer/table/ColTypeSelect.vue";
@@ -88,11 +90,14 @@ import { resetFocus } from "@/utils/utils.ts";
 import { type ColumnType, getDefaultModifierParams } from "@/types/TableColumnTypes/tableField.ts";
 import ColumnProperties from "@/components/designer/table/ColumnProperties/ColumnProperties.vue";
 
-const { bufferLogColChange } = useDesignStore();
+const { bufferLogColChange, addComment, linkCommentTo } = useDesignStore();
+const { linkingComment } = storeToRefs(useDesignStore());
+const actionStore = useActionsStore();
 
 const col = defineModel<TableCol>('col', { required: true });
 
 const props = withDefaults(defineProps<{
+  tableId: string
   isColNameDuplicate?: boolean
   nonFocusableRow?: boolean
 }>(), {
@@ -178,7 +183,27 @@ const rowIndicatorStyles = computed(() => {
   return [border, bg];
 });
 
-const onMouseDown = () => {
+const onMouseDown = (evt: MouseEvent) => {
+  if (!props.nonFocusableRow) {
+    const linkedTo = { type: 'column' as const, entityId: `${props.tableId}.${col.value.id}`, offsetX: 0, offsetY: 0 };
+
+    if (actionStore.currentAction === 'comment') {
+      addComment(0, 0, linkedTo);
+      resetFocus();
+      actionStore.setAction(undefined);
+      evt.stopPropagation();
+      return;
+    }
+
+    if (linkingComment.value) {
+      linkCommentTo('column', linkedTo.entityId);
+      resetFocus();
+      actionStore.setAction(undefined);
+      evt.stopPropagation();
+      return;
+    }
+  }
+
   emit('mouseDown');
   rowRef.value?.focus();
 };

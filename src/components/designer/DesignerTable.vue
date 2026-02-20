@@ -17,6 +17,7 @@
         <div
           :id="`table-header-${table.id}`"
           class="w-full border-b border-b-accentDarkGray flex items-center justify-between bg-monolithicCyanTsunami relative"
+          @mousedown.left="onHeaderMouseDown"
         >
           <DoubleClickFocusInput
             :id="`name-${table.id}`"
@@ -51,6 +52,7 @@
             :key="col.id"
             ref="tableColumns"
             v-model:col="table.cols[index]"
+            :table-id="table.id"
             :is-col-name-duplicate="duplicateColNames.has(col.name.toLowerCase())"
             @focus-next="focusNextInput(index + 1)"
             @mouse-down="selectTable(table)"
@@ -63,6 +65,7 @@
           <TableColRow
             ref="newColRef"
             v-model:col="newTableCol"
+            :table-id="table.id"
             non-focusable-row
             @focus-next="storeNewCol"
             @focus-out="storeNewCol(false)"
@@ -83,6 +86,7 @@
 import { computed, nextTick, onMounted, ref, useTemplateRef } from "vue";
 import { generateNewTableCol, type Table, type TableCol } from "@/types/table.ts";
 import { useDesignStore } from "@/store/design.ts";
+import { useActionsStore } from "@/store/action.ts";
 import DoubleClickFocusInput from "@/components/core/DoubleClickFocusInput.vue";
 import { notBlankOrEmpty, resetFocus, sleep } from "@/utils/utils.ts";
 import TableColRow from "@/components/designer/table/TableColRow.vue";
@@ -93,15 +97,20 @@ import { storeToRefs } from "pinia";
 import { defaultPrimaryTypes } from "@/types/TableColumnTypes/tableField.ts";
 import { FOCUS_DELAY_MS } from "@/types/constants.ts";
 
+const designStore = useDesignStore();
 const {
   selectTable,
   setResizedTable,
   addTableCol,
   deleteTableCol,
   bufferLogTableChange,
-} = useDesignStore();
+  addComment,
+  linkCommentTo,
+} = designStore;
 
-const { focusedTable, isManualCreation } = storeToRefs(useDesignStore());
+const actionStore = useActionsStore();
+
+const { focusedTable, isManualCreation, linkingComment } = storeToRefs(designStore);
 
 const props = defineProps<{
   table: Table
@@ -125,6 +134,24 @@ const tableRef = useTemplateRef('tableRef');
 
 const focusTable = () => {
   tableRef.value?.focus();
+};
+
+const onHeaderMouseDown = (evt: MouseEvent) => {
+  if (actionStore.currentAction === 'comment') {
+    addComment(0, 0, { type: 'table', entityId: table.value.id, offsetX: 0, offsetY: 0 });
+    resetFocus();
+    actionStore.setAction(undefined);
+    evt.stopPropagation();
+    return;
+  }
+
+  if (linkingComment.value) {
+    linkCommentTo('table', table.value.id);
+    resetFocus();
+    actionStore.setAction(undefined);
+    evt.stopPropagation();
+    return;
+  }
 };
 
 const onFocusOut = () => {

@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue';
 import { useActionsStore } from "@/store/action.ts";
 import { useDesignStore } from "@/store/design.ts";
-import { clamp, resetFocus } from "@/utils/utils.ts";
+import { clamp } from "@/utils/utils.ts";
 import { storeToRefs } from "pinia";
 import { useSettingsStore } from "@/store/settings.ts";
 import { cloneDeep } from "lodash";
@@ -125,172 +125,18 @@ export function useDesignCanvas() {
         break;
       }
       case 'comment': {
-        const clickX = evt.clientX;
-        const clickY = evt.clientY;
-
-        // Priority 1: Check if click is on a column
-        const columnHit = detectColumnClick(clickX, clickY);
-        if (columnHit) {
-          designStore.addComment(
-            clickX / scaleFactor.value - translateOffsetX.value,
-            clickY / scaleFactor.value - translateOffsetY.value,
-            {
-              type: 'column',
-              entityId: `${columnHit.tableId}.${columnHit.colId}`,
-              offsetX: 0,
-              offsetY: 0
-            }
-          );
-          resetFocus();
-          actionStore.setAction(undefined);
-          break;
-        }
-
-        // Priority 2: Check if click is on a table header
-        const tableId = detectTableHeaderClick(clickX, clickY);
-        if (tableId) {
-          designStore.addComment(
-            clickX / scaleFactor.value - translateOffsetX.value,
-            clickY / scaleFactor.value - translateOffsetY.value,
-            {
-              type: 'table',
-              entityId: tableId,
-              offsetX: 0,
-              offsetY: 0
-            }
-          );
-          resetFocus();
-          actionStore.setAction(undefined);
-          break;
-        }
-
-        // Priority 3: Check if click is on a group header
-        const groupId = detectGroupHeaderClick(clickX, clickY);
-        if (groupId) {
-          designStore.addComment(
-            clickX / scaleFactor.value - translateOffsetX.value,
-            clickY / scaleFactor.value - translateOffsetY.value,
-            {
-              type: 'group',
-              entityId: groupId,
-              offsetX: 0,
-              offsetY: 0
-            }
-          );
-          resetFocus();
-          actionStore.setAction(undefined);
-          break;
-        }
-
-        // Priority 4: Create standalone comment at click position
+        // Entity hits (column/table/group) are handled by component listeners
+        // via stopPropagation. This only fires for empty canvas clicks.
         designStore.addComment(
-          clickX / scaleFactor.value - translateOffsetX.value,
-          clickY / scaleFactor.value - translateOffsetY.value
+          evt.clientX / scaleFactor.value - translateOffsetX.value,
+          evt.clientY / scaleFactor.value - translateOffsetY.value
         );
         actionStore.setAction(undefined);
         break;
       }
       case 'linkComment': {
-        if (!linkingComment.value) {
-          actionStore.setAction(undefined);
-          break;
-        }
-
-        const clickX = evt.clientX;
-        const clickY = evt.clientY;
-
-        // Priority 1: Check if click is on a column
-        const columnHit = detectColumnClick(clickX, clickY);
-        if (columnHit) {
-          const oldVal = cloneDeep(linkingComment.value);
-          const parent = designStore.getLinkedEntity?.({
-            type: 'column',
-            entityId: `${columnHit.tableId}.${columnHit.colId}`,
-            offsetX: 0,
-            offsetY: 0
-          });
-          if (parent) {
-            // Determine which side the comment is on
-            const isOnLeft = linkingComment.value.posX < parent.posX + parent.width / 2;
-
-            linkingComment.value.linkedTo = {
-              type: 'column',
-              entityId: `${columnHit.tableId}.${columnHit.colId}`,
-              offsetX: isOnLeft
-                ? linkingComment.value.posX - parent.posX
-                : linkingComment.value.posX - parent.posX - parent.width,
-              offsetY: linkingComment.value.posY - parent.posY
-            };
-            designStore.bufferLogCommentChange(oldVal);
-          }
-          resetFocus();
-          designStore.setLinkingComment(undefined);
-          actionStore.setAction(undefined);
-          break;
-        }
-
-        // Priority 2: Check if click is on a table header
-        const tableId = detectTableHeaderClick(clickX, clickY);
-        if (tableId) {
-          const oldVal = cloneDeep(linkingComment.value);
-          const parent = designStore.getLinkedEntity?.({
-            type: 'table',
-            entityId: tableId,
-            offsetX: 0,
-            offsetY: 0
-          });
-          if (parent) {
-            // Determine which side the comment is on
-            const isOnLeft = linkingComment.value.posX < parent.posX + parent.width / 2;
-
-            linkingComment.value.linkedTo = {
-              type: 'table',
-              entityId: tableId,
-              offsetX: isOnLeft
-                ? linkingComment.value.posX - parent.posX
-                : linkingComment.value.posX - parent.posX - parent.width,
-              offsetY: linkingComment.value.posY - parent.posY
-            };
-            designStore.bufferLogCommentChange(oldVal);
-          }
-          resetFocus();
-          designStore.setLinkingComment(undefined);
-          actionStore.setAction(undefined);
-          break;
-        }
-
-        // Priority 3: Check if click is on a group header
-        const groupId = detectGroupHeaderClick(clickX, clickY);
-        if (groupId) {
-          const oldVal = cloneDeep(linkingComment.value);
-          const parent = designStore.getLinkedEntity?.({
-            type: 'group',
-            entityId: groupId,
-            offsetX: 0,
-            offsetY: 0
-          });
-          if (parent) {
-            // Determine which side the comment is on
-            const isOnLeft = linkingComment.value.posX < parent.posX + parent.width / 2;
-
-            linkingComment.value.linkedTo = {
-              type: 'group',
-              entityId: groupId,
-              offsetX: isOnLeft
-                ? linkingComment.value.posX - parent.posX
-                : linkingComment.value.posX - parent.posX - parent.width,
-              offsetY: linkingComment.value.posY - parent.posY
-            };
-            designStore.bufferLogCommentChange(oldVal);
-          }
-          resetFocus();
-          designStore.setLinkingComment(undefined);
-          actionStore.setAction(undefined);
-          break;
-        }
-
-        // If clicked elsewhere, cancel linking
-        resetFocus();
+        // Entity hits are handled by component listeners via stopPropagation.
+        // Canvas click = cancel linking.
         designStore.setLinkingComment(undefined);
         actionStore.setAction(undefined);
         break;
@@ -463,55 +309,6 @@ export function useDesignCanvas() {
     translateOffsetY.value -= (y/oldScale - y/newScale);
 
     scaleFactor.value = newScale;
-  };
-
-  // Click detection helpers for comment creation
-  const isPointInRect = (x: number, y: number, rect: DOMRect): boolean => {
-    return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
-  };
-
-  const detectColumnClick = (clickX: number, clickY: number): { tableId: string; colId: string } | null => {
-    const { tables } = designStore;
-    for (const table of tables) {
-      for (const col of table.cols) {
-        const colEl = document.getElementById(`col-${col.id}`);
-        if (!colEl) continue;
-
-        const rect = colEl.getBoundingClientRect();
-        if (isPointInRect(clickX, clickY, rect)) {
-          return { tableId: table.id, colId: col.id };
-        }
-      }
-    }
-    return null;
-  };
-
-  const detectTableHeaderClick = (clickX: number, clickY: number): string | null => {
-    const { tables } = designStore;
-    for (const table of tables) {
-      const headerEl = document.getElementById(`table-header-${table.id}`);
-      if (!headerEl) continue;
-
-      const rect = headerEl.getBoundingClientRect();
-      if (isPointInRect(clickX, clickY, rect)) {
-        return table.id;
-      }
-    }
-    return null;
-  };
-
-  const detectGroupHeaderClick = (clickX: number, clickY: number): string | null => {
-    const { groups } = designStore;
-    for (const group of groups) {
-      const headerEl = document.getElementById(`group-header-${group.id}`);
-      if (!headerEl) continue;
-
-      const rect = headerEl.getBoundingClientRect();
-      if (isPointInRect(clickX, clickY, rect)) {
-        return group.id;
-      }
-    }
-    return null;
   };
 
   const createGroupSnapshot = () => {
