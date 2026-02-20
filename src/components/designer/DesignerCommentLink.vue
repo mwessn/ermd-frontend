@@ -13,9 +13,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, nextTick } from 'vue';
+import { ref, computed } from 'vue';
 import { useDesignStore } from '@/store/design.ts';
 import type { Comment } from '@/types/comments.ts';
+import { useLineTracker } from '@/components/designer/scripts/useLineTracker.ts';
 
 const props = defineProps<{
   comment: Comment;
@@ -126,57 +127,5 @@ function getEntityAnchorId(linkedTo: { type: string; entityId: string }, side: s
   }
 }
 
-// Watch for position changes
-watch(
-  () => [
-    props.comment.posX,
-    props.comment.posY,
-    props.scaleFactor,
-    props.offsetX,
-    props.offsetY,
-    // Watch entity positions based on type
-    ...(props.comment.linkedTo?.type === 'table' || props.comment.linkedTo?.type === 'column'
-      ? [designStore.tables.find(t => {
-        if (props.comment.linkedTo?.type === 'table') {
-          return t.id === props.comment.linkedTo.entityId;
-        } else {
-          const [tableId] = props.comment.linkedTo!.entityId.split('.');
-          return t.id === tableId;
-        }
-      })?.posX,
-      designStore.tables.find(t => {
-        if (props.comment.linkedTo?.type === 'table') {
-          return t.id === props.comment.linkedTo.entityId;
-        } else {
-          const [tableId] = props.comment.linkedTo!.entityId.split('.');
-          return t.id === tableId;
-        }
-      })?.posY,
-      designStore.tables.find(t => {
-        if (props.comment.linkedTo?.type === 'table') {
-          return t.id === props.comment.linkedTo.entityId;
-        } else {
-          const [tableId] = props.comment.linkedTo!.entityId.split('.');
-          return t.id === tableId;
-        }
-      })?.widthPx]
-      : []),
-    ...(props.comment.linkedTo?.type === 'group'
-      ? [designStore.groups.find(g => g.id === props.comment.linkedTo!.entityId)?.posX,
-        designStore.groups.find(g => g.id === props.comment.linkedTo!.entityId)?.posY,
-        designStore.groups.find(g => g.id === props.comment.linkedTo!.entityId)?.size.width]
-      : [])
-  ],
-  async () => {
-    await nextTick();
-    updateCoordinates();
-  },
-  { deep: true, immediate: true }
-);
-
-// Also update on mount
-onMounted(async () => {
-  await nextTick();
-  updateCoordinates();
-});
+useLineTracker(updateCoordinates);
 </script>

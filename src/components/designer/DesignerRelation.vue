@@ -28,12 +28,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, watch } from "vue";
+import { computed, ref } from "vue";
 import type { DatabaseRelationship, RelationshipType } from "@/types/relationships.ts";
 import { useDesignStore } from "@/store/design.ts";
-import type { Table } from "@/types/table.ts";
 import { clamp } from "@/utils/utils.ts";
 import { storeToRefs } from "pinia";
+import { useLineTracker } from "@/components/designer/scripts/useLineTracker.ts";
 import {
   RELATION_BASE_CIRCLE_SIZE,
   RELATION_CIRCLE_SIZE_MULTIPLIER,
@@ -97,16 +97,13 @@ const x1offset = computed(() =>
 // Non-identifying are dashed
 const lineDash = computed(() => nonIdentifyingTypes.includes(props.relation.type) ? RELATION_DASH_PATTERN : undefined);
 
-const { tables, selectedTable } = storeToRefs(useDesignStore());
+const { selectedTable } = storeToRefs(useDesignStore());
 
 const lineColor = computed(
     () => selectedTable.value &&
     props.relation.firstTableId == selectedTable.value.id ?
       'var(--color-monolithicCyanTsunami)' :
       'var(--color-lycheeIce)');
-
-const firstTable = ref<Table>(tables.value.find(it => it.id == props.relation.firstTableId)!);
-const secondTable = ref<Table>(tables.value.find(it => it.id == props.relation.secondTableId)!);
 
 const x1 = ref<number>(0);
 const y1 = ref<number>(0);
@@ -157,32 +154,7 @@ const calculateLineCoordinates = () => {
   }
 };
 
-watch(
-  () => [
-    firstTable.value.posX,
-    firstTable.value.posY,
-    secondTable.value.posX,
-    secondTable.value.posY,
-    firstTable.value.widthPx,
-    secondTable.value.widthPx,
-    // Watch column arrays to detect reordering or additions/deletions
-    firstTable.value.cols.length,
-    secondTable.value.cols.length,
-    // Watch the specific columns involved in the relation
-    firstTable.value.cols.findIndex(c => c.id === props.relation.firstTableColId),
-    secondTable.value.cols.findIndex(c => c.id === props.relation.secondTableColId)
-  ],
-  async () => {
-    await nextTick();
-    calculateLineCoordinates();
-  },
-  { deep: true }
-);
-
-onMounted(async () => {
-  await nextTick();
-  calculateLineCoordinates();
-});
+useLineTracker(calculateLineCoordinates);
 
 </script>
 
