@@ -180,8 +180,7 @@ export const useDesignStore = defineStore('design', () => {
         // Handle linked comments based on setting
         const columnEntityId = `${selectedTable.value.id}.${col.id}`;
         const linkedComments = comments.value.filter(c =>
-          c.linkedTo?.type === 'column' && c.linkedTo.entityId === columnEntityId
-        );
+          c.linkedTo?.type === 'column' && c.linkedTo.entityId === columnEntityId);
 
         if (currentSettings.value.deleteLinkedCommentsWithEntity) {
           // Delete linked comments

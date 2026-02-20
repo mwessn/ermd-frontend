@@ -143,7 +143,7 @@ const functionsCommentItems: readonly MenuItem[] = [
       actionStore.setAction('group');
     }
   },
-]
+];
 
 const functionsMenuProjectItems: readonly MenuItem[] = [
   {
