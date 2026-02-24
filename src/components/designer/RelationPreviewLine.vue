@@ -15,6 +15,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useLineTracker } from "@/components/designer/scripts/useLineTracker.ts";
+import { useDesignStore } from "@/store/design.ts";
 import { RELATION_DASH_PATTERN } from "@/types/constants.ts";
 
 const props = defineProps<{
@@ -25,19 +26,32 @@ const props = defineProps<{
   mouseX: number
   mouseY: number
   dashed: boolean
+  isMtm: boolean
 }>();
+
+const designStore = useDesignStore();
 
 const x1 = ref<number>(0);
 const y1 = ref<number>(0);
 
-const calculateLineStart = () => {
-  const headerDOM = document.getElementById(`table-header-${props.tableId}`);
-  if (!headerDOM) return;
+function getAnchorId(side: 'l' | 'r'): string {
+  if (props.isMtm) {
+    const table = designStore.tablesMap.get(props.tableId);
+    const pkCol = table?.cols.find(c => c.primaryKey);
+    if (pkCol) return `anchor-${pkCol.id}-${side}`;
+  }
+  return `anchor-newcol-${props.tableId}-${side}`;
+}
 
-  const rect = headerDOM.getBoundingClientRect();
-  // Center of the header
-  x1.value = (rect.x + rect.width / 2) / props.scaleFactor - props.offsetX;
-  y1.value = (rect.y + rect.height / 2) / props.scaleFactor - props.offsetY;
+const calculateLineStart = () => {
+  const mouseIsRight = props.mouseX > x1.value;
+  const side = mouseIsRight ? 'r' : 'l';
+  const anchor = document.getElementById(getAnchorId(side));
+  if (!anchor) return;
+
+  const rect = anchor.getBoundingClientRect();
+  x1.value = rect.x / props.scaleFactor - props.offsetX;
+  y1.value = rect.y / props.scaleFactor - props.offsetY;
 };
 
 useLineTracker(calculateLineStart);

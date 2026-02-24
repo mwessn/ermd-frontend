@@ -59,6 +59,7 @@
             :mouse-x="canvasMouseX"
             :mouse-y="canvasMouseY"
             :dashed="actionsStore.currentAction === 'noto' || actionsStore.currentAction === 'notm'"
+            :is-mtm="actionsStore.currentAction === 'mtm'"
           />
         </svg>
 

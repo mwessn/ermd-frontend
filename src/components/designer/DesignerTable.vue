@@ -63,15 +63,21 @@
             @delete-col="onDeleteCol(col)"
           />
 
-          <TableColRow
-            ref="newColRef"
-            v-model:col="newTableCol"
-            :table-id="table.id"
-            non-focusable-row
-            @focus-next="storeNewCol"
-            @focus-out="storeNewCol(false)"
-            @mouse-down="focusTable()"
-          />
+          <div class="relative">
+            <TableColRow
+              ref="newColRef"
+              v-model:col="newTableCol"
+              :table-id="table.id"
+              non-focusable-row
+              @focus-next="storeNewCol"
+              @focus-out="storeNewCol(false)"
+              @mouse-down="focusTable()"
+            />
+            <div class="absolute inset-0 flex items-center justify-between pointer-events-none">
+              <div :id="`anchor-newcol-${table.id}-l`" />
+              <div :id="`anchor-newcol-${table.id}-r`" />
+            </div>
+          </div>
         </div>
       </div>
 
