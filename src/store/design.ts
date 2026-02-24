@@ -908,6 +908,9 @@ export const useDesignStore = defineStore(
       setAllGroups,
       setAllComments,
 
+      // Relation creation state
+      relationFirstTableId,
+
       // Expose maps for direct access when needed
       tablesMap,
       relationsMap,
