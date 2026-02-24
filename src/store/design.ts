@@ -387,6 +387,16 @@ export const useDesignStore = defineStore(
           return;
         }
 
+        // Verify both tables have primary keys before creating pivot
+        const firstHasPK = firstTable.cols.some(col => col.primaryKey);
+        const secondHasPK = selectedTable.value.cols.some(col => col.primaryKey);
+        if (!firstHasPK || !secondHasPK) {
+          const tableName = !firstHasPK ? firstTable.name : selectedTable.value.name;
+          notificationStore.show(i18n.global.t('notifications.noPrimaryKey', { tableName }), 'error');
+          actionStore.resetAction();
+          return;
+        }
+
         // Check if a simple relation between tables already exists
         const existingRel = relations.value.find(it =>
           (it.firstTableId == firstTable.id && it.secondTableId == selectedTable.value?.id) ||
