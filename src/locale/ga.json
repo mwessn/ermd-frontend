@@ -43,7 +43,42 @@
       "hint": "Teoranta go {max} chun fadhbanna feidhmíochta a sheachaint"
     },
     "databaseEngine": "Inneall Bunachar Sonraí",
-    "customColumnTypes": "Cineálacha colúin saincheaptha"
+    "customColumnTypes": "Cineálacha colúin saincheaptha",
+    "tabs": {
+      "general": "Ginearálta",
+      "shortcuts": "Aicearraí"
+    },
+    "shortcuts": {
+      "canvasGroup": "Canbhás",
+      "globalGroup": "Domhanda",
+      "columnGroup": "Colún",
+      "pressKey": "Brúigh eochair...",
+      "resetDefaults": "Athshocraigh go réamhshocrúcháin",
+      "locked": "Glasáilte",
+      "actions": {
+        "escape": "Athshocraigh / Díroghnaigh",
+        "createTable": "Cruthaigh tábla",
+        "createNoto": "Neamh-shainaitheantach 1:1",
+        "createIoto": "Sainaitheantach 1:1",
+        "createNotm": "Neamh-shainaitheantach 1:M",
+        "createIotm": "Sainaitheantach 1:M",
+        "createMtm": "Mórán le mórán",
+        "createComment": "Cruthaigh nóta tráchta",
+        "createGroup": "Cruthaigh grúpa",
+        "centerView": "Láraigh an t-amharc",
+        "deleteSelected": "Scrios an rogha",
+        "undo": "Cealaigh",
+        "redo": "Athdhéan",
+        "redoAlt": "Athdhéan (mal.)",
+        "copy": "Cóipeáil",
+        "paste": "Greamaigh",
+        "save": "Sábháil",
+        "togglePK": "Scoránaigh an Eochair Phríomhúil",
+        "toggleNotNull": "Scoránaigh Neamhnitheach",
+        "toggleUnique": "Scoránaigh Uathúil",
+        "toggleAutoIncrement": "Scoránaigh Uathincrimint"
+      }
+    }
   },
   "modal": {
     "importJson": "Iompórtáil JSON",
@@ -103,7 +138,8 @@
     "projectImported": "Tionscadal iompórtáilte go rathúil",
     "projectCleared": "Tionscadal glanta",
     "unknownEngine": "Inneall bunachair sonraí anaithnid: {engine}",
-    "actionBufferError": "Theip ar an ngníomh cealaigh/athdhéan a fheidhmiú"
+    "actionBufferError": "Theip ar an ngníomh cealaigh/athdhéan a fheidhmiú",
+    "shortcutReassigned": "Athsannadh '{key}' ó '{oldAction}' go '{newAction}'"
   },
   "criticalError": {
     "title": "Earráid Chriticiúil",

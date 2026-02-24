@@ -43,7 +43,42 @@
       "hint": "パフォーマンスの問題を防ぐため、最大{max}に制限されています"
     },
     "databaseEngine": "データベースエンジン",
-    "customColumnTypes": "カスタムカラム型"
+    "customColumnTypes": "カスタムカラム型",
+    "tabs": {
+      "general": "一般",
+      "shortcuts": "ショートカット"
+    },
+    "shortcuts": {
+      "canvasGroup": "キャンバス",
+      "globalGroup": "グローバル",
+      "columnGroup": "カラム",
+      "pressKey": "キーを押してください...",
+      "resetDefaults": "デフォルトに戻す",
+      "locked": "ロック済み",
+      "actions": {
+        "escape": "リセット / 選択解除",
+        "createTable": "テーブルを作成",
+        "createNoto": "非依存 1:1",
+        "createIoto": "依存 1:1",
+        "createNotm": "非依存 1:N",
+        "createIotm": "依存 1:N",
+        "createMtm": "多対多",
+        "createComment": "コメントを作成",
+        "createGroup": "グループを作成",
+        "centerView": "表示を中央に合わせる",
+        "deleteSelected": "選択した項目を削除",
+        "undo": "元に戻す",
+        "redo": "やり直し",
+        "redoAlt": "やり直し (Alt)",
+        "copy": "コピー",
+        "paste": "貼り付け",
+        "save": "保存",
+        "togglePK": "主キーの切り替え",
+        "toggleNotNull": "NOT NULLの切り替え",
+        "toggleUnique": "ユニークの切り替え",
+        "toggleAutoIncrement": "自動インクリメントの切り替え"
+      }
+    }
   },
   "modal": {
     "importJson": "JSONインポート",
@@ -103,7 +138,8 @@
     "projectImported": "プロジェクトのインポートに成功しました",
     "projectCleared": "プロジェクトをクリアしました",
     "unknownEngine": "不明なデータベースエンジン: {engine}",
-    "actionBufferError": "元に戻す/やり直し操作の実行に失敗しました"
+    "actionBufferError": "元に戻す/やり直し操作の実行に失敗しました",
+    "shortcutReassigned": "'{key}' を '{oldAction}' から '{newAction}' に再割り当てしました"
   },
   "criticalError": {
     "title": "重大なエラー",

@@ -8,14 +8,12 @@
       :aria-label="props.nonFocusableRow ? 'New column input' : `Column ${col.name || 'unnamed'}, press Delete to remove`"
       role="row"
 
-      @focus="showColumnProps = true"
+      @focus="onRowFocus"
       @focusout="onFocusOut"
 
       @mousedown.left="onMouseDown"
       @keyup.enter.exact="onRowEnterKey"
       @keyup.delete.exact.stop="emit('deleteCol');"
-
-      @keyup.alt.prevent="onRowKeyUp"
     >
       <div
         v-if="showColType"
@@ -78,7 +76,7 @@
 
 <script setup lang="ts">
 import { computed, nextTick, ref, useTemplateRef, watch } from "vue";
-import { colCanAutoIncrement, colCanBeNullable, colCanBePrimary, type TableCol } from "@/types/table.ts";
+import { colCanAutoIncrement, colCanBePrimary, type TableCol } from "@/types/table.ts";
 import DoubleClickFocusInput from "@/components/core/DoubleClickFocusInput.vue";
 import { useDesignStore } from "@/store/design.ts";
 import { useActionsStore } from "@/store/action.ts";
@@ -268,9 +266,15 @@ const onColTypeChange = (oldVal: TableCol) => {
   }
 };
 
+const onRowFocus = () => {
+  showColumnProps.value = true;
+  designStore.setFocusedCol(col.value, props.tableId);
+};
+
 function onFocusOut(event: FocusEvent) {
   if (!event.relatedTarget || !rowRef.value?.contains(event.relatedTarget as Node)) {
     showColumnProps.value = false;
+    designStore.setFocusedCol(undefined);
   }
 }
 
@@ -283,44 +287,6 @@ const highlightColumnClass = computed(() => {
 
   return '';
 });
-
-const onRowKeyUp = (e: KeyboardEvent) => {
-  if (!e.altKey || col.value.type.primitive == 'serial') { return; } // serial column flags are locked
-
-  const oldVal = cloneDeep(col.value);
-  let changed = false;
-
-  switch (e.key.toLowerCase()) {
-    case 'p':
-      if (colCanBePrimary(col.value)) {
-        col.value.primaryKey = !col.value.primaryKey;
-        changed = true;
-      }
-      break;
-    case 'n':
-      if (colCanBeNullable(col.value)) {
-        col.value.notNull = !col.value.notNull;
-        changed = true;
-      }
-      break;
-    case 'u':
-      if (!col.value.primaryKey) {
-        col.value.unique = !col.value.unique;
-        changed = true;
-      }
-      break;
-    case 'a':
-      if (!col.value.primaryKey && colCanAutoIncrement(col.value)) {
-        col.value.autoIncrement = !col.value.autoIncrement;
-        changed = true;
-      }
-      break;
-  }
-
-  if (changed) {
-    onColTypeChange(oldVal);
-  }
-};
 
 defineExpose({ focusColName, focusColType, focusRow });
 </script>

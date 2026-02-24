@@ -14,6 +14,7 @@ import {mysqlTypes} from "@/types/TableColumnTypes/mysqlTypes.ts";
 import {postgresTypes} from "@/types/TableColumnTypes/postgresTypes.ts";
 import {useNotificationStore} from "@/store/ui/notifications.ts";
 import i18n from "@/utils/i18n.ts";
+import {DEFAULT_KEYBOARD_BINDINGS, type KeyboardBindAction} from "@/types/shortcuts.ts";
 
 interface ErrorDetails {
   datetime: string,
@@ -21,18 +22,37 @@ interface ErrorDetails {
   stack?: string
 }
 
+function deduplicateBindings(group: Record<string, KeyboardBindAction>): Record<string, KeyboardBindAction> {
+  const seen = new Set<KeyboardBindAction>();
+  const result: Record<string, KeyboardBindAction> = {};
+  for (const [key, action] of Object.entries(group)) {
+    if (!seen.has(action)) {
+      seen.add(action);
+      result[key] = action;
+    }
+  }
+  return result;
+}
+
 export const useSettingsStore = defineStore('settings', () => {
 
   const criticalError = ref<ErrorDetails | undefined>(undefined);
 
   const loadSettings = (): UserSettings => {
-    const json: UserSettings | null = JSON.parse(localStorage.getItem("__ermd_settings") ?? "null");
+    const stored = JSON.parse(localStorage.getItem("__ermd_settings") ?? "null");
+    const json = stored?.currentSettings as UserSettings | undefined;
 
     if (json) {
-      return {
+      const settings: UserSettings = {
         ...cloneDeep(defaultSettings),
-        ...json
+        ...json,
       };
+
+      for (const group of ['keys', 'ctrl', 'alt', 'shift'] as const) {
+        settings.shortcuts[group] = deduplicateBindings(settings.shortcuts[group]);
+      }
+
+      return settings;
     } else {
       return cloneDeep(defaultSettings);
     }
@@ -115,6 +135,10 @@ export const useSettingsStore = defineStore('settings', () => {
     criticalError.value = undefined;
   };
 
+  const resetShortcuts = () => {
+    currentSettings.value.shortcuts = cloneDeep(DEFAULT_KEYBOARD_BINDINGS);
+  };
+
   return {
     currentSettings,
     defaultTableName,
@@ -136,6 +160,7 @@ export const useSettingsStore = defineStore('settings', () => {
 
     setCriticalError,
     clearCriticalError,
+    resetShortcuts,
   };
 }, {
   persist: {
@@ -143,7 +168,6 @@ export const useSettingsStore = defineStore('settings', () => {
     pick: [
       'currentSettings',
       'userDefinedColumnTypes',
-      'criticalError'
-    ],
+    ]
   }
 });

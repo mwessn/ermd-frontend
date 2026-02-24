@@ -47,10 +47,14 @@ import {
   faTable
 } from "@fortawesome/free-solid-svg-icons";
 import { useActionsStore } from "@/store/action.ts";
+import { useSettingsStore } from "@/store/settings.ts";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
 import { appConfig } from "@/app.config.ts";
 import Tooltip from "@/components/core/Tooltip.vue";
 import { resetFocus } from "@/utils/utils.ts";
+import { computed } from "vue";
+import type { KeyboardBindAction } from "@/types/shortcuts.ts";
+import { findActionBinding, formatFullShortcut } from "@/utils/shortcutUtils.ts";
 
 withDefaults(defineProps<{
   visible: boolean
@@ -62,6 +66,7 @@ withDefaults(defineProps<{
 const emit = defineEmits(['openImportModal', 'openExportModal', 'openNewProjectModal']);
 
 const actionStore = useActionsStore();
+const settingsStore = useSettingsStore();
 
 interface MenuItem {
   pic: IconDefinition;
@@ -75,11 +80,16 @@ const execAction = (action: () => void) => {
   resetFocus();
 };
 
-const functionsMenuTopItems: readonly MenuItem[] = [
+const getButtonLabel = (action: KeyboardBindAction): string | undefined => {
+  const binding = findActionBinding(settingsStore.currentSettings.shortcuts, action);
+  return binding ? formatFullShortcut(binding.group, binding.key) : undefined;
+};
+
+const functionsMenuTopItems = computed((): readonly MenuItem[] => [
   {
     pic: faTable,
     hint: 'actions.createTable',
-    button: 'T',
+    button: getButtonLabel('canvas.createTable'),
     action: () => {
       actionStore.setAction('table');
     }
@@ -87,7 +97,7 @@ const functionsMenuTopItems: readonly MenuItem[] = [
   {
     pic: faArrowRight,
     hint: 'actions.nonIdentifyingOneToOne',
-    button: 'H',
+    button: getButtonLabel('canvas.createNoto'),
     action: () => {
       actionStore.setAction('noto');
     }
@@ -95,7 +105,7 @@ const functionsMenuTopItems: readonly MenuItem[] = [
   {
     pic: faCircleArrowRight,
     hint: 'actions.identifyingOneToOne',
-    button: 'B',
+    button: getButtonLabel('canvas.createIoto'),
     action: () => {
       actionStore.setAction('ioto');
     }
@@ -103,7 +113,7 @@ const functionsMenuTopItems: readonly MenuItem[] = [
   {
     pic: faChevronRight,
     hint: 'actions.nonIdentifyingOneToMany',
-    button: 'J',
+    button: getButtonLabel('canvas.createNotm'),
     action: () => {
       actionStore.setAction('notm');
     }
@@ -111,7 +121,7 @@ const functionsMenuTopItems: readonly MenuItem[] = [
   {
     pic: faChevronCircleRight,
     hint: 'actions.identifyingOneToMany',
-    button: 'N',
+    button: getButtonLabel('canvas.createIotm'),
     action: () => {
       actionStore.setAction('iotm');
     }
@@ -119,18 +129,18 @@ const functionsMenuTopItems: readonly MenuItem[] = [
   {
     pic: faArrowsUpDownLeftRight,
     hint: 'actions.manyToMany',
-    button: 'M',
+    button: getButtonLabel('canvas.createMtm'),
     action: () => {
       actionStore.setAction('mtm');
     }
   },
-];
+]);
 
-const functionsCommentItems: readonly MenuItem[] = [
+const functionsCommentItems = computed((): readonly MenuItem[] => [
   {
     pic: faComment,
     hint: 'actions.comment',
-    button: 'C',
+    button: getButtonLabel('canvas.createComment'),
     action: () => {
       actionStore.setAction('comment');
     }
@@ -138,12 +148,12 @@ const functionsCommentItems: readonly MenuItem[] = [
   {
     pic: faObjectGroup,
     hint: 'actions.group',
-    button: 'G',
+    button: getButtonLabel('canvas.createGroup'),
     action: () => {
       actionStore.setAction('group');
     }
   },
-];
+]);
 
 const functionsMenuProjectItems: readonly MenuItem[] = [
   {
@@ -186,12 +196,12 @@ const functionsMenuMiscItems: readonly MenuItem[] = [
   },
 ];
 
-const sections = [
-  { items: functionsMenuTopItems },
-  { items: functionsCommentItems },
+const sections = computed(() => [
+  { items: functionsMenuTopItems.value },
+  { items: functionsCommentItems.value },
   { items: functionsMenuProjectItems },
   { items: functionsMenuMiscItems },
-] as const;
+]);
 </script>
 
 <style scoped>

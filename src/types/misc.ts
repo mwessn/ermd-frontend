@@ -4,6 +4,9 @@ import { generateId } from "@/utils/utils.ts";
 import type { Table, TableCol } from "@/types/table.ts";
 import type { DatabaseRelationship } from "@/types/relationships.ts";
 import type { Comment } from "@/types/comments.ts";
+import type { KeyboardBindings } from "@/types/shortcuts.ts";
+import { DEFAULT_KEYBOARD_BINDINGS } from "@/types/shortcuts.ts";
+import { cloneDeep } from "lodash";
 
 export type AppLocale = 'en' | 'ga' | 'ja';
 
@@ -28,6 +31,9 @@ export interface UserSettings {
   dragCanvasButton: 'middle' | 'left';
   undoActionBufferSize: number;
   snapToGrid: boolean;
+
+  // Keyboard shortcuts
+  shortcuts: KeyboardBindings;
 }
 
 export const defaultSettings: UserSettings = {
@@ -48,6 +54,7 @@ export const defaultSettings: UserSettings = {
   undoActionBufferSize: 20,
   snapToGrid: false,
 
+  shortcuts: cloneDeep(DEFAULT_KEYBOARD_BINDINGS),
 };
 
 export const SQL_IDENTIFIER_REGEX = /^[a-zA-Z_][a-zA-Z0-9_]*$/;

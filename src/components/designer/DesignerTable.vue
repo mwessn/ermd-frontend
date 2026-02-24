@@ -8,7 +8,7 @@
 
       :style="{ top: table.posY + 'px', left: table.posX + 'px', width: table.widthPx + 'px' }"
 
-      @click="focusedTable = table"
+      @mousedown="focusedTable = table"
 
       @focus="selectTable(table)"
       @focusout="onFocusOut"

@@ -77,6 +77,17 @@ export const useDesignStore = defineStore(
 
     const relationFirstTableId = ref<string | undefined>(undefined);
 
+    interface FocusedCol {
+      col: TableCol;
+      tableId: string;
+    }
+
+    const focusedCol = ref<FocusedCol | undefined>(undefined);
+
+    const setFocusedCol = (col: TableCol | undefined, tableId?: string) => {
+      focusedCol.value = col && tableId ? { col, tableId } : undefined;
+    };
+
     // Flag to track whether a table is mounted after manual creation or loaded from localStorage
     const isManualCreation = ref<boolean>(false);
 
@@ -856,6 +867,10 @@ export const useDesignStore = defineStore(
       ...commentOps,
       setMovedComment,
       setLinkingComment,
+
+      // Column focus tracking
+      focusedCol,
+      setFocusedCol,
 
       // Canvas operations
       snapToGrid,

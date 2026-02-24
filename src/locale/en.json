@@ -43,7 +43,42 @@
       "hint": "Capped to {max} to prevent performance issues"
     },
     "databaseEngine": "Database Engine",
-    "customColumnTypes": "Custom column types"
+    "customColumnTypes": "Custom column types",
+    "tabs": {
+      "general": "General",
+      "shortcuts": "Shortcuts"
+    },
+    "shortcuts": {
+      "canvasGroup": "Canvas",
+      "globalGroup": "Global",
+      "columnGroup": "Column",
+      "pressKey": "Press a key...",
+      "resetDefaults": "Reset to defaults",
+      "locked": "Locked",
+      "actions": {
+        "escape": "Reset / Deselect",
+        "createTable": "Create table",
+        "createNoto": "Non-identifying 1:1",
+        "createIoto": "Identifying 1:1",
+        "createNotm": "Non-identifying 1:M",
+        "createIotm": "Identifying 1:M",
+        "createMtm": "Many-to-many",
+        "createComment": "Create comment",
+        "createGroup": "Create group",
+        "centerView": "Center view",
+        "deleteSelected": "Delete selected",
+        "undo": "Undo",
+        "redo": "Redo",
+        "redoAlt": "Redo (alt)",
+        "copy": "Copy",
+        "paste": "Paste",
+        "save": "Save",
+        "togglePK": "Toggle Primary Key",
+        "toggleNotNull": "Toggle Not Null",
+        "toggleUnique": "Toggle Unique",
+        "toggleAutoIncrement": "Toggle Auto Increment"
+      }
+    }
   },
   "modal": {
     "importJson": "Import JSON",
@@ -103,7 +138,8 @@
     "projectImported": "Project imported successfully",
     "projectCleared": "Project cleared",
     "unknownEngine": "Unknown database engine: {engine}",
-    "actionBufferError": "Failed to execute undo/redo action"
+    "actionBufferError": "Failed to execute undo/redo action",
+    "shortcutReassigned": "'{key}' reassigned from '{oldAction}' to '{newAction}'"
   },
   "criticalError": {
     "title": "Critical Error",
