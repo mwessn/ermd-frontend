@@ -104,6 +104,13 @@
     "unknownEngine": "Unknown database engine: {engine}",
     "actionBufferError": "Failed to execute undo/redo action"
   },
+  "criticalError": {
+    "title": "Critical Error",
+    "body": "Something went terribly wrong. You can export your project as JSON to save your work for a bug report or manual recovery, or clear the project to start fresh.",
+    "exportJson": "Export JSON",
+    "clearProject": "Clear Project",
+    "errorDetails": "Error details"
+  },
   "actions": {
     "createTable": "Create table",
     "nonIdentifyingOneToOne": "Non-identifying One-to-One relation",

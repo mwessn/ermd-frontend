@@ -9,7 +9,11 @@
           <div class="text-accentDarkGray font-bold text-lg cursor-default">
             {{ modalName }}
           </div>
-          <div class="cursor-pointer p-1 bg-accentGray rounded-lg" @click="emit('close')">
+          <div
+            v-if="!persistent"
+            class="cursor-pointer p-1 bg-accentGray rounded-lg"
+            @click="emit('close')"
+          >
             <FontAwesomeIcon :icon="faXmark" class="h-5 select-none" />
           </div>
         </div>
@@ -22,13 +26,17 @@
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 
-defineProps<{
+const props = withDefaults(defineProps<{
   modalName: string
-}>();
+  persistent?: boolean
+}>(), {
+  persistent: false
+});
 
 const emit = defineEmits(['close']);
 
 const closeModal = () => {
+  if (props.persistent) return;
   emit('close');
 };
 </script>

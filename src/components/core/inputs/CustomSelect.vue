@@ -84,7 +84,7 @@ const props = withDefaults(defineProps<{
   hint: ""
 });
 
-const rootDiv = ref();
+const rootDiv = ref<HTMLDivElement | undefined>();
 
 const emit = defineEmits(["change"]);
 

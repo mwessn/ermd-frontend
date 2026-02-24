@@ -48,6 +48,10 @@ Tailwind
   --color-monolithicCyanTsunami: #007A8A;
 
   --color-tinted: rgba(0, 0, 0, 0.4);
+
+  --color-notificationMessage: #41ff41;
+  --color-warningMessage: #ffcb1f;
+  --color-errorMessage: #ff3030;
 }
 
 @utility slider-thumb-* {

@@ -11,14 +11,14 @@ import {
   getDefaultModifierParams
 } from "@/types/TableColumnTypes/tableField.ts";
 import {mysqlTypes} from "@/types/TableColumnTypes/mysqlTypes.ts";
-import {useDesignStore} from "@/store/design.ts";
 import {postgresTypes} from "@/types/TableColumnTypes/postgresTypes.ts";
 import {useNotificationStore} from "@/store/ui/notifications.ts";
 import i18n from "@/utils/i18n.ts";
 
 interface ErrorDetails {
-  datetime: Date,
-  error: Error
+  datetime: string,
+  message: string,
+  stack?: string
 }
 
 export const useSettingsStore = defineStore('settings', () => {
@@ -105,10 +105,14 @@ export const useSettingsStore = defineStore('settings', () => {
 
   const setCriticalError = (e: Error) => {
     criticalError.value = {
-      datetime: new Date(),
-      error: e
+      datetime: new Date().toISOString(),
+      message: e.message,
+      stack: e.stack
     };
-    useDesignStore().createNewProject();
+  };
+
+  const clearCriticalError = () => {
+    criticalError.value = undefined;
   };
 
   return {
@@ -131,13 +135,15 @@ export const useSettingsStore = defineStore('settings', () => {
     setCurrentEngine,
 
     setCriticalError,
+    clearCriticalError,
   };
 }, {
   persist: {
     key: `__ermd_settings`,
     pick: [
       'currentSettings',
-      'userDefinedColumnTypes'
+      'userDefinedColumnTypes',
+      'criticalError'
     ],
   }
 });

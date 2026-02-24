@@ -104,6 +104,13 @@
     "unknownEngine": "Inneall bunachair sonraí anaithnid: {engine}",
     "actionBufferError": "Theip ar an ngníomh cealaigh/athdhéan a fheidhmiú"
   },
+  "criticalError": {
+    "title": "Earráid Chriticiúil",
+    "body": "Chuaigh rud éigin an-mhór ó rath. Is féidir leat do thionscadal a easpórtáil mar JSON chun do chuid oibre a shábháil le haghaidh tuairisc fabht nó aisghabháil láimhe, nó an tionscadal a ghlanadh chun tosú as an nua.",
+    "exportJson": "Easpórtáil JSON",
+    "clearProject": "Glan an Tionscadal",
+    "errorDetails": "Sonraí earráide"
+  },
   "actions": {
     "createTable": "Cruthaigh tábla",
     "nonIdentifyingOneToOne": "Gaol Aon le hAon neamh-shainaitheanta",
