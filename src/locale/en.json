@@ -95,6 +95,15 @@
     "dbTypeChange": "You are about to change the database engine. ERMD will try its best with type coercion for the existing tables, but some data may be lost. Please confirm whether you want to continue.",
     "newProjectConfirm": "Creating a new project will permanently delete all existing data. Please confirm you want to proceed."
   },
+  "notifications": {
+    "tableNotFound": "Table not found: {firstTableId}, {secondTableId}",
+    "noPrimaryKey": "Table {tableName} has no primary key",
+    "projectExported": "Project exported successfully",
+    "projectImported": "Project imported successfully",
+    "projectCleared": "Project cleared",
+    "unknownEngine": "Unknown database engine: {engine}",
+    "actionBufferError": "Failed to execute undo/redo action"
+  },
   "actions": {
     "createTable": "Create table",
     "nonIdentifyingOneToOne": "Non-identifying One-to-One relation",

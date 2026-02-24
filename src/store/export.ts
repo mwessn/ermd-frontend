@@ -7,10 +7,13 @@ import { type DatabaseEngine, DatabaseEngines } from "@/types/TableColumnTypes/t
 import { useSettingsStore } from "@/store/settings.ts";
 import type { Table, TableCol } from "@/types/table.ts";
 import { assertDefined } from "@/utils/utils.ts";
+import { useNotificationStore } from "@/store/ui/notifications.ts";
+import i18n from "@/utils/i18n.ts";
 
 export const useExportStore = defineStore('export', () => {
   const designStore = useDesignStore();
   const settingsStore = useSettingsStore();
+  const notificationStore = useNotificationStore();
 
   const {
     tables,
@@ -72,6 +75,8 @@ export const useExportStore = defineStore('export', () => {
     link.click();
 
     URL.revokeObjectURL(url);
+
+    notificationStore.show(i18n.global.t('notifications.projectExported'), 'success');
   }
 
   function incrementVersion(version: string): string {
@@ -154,6 +159,8 @@ export const useExportStore = defineStore('export', () => {
       setAllRelations(validatedJson.relations);
       setAllGroups(validatedJson.groups ?? []);
       setAllComments(validatedJson.comments ?? []);
+
+      notificationStore.show(i18n.global.t('notifications.projectImported'), 'success');
 
     } catch (err) {
       console.error("Failed to import JSON:", err);

@@ -13,6 +13,8 @@ import {
 import {mysqlTypes} from "@/types/TableColumnTypes/mysqlTypes.ts";
 import {useDesignStore} from "@/store/design.ts";
 import {postgresTypes} from "@/types/TableColumnTypes/postgresTypes.ts";
+import {useNotificationStore} from "@/store/ui/notifications.ts";
+import i18n from "@/utils/i18n.ts";
 
 interface ErrorDetails {
   datetime: Date,
@@ -78,6 +80,7 @@ export const useSettingsStore = defineStore('settings', () => {
     // Sanity check
     if (!DatabaseEngines.includes(val)) {
       console.error('Unknown engine', val);
+      useNotificationStore().show(i18n.global.t('notifications.unknownEngine', { engine: val }), 'error');
       throw new Error(`Unknown engine: ${val}`);
     }
 

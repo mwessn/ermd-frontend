@@ -1,13 +1,11 @@
 import { irregularPlurals } from "@/types/irregularPlurals.ts";
 
-type IdScope = 'col' | 'table' | 'relation' | 'group' | 'comment';
+type IdScope = 'col' | 'table' | 'relation' | 'group' | 'comment' | 'ui';
 
 export function generateId(scope: IdScope): string {
   const random = Math.random().toString(36).substring(2, 8); // 6-char random
   const timestamp = Date.now().toString(36); // compact timestamp
-  const id = `${scope}-${timestamp}-${random}`;
-
-  return id;
+  return `${ scope }-${ timestamp }-${ random }`;
 }
 
 export const clamp = (val: number, min: number, max: number) => Math.min(Math.max(val, min), max);

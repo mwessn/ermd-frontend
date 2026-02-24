@@ -4,6 +4,8 @@ import type { ActionBufferEntry, BufferEntity } from "@/types/actionsBuffer.ts";
 import { useDesignStore } from "@/store/design.ts";
 import { cloneDeep } from "lodash";
 import { useSettingsStore } from "@/store/settings.ts";
+import { useNotificationStore } from "@/store/ui/notifications.ts";
+import i18n from "@/utils/i18n.ts";
 
 export const useActionBuffer = defineStore('actionBuffer', () => {
 
@@ -13,6 +15,7 @@ export const useActionBuffer = defineStore('actionBuffer', () => {
   const redoBuffer = ref<ActionBufferEntry[]>([]);
 
   const designStore = useDesignStore();
+  const notificationStore = useNotificationStore();
 
   const addUndoBufferAction = (action: ActionBufferEntry) => {
     redoBuffer.value = [];
@@ -98,6 +101,7 @@ export const useActionBuffer = defineStore('actionBuffer', () => {
       const typeMap = entityActionMap[entity.type];
       if (!typeMap || !typeMap[entity.action]) {
         console.warn("Action buffer error:", entity);
+        notificationStore.show(i18n.global.t('notifications.actionBufferError'), 'error');
         success = false;
         continue;
       }
