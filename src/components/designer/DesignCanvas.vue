@@ -99,7 +99,7 @@
           @mouseup.left="centerView(0, 0)"
         >
           <Tooltip
-            text="Center view"
+            text="actions.centerView"
             button="X"
             class="full"
           >

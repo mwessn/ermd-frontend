@@ -6,6 +6,15 @@
             transition-transform duration-300"
       :class="visible ? 'translate-x-0' : 'translate-x-full'"
     >
+      <CustomSelect
+        v-model="currentSettings.language"
+        :label="$t('settings.language')"
+        :options="languageOptions"
+        @change="onLanguageChange"
+      />
+
+      <Separator />
+
       <DBEngineChangeSelect
         :init-value="currentSettings.databaseEngine"
         @engine-change="onEngineChange"
@@ -90,6 +99,7 @@ import { storeToRefs } from "pinia";
 import { useSettingsStore } from "@/store/settings.ts";
 import CustomSelect from "@/components/core/inputs/CustomSelect.vue";
 import type { SelectOption } from "@/types/misc.ts";
+import type { AppLocale } from "@/types/misc.ts";
 import { computed } from "vue";
 import DBEngineChangeSelect from "@/components/settings/DBEngineChangeSelect.vue";
 import { type DatabaseEngine, DatabaseEngines } from "@/types/TableColumnTypes/tableField.ts";
@@ -105,6 +115,22 @@ defineProps<{
 }>();
 
 const i18n = useI18n();
+
+const languageLabels: Record<AppLocale, string> = {
+  en: '\uD83C\uDF0D English',
+  ga: '\uD83C\uDDEE\uD83C\uDDEA Gaeilge',
+  ja: '\uD83C\uDDEF\uD83C\uDDF5 \u65E5\u672C\u8A9E',
+};
+
+const languageOptions: SelectOption[] = [
+  { label: languageLabels.en, value: 'en' },
+  { label: languageLabels.ga, value: 'ga' },
+  { label: languageLabels.ja, value: 'ja' },
+];
+
+const onLanguageChange = () => {
+  i18n.locale.value = currentSettings.value.language;
+};
 
 const settingsStore = useSettingsStore();
 

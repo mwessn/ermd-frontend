@@ -10,7 +10,7 @@
           :key="itemIndex"
           :text="item.hint"
           :button="item.button"
-          :aria-label="item.hint"
+          :aria-label="$t(item.hint)"
           tabindex="0"
           @keyup.enter="execAction(item.action)"
         >
@@ -51,7 +51,6 @@ import { faGithub } from "@fortawesome/free-brands-svg-icons";
 import { appConfig } from "@/app.config.ts";
 import Tooltip from "@/components/core/Tooltip.vue";
 import { resetFocus } from "@/utils/utils.ts";
-import { useI18n } from "vue-i18n";
 
 withDefaults(defineProps<{
   visible: boolean
@@ -63,7 +62,6 @@ withDefaults(defineProps<{
 const emit = defineEmits(['openImportModal', 'openExportModal', 'openNewProjectModal']);
 
 const actionStore = useActionsStore();
-const { t } = useI18n();
 
 interface MenuItem {
   pic: IconDefinition;
@@ -80,7 +78,7 @@ const execAction = (action: () => void) => {
 const functionsMenuTopItems: readonly MenuItem[] = [
   {
     pic: faTable,
-    hint: t('actions.createTable'),
+    hint: 'actions.createTable',
     button: 'T',
     action: () => {
       actionStore.setAction('table');
@@ -88,7 +86,7 @@ const functionsMenuTopItems: readonly MenuItem[] = [
   },
   {
     pic: faArrowRight,
-    hint: t('actions.nonIdentifyingOneToOne'),
+    hint: 'actions.nonIdentifyingOneToOne',
     button: 'H',
     action: () => {
       actionStore.setAction('noto');
@@ -96,7 +94,7 @@ const functionsMenuTopItems: readonly MenuItem[] = [
   },
   {
     pic: faCircleArrowRight,
-    hint: t('actions.identifyingOneToOne'),
+    hint: 'actions.identifyingOneToOne',
     button: 'B',
     action: () => {
       actionStore.setAction('ioto');
@@ -104,7 +102,7 @@ const functionsMenuTopItems: readonly MenuItem[] = [
   },
   {
     pic: faChevronRight,
-    hint: t('actions.nonIdentifyingOneToMany'),
+    hint: 'actions.nonIdentifyingOneToMany',
     button: 'J',
     action: () => {
       actionStore.setAction('notm');
@@ -112,7 +110,7 @@ const functionsMenuTopItems: readonly MenuItem[] = [
   },
   {
     pic: faChevronCircleRight,
-    hint: t('actions.identifyingOneToMany'),
+    hint: 'actions.identifyingOneToMany',
     button: 'N',
     action: () => {
       actionStore.setAction('iotm');
@@ -120,7 +118,7 @@ const functionsMenuTopItems: readonly MenuItem[] = [
   },
   {
     pic: faArrowsUpDownLeftRight,
-    hint: t('actions.manyToMany'),
+    hint: 'actions.manyToMany',
     button: 'M',
     action: () => {
       actionStore.setAction('mtm');
@@ -131,7 +129,7 @@ const functionsMenuTopItems: readonly MenuItem[] = [
 const functionsCommentItems: readonly MenuItem[] = [
   {
     pic: faComment,
-    hint: t('actions.comment'),
+    hint: 'actions.comment',
     button: 'C',
     action: () => {
       actionStore.setAction('comment');
@@ -139,7 +137,7 @@ const functionsCommentItems: readonly MenuItem[] = [
   },
   {
     pic: faObjectGroup,
-    hint: t('actions.group'),
+    hint: 'actions.group',
     button: 'G',
     action: () => {
       actionStore.setAction('group');
@@ -150,21 +148,21 @@ const functionsCommentItems: readonly MenuItem[] = [
 const functionsMenuProjectItems: readonly MenuItem[] = [
   {
     pic: faFile,
-    hint: t('actions.newProject'),
+    hint: 'actions.newProject',
     action: () => {
       emit('openNewProjectModal');
     }
   },
   {
     pic: faFileArrowDown,
-    hint: t('actions.saveAsJson'),
+    hint: 'actions.saveAsJson',
     action: () => {
       emit('openExportModal');
     }
   },
   {
     pic: faFileArrowUp,
-    hint: t('actions.uploadJson'),
+    hint: 'actions.uploadJson',
     action: () => {
       emit('openImportModal');
     }
@@ -174,14 +172,14 @@ const functionsMenuProjectItems: readonly MenuItem[] = [
 const functionsMenuMiscItems: readonly MenuItem[] = [
   {
     pic: faCircleInfo,
-    hint: t('actions.info'),
+    hint: 'actions.info',
     action: () => {
       //
     }
   },
   {
     pic: faGithub,
-    hint: t('actions.projectGitHub'),
+    hint: 'actions.projectGitHub',
     action: () => {
       window.open(appConfig.appGitHub);
     }

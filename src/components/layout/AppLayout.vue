@@ -36,7 +36,7 @@
 
 <script setup lang="ts">
 import PageHeader from "@/components/layout/PageHeader.vue";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import FunctionsMenu from "@/components/sideMenu/FunctionsMenu.vue";
 import SettingsMenu from "@/components/sideMenu/SettingsMenu.vue";
 import { useDesignStore } from "@/store/design.ts";
@@ -70,7 +70,7 @@ const importModalVisible = ref<boolean>(false);
 const newProjectModalVisible = ref<boolean>(false);
 
 const { t } = useI18n();
-const newProjectModalBodyText = t('messages.newProjectConfirm');
+const newProjectModalBodyText = computed(() => t('messages.newProjectConfirm'));
 
 const onNewProjectModalClose = (val: boolean | undefined) => {
   newProjectModalVisible.value = false;

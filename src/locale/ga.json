@@ -13,6 +13,7 @@
     }
   },
   "settings": {
+    "language": "Teanga",
     "namingConvention": {
       "label": "Gnás ainmnithe",
       "hint": "Ní bheidh feidhm aige seo ach ar tháblaí nuachruthaithe"
@@ -123,6 +124,7 @@
     "newProject": "Tionscadal nua",
     "saveAsJson": "Sábháil mar JSON",
     "uploadJson": "Uaslódáil JSON",
+    "centerView": "Lárú an amhairc",
     "info": "Eolas",
     "projectGitHub": "GitHub an Tionscadail"
   }

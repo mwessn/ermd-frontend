@@ -55,7 +55,11 @@ const route = useRoute();
 const isMobile = computed(() => window.innerWidth <= 768);
 
 const notificationStore = useNotificationStore();
-const { criticalError } = storeToRefs(useSettingsStore());
+const settingsStore = useSettingsStore();
+const { criticalError } = storeToRefs(settingsStore);
+
+// Restore persisted language on load
+i18n.locale.value = settingsStore.currentSettings.language;
 
 watch(
   () => i18n.locale,

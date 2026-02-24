@@ -5,7 +5,10 @@ import type { Table, TableCol } from "@/types/table.ts";
 import type { DatabaseRelationship } from "@/types/relationships.ts";
 import type { Comment } from "@/types/comments.ts";
 
+export type AppLocale = 'en' | 'ga' | 'ja';
+
 export interface UserSettings {
+  language: AppLocale;
   databaseEngine: DatabaseEngine;
   namingConvention: 'snake' | 'camel';
 
@@ -28,6 +31,7 @@ export interface UserSettings {
 }
 
 export const defaultSettings: UserSettings = {
+  language: 'en',
   databaseEngine: 'postgres',
   namingConvention: 'camel',
 
