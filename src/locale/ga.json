@@ -1,0 +1,122 @@
+{
+  "mobile": {
+    "title": "AN AIPE SEO",
+    "notAvailable": "NÍL AR FÁIL",
+    "devices": "AR GHLÉASANNA SOGHLUAISTE"
+  },
+  "menu": {
+    "functions": {
+      "open": "Oscail roghchlár feidhmeanna"
+    },
+    "settings": {
+      "open": "Oscail roghchlár socruithe"
+    }
+  },
+  "settings": {
+    "namingConvention": {
+      "label": "Gnás ainmnithe",
+      "hint": "Ní bheidh feidhm aige seo ach ar tháblaí nuachruthaithe"
+    },
+    "defaultPrimaryKey": "Príomheochair Réamhshocraithe",
+    "generateMtMPrimaryKey": "Gin príomheochair do tháblaí MtM",
+    "defaultMtMPrimaryKey": "Príomheochair Réamhshocraithe MtM",
+    "updateFKTypes": {
+      "label": "Nuashonraigh cineálacha FK nuair a athraíonn cineál PK",
+      "hint": "Sioncronaigh cineálacha colún FK go huathoibríoch lena n-eochair phríomhúil tagartha"
+    },
+    "deleteFKColumn": {
+      "label": "Scrios colún FK nuair a scriostar an gaol",
+      "hint": "Má tá sé díchumasaithe, éireoidh an colún FK ina ghnáthcholún"
+    },
+    "deleteLinkedComments": {
+      "label": "Scrios nótaí tráchta nasctha leis an aonán",
+      "hint": "Nuair atá sé cumasaithe, scriostar nótaí tráchta atá nasctha le haonáin nuair a scriostar an t-aonán. Mura bhfuil, éireoidh siad ina nótaí tráchta saorsheasaimh."
+    },
+    "dragCanvasButton": "Cnaipe luiche le haghaidh tarraingt an chanbháis",
+    "snapToGrid": {
+      "label": "Snap go greille",
+      "hint": "Turgnamhach, d'fhéadfadh sé a bheith briste"
+    },
+    "actionBufferSize": {
+      "label": "Méid an mhaoláin gníomhartha",
+      "hint": "Teoranta go {max} chun fadhbanna feidhmíochta a sheachaint"
+    },
+    "databaseEngine": "Inneall Bunachar Sonraí",
+    "customColumnTypes": "Cineálacha colúin saincheaptha"
+  },
+  "modal": {
+    "importJson": "Iompórtáil JSON",
+    "exportJson": "Easpórtáil JSON",
+    "addCustomType": "Cuir cineál saincheaptha leis",
+    "createNewProject": "Cruthaigh tionscadal nua",
+    "changingDatabaseEngine": "Inneall Bunachair Sonraí á Athrú"
+  },
+  "project": {
+    "name": {
+      "label": "Ainm an tionscadail",
+      "placeholder": "cuir isteach ainm an tionscadail"
+    },
+    "version": {
+      "label": "Leagan an tionscadail",
+      "optional": "Roghnach"
+    }
+  },
+  "group": {
+    "new": "grúpa nua"
+  },
+  "column": {
+    "type": {
+      "canBePrimaryKey": "Is féidir a úsáid mar phríomheochair",
+      "canAutoIncrement": "Is féidir uath-incrimintiú a dhéanamh",
+      "canHaveDefault": "Is féidir luach réamhshocraithe a bheith aige",
+      "typeAliases": "Ailiasanna cineáil"
+    },
+    "property": {
+      "default": "Réamhshocrú"
+    }
+  },
+  "file": {
+    "drop": "Scaoil comhad anseo",
+    "clickToSelect": "nó cliceáil le roghnú"
+  },
+  "import": {
+    "errors": "Earráidí iompórtála"
+  },
+  "common": {
+    "add": "Cuir leis",
+    "save": "Sábháil",
+    "import": "Iompórtáil",
+    "export": "Easpórtáil",
+    "confirm": "Deimhnigh",
+    "cancel": "Cealaigh",
+    "name": "Ainm"
+  },
+  "messages": {
+    "dbTypeChange": "Tá tú ar tí inneall an bhunachair sonraí a athrú. Déanfaidh ERMD a dhícheall le comhéigniú cineáil do na táblaí atá ann cheana, ach d'fhéadfaí roinnt sonraí a chailliúint. Deimhnigh le do thoil ar mhaith leat leanúint ar aghaidh.",
+    "newProjectConfirm": "Scriosfaidh tionscadal nua na sonraí go léir atá ann cheana go buan. Deimhnigh le do thoil gur mhaith leat leanúint ar aghaidh."
+  },
+  "notifications": {
+    "tableNotFound": "Tábla gan aimsiú: {firstTableId}, {secondTableId}",
+    "noPrimaryKey": "Níl aon phríomheochair ag an tábla {tableName}",
+    "projectExported": "Tionscadal easpórtáilte go rathúil",
+    "projectImported": "Tionscadal iompórtáilte go rathúil",
+    "projectCleared": "Tionscadal glanta",
+    "unknownEngine": "Inneall bunachair sonraí anaithnid: {engine}",
+    "actionBufferError": "Theip ar an ngníomh cealaigh/athdhéan a fheidhmiú"
+  },
+  "actions": {
+    "createTable": "Cruthaigh tábla",
+    "nonIdentifyingOneToOne": "Gaol Aon le hAon neamh-shainaitheanta",
+    "identifyingOneToOne": "Gaol Aon le hAon sainaitheanta",
+    "nonIdentifyingOneToMany": "Gaol Aon le hIomad neamh-shainaitheanta",
+    "identifyingOneToMany": "Gaol Aon le hIomad sainaitheanta",
+    "manyToMany": "Gaol Iomad le hIomad",
+    "comment": "Trácht",
+    "group": "Grúpa",
+    "newProject": "Tionscadal nua",
+    "saveAsJson": "Sábháil mar JSON",
+    "uploadJson": "Uaslódáil JSON",
+    "info": "Eolas",
+    "projectGitHub": "GitHub an Tionscadail"
+  }
+}
