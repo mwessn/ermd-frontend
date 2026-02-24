@@ -37,6 +37,8 @@ export const useExportStore = defineStore('export', () => {
     userDefinedColumnTypes,
   } = storeToRefs(settingsStore);
 
+  const exportModalVisible = ref<boolean>(false);
+
   const projectName = ref<string>('Example Project');
   const projectVersion = ref<string>('0.0.1');
 
@@ -502,6 +504,8 @@ export const useExportStore = defineStore('export', () => {
   }
 
   return {
+    exportModalVisible,
+
     projectName,
     projectVersion,
 

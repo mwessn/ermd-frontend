@@ -4,7 +4,7 @@
 
       <FunctionsMenu
         :visible="functionsMenuVisible"
-        @open-export-modal="exportModalVisible = true"
+        @open-export-modal="exportStore.exportModalVisible = true"
         @open-import-modal="importModalVisible = true"
         @open-new-project-modal="newProjectModalVisible = true"
       />
@@ -12,8 +12,8 @@
       <SettingsMenu :visible="settingsMenuVisible" />
 
       <ExportJsonModal
-        v-if="exportModalVisible"
-        @close="exportModalVisible = false"
+        v-if="exportStore.exportModalVisible"
+        @close="exportStore.exportModalVisible = false"
       />
 
       <ImportJsonModal
@@ -40,6 +40,7 @@ import { computed, ref } from "vue";
 import FunctionsMenu from "@/components/sideMenu/FunctionsMenu.vue";
 import SettingsMenu from "@/components/sideMenu/SettingsMenu.vue";
 import { useDesignStore } from "@/store/design.ts";
+import { useExportStore } from "@/store/export.ts";
 import { storeToRefs } from "pinia";
 import ExportJsonModal from "@/components/layout/modal/ExportJsonModal.vue";
 import ImportJsonModal from "@/components/layout/modal/ImportJsonModal.vue";
@@ -47,6 +48,7 @@ import YesNoModal from "@/components/layout/modal/YesNoModal.vue";
 import { useI18n } from "vue-i18n";
 
 const { tables } = storeToRefs(useDesignStore());
+const exportStore = useExportStore();
 
 const isFirstLaunch = tables.value.length == 0;
 
@@ -64,7 +66,6 @@ const toggleMenu = (val: 'functions' | 'settings') => {
   }
 };
 
-const exportModalVisible = ref<boolean>(false);
 const importModalVisible = ref<boolean>(false);
 
 const newProjectModalVisible = ref<boolean>(false);

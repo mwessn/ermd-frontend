@@ -6,6 +6,7 @@ import { useDesignStore } from "@/store/design.ts";
 import { resetFocus } from "@/utils/utils.ts";
 import { useActionBuffer } from "@/store/actionBuffer.ts";
 import { useSettingsStore } from "@/store/settings.ts";
+import { useExportStore } from "@/store/export.ts";
 import type { KeyboardBindAction } from "@/types/shortcuts.ts";
 import { colCanBePrimary, colCanBeNullable, colCanAutoIncrement, type TableCol } from "@/types/table.ts";
 import { cloneDeep } from "lodash";
@@ -15,6 +16,7 @@ export function useKeyboardShortcuts(centerView: () => void) {
   const designStore = useDesignStore();
   const bufferStore = useActionBuffer();
   const settingsStore = useSettingsStore();
+  const exportStore = useExportStore();
 
   const setAction = (val: UserAction) => {
     actionsStore.setAction(val);
@@ -49,7 +51,7 @@ export function useKeyboardShortcuts(centerView: () => void) {
     'buffer.redoAlt': () => bufferStore.redo(),
     'clipboard.copy': () => { /* TODO: implement copy */ },
     'clipboard.paste': () => { /* TODO: implement paste */ },
-    'project.save': () => { /* TODO: implement save */ },
+    'project.save': () => { exportStore.exportModalVisible = true; },
     'column.togglePK': () => {
       const fc = designStore.focusedCol;
       if (!fc || fc.col.type.primitive === 'serial') return;

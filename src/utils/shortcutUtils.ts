@@ -34,16 +34,6 @@ export function formatFullShortcut(group: ShortcutGroup, key: string): string {
   return GROUP_PREFIXES[group] + formatBindingKey(key);
 }
 
-export function buildLookupKey(evt: KeyboardEvent, group: ShortcutGroup): string {
-  const key = evt.key.toLowerCase();
-
-  if (group === 'ctrl' && evt.shiftKey) {
-    return `shift+${key}`;
-  }
-
-  return key;
-}
-
 export function findActionBinding(
   shortcuts: KeyboardBindings,
   action: KeyboardBindAction

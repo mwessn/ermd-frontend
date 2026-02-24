@@ -8,7 +8,7 @@
       :aria-label="props.nonFocusableRow ? 'New column input' : `Column ${col.name || 'unnamed'}, press Delete to remove`"
       role="row"
 
-      @focus="onRowFocus"
+      @focusin="onRowFocus"
       @focusout="onFocusOut"
 
       @mousedown.left="onMouseDown"
@@ -268,7 +268,9 @@ const onColTypeChange = (oldVal: TableCol) => {
 
 const onRowFocus = () => {
   showColumnProps.value = true;
-  designStore.setFocusedCol(col.value, props.tableId);
+  if (!props.nonFocusableRow) {
+    designStore.setFocusedCol(col.value, props.tableId);
+  }
 };
 
 function onFocusOut(event: FocusEvent) {
