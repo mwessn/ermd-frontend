@@ -77,9 +77,9 @@ export function createColumnOperations(
     }
   }
 
-  function bufferLogColChange(col: TableCol, oldVal: TableCol) {
+  function buildColChangeEntries(col: TableCol, oldVal: TableCol): BufferEntity[] {
     const { selectedTable, relationsByPKColumnId, tablesMap } = state();
-    if (!selectedTable.value) return;
+    if (!selectedTable.value) return [];
 
     const bufferEntries: BufferEntity[] = [];
 
@@ -139,10 +139,7 @@ export function createColumnOperations(
       });
     }
 
-    // Log all changes (PK + FKs) as a single batch
-    stores.bufferStore.addUndoBufferAction({
-      entities: bufferEntries
-    });
+    return bufferEntries;
   }
 
   return {
@@ -150,6 +147,6 @@ export function createColumnOperations(
     bufferDeleteCol,
     bufferRestoreCol,
     bufferRevertColumnVal,
-    bufferLogColChange,
+    buildColChangeEntries,
   };
 }

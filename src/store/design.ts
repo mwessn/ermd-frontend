@@ -231,6 +231,21 @@ export const useDesignStore = defineStore(
       }
     };
 
+    const bufferLogColChange = (col: TableCol, oldVal: TableCol) => {
+      const bufferEntries = columnOps.buildColChangeEntries(col, oldVal);
+
+      // If PK was removed, delete relations referencing this column as PK
+      if (oldVal.primaryKey && !col.primaryKey) {
+        const pkRelations = relations.value.filter(r => r.secondTableColId === col.id);
+        pkRelations.forEach(rel =>
+          bufferEntries.push(...deleteRelationship(rel, currentSettings.value.deleteForeignKeyColumnOnRelationDelete)));
+      }
+
+      if (bufferEntries.length > 0) {
+        bufferStore.addUndoBufferAction({ entities: bufferEntries });
+      }
+    };
+
 
     const moveGroup = (
       deltaX: number,
@@ -862,6 +877,7 @@ export const useDesignStore = defineStore(
 
       // Column operations (from module + cross-domain)
       ...columnOps,
+      bufferLogColChange,
       deleteTableCol,
 
       // Relation operations (from module + cross-domain)
