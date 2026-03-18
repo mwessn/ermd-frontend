@@ -366,7 +366,6 @@ export const useExportStore = defineStore('export', () => {
       { name: 'firstTableId', type: 'string' },
       { name: 'secondTableColId', type: 'string' },
       { name: 'secondTableId', type: 'string' },
-      { name: 'type', type: 'string' },
     ];
 
     for (const { index, rel } of rels.map((rel, index) => ({ index, rel }))) {
@@ -378,10 +377,6 @@ export const useExportStore = defineStore('export', () => {
       errors.push(
         ...validateObjectKeys(relKeys, rel, 'relation', index)
       );
-
-      if (typeof rel.type == 'string' && !['ioto', 'iotm', 'noto', 'notm', 'mtm'].includes(rel.type)) {
-        errors.push(`Unknown relation ${index} type: ${rel.type}`);
-      }
 
       if (typeof rel.firstTableId == 'string' && typeof rel.firstTableColId == 'string') {
         const table = tables.find(it => it.id == rel.firstTableId);

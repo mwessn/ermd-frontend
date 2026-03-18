@@ -311,7 +311,6 @@ export const useDesignStore = defineStore(
       // Circular dependency check (non-MtM only)
       if (type !== 'mtm') {
         const hasReverse = relations.value.some(it =>
-          it.type !== 'mtm' &&
           it.firstTableId === selectedTable.value?.id &&
           it.secondTableId === firstTable.id);
 
@@ -499,7 +498,6 @@ export const useDesignStore = defineStore(
 
         secondPrimary.id,
         secondTable.id,
-        type
       ));
 
       relationsMap.value.set(rel.id, rel);
@@ -668,75 +666,6 @@ export const useDesignStore = defineStore(
     }
 
     // ==================== WATCHERS ====================
-
-    // Helper function to update relation type based on FK column properties
-    function updateRelationTypeFromColumn(relation: DatabaseRelationship, fkColumn: TableCol): RelationshipType | null {
-      // Skip MTM relations as they have different rules
-      if (relation.type === 'mtm') return null;
-
-      const isIdentifying = fkColumn.notNull;
-      const isOneToOne = fkColumn.unique;
-
-      // Determine new type based on column properties
-      if (isOneToOne) {
-        return isIdentifying ? 'ioto' : 'noto';
-      } else {
-        return isIdentifying ? 'iotm' : 'notm';
-      }
-    }
-
-    // Monitor FK columns and update relation types accordingly
-    watch(
-      () => tables.value.flatMap(table =>
-        table.cols
-          .filter(col => col.foreignKey)
-          .map(col => ({
-            tableId: table.id,
-            colId: col.id,
-            notNull: col.notNull,
-            unique: col.unique
-          }))),
-      (newFKStates, oldFKStates) => {
-        if (!oldFKStates) return; // Skip initial run
-
-        // Check each FK column for changes
-        newFKStates.forEach(newState => {
-          const oldState = oldFKStates.find(
-            s => s.tableId === newState.tableId && s.colId === newState.colId
-          );
-
-          // If notNull or unique changed, update the relation
-          if (oldState && (oldState.notNull !== newState.notNull || oldState.unique !== newState.unique)) {
-            const relation = relations.value.find(r => r.firstTableColId === newState.colId);
-
-            if (relation) {
-              const table = tablesMap.value.get(newState.tableId);
-              const fkColumn = table?.cols.find(c => c.id === newState.colId);
-
-              if (fkColumn) {
-                const newType = updateRelationTypeFromColumn(relation, fkColumn);
-
-                if (newType && newType !== relation.type) {
-                  // Log the change to the buffer
-                  bufferStore.addUndoBufferAction({
-                    entities: [{
-                      action: 'change',
-                      type: 'relation',
-                      entityId: relation.id,
-                      oldVal: cloneDeep(relation)
-                    }]
-                  });
-
-                  // Update the relation type
-                  relation.type = newType;
-                }
-              }
-            }
-          }
-        });
-      },
-      { deep: true }
-    );
 
     // Monitor when PK flag is removed from a column and delete corresponding relations
     watch(
