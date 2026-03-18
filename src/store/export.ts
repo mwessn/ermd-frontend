@@ -182,7 +182,8 @@ export const useExportStore = defineStore('export', () => {
     if (!type) { throw new Error(`Type ${e.type} doesn't exist in the current engine`);}
     return {
       ...e,
-      type: type
+      type: type,
+      defaultValue: e.defaultValue != null ? String(e.defaultValue) : undefined
     };
   }
 
@@ -234,12 +235,12 @@ export const useExportStore = defineStore('export', () => {
     nullable?: boolean,
   }
 
-  function validateObjectKeys(keys: ObjectKeyValue[], obj: Record<string, unknown>, objType: string, objIndex: number): string[] {
+  function validateObjectKeys(keys: ObjectKeyValue[], obj: Record<string, unknown>, objType: string, objId: string): string[] {
     const errors: string[] = [];
 
     for (const key of keys) {
       if (!key.nullable && !(key.name in obj)) {
-        errors.push(`${objType} ${objIndex} is missing key '${key.name}'`);
+        errors.push(`${objType} '${objId}' is missing key '${key.name}'`);
         continue;
       }
       if (key.nullable && !obj[key.name]) {
@@ -247,15 +248,15 @@ export const useExportStore = defineStore('export', () => {
       }
       if (key.type == "array") {
         if (Array.isArray(obj[key.name])) { continue; }
-        errors.push(`${objType} ${objIndex}'s '${key.name}' is not an array`);
+        errors.push(`${objType} '${objId}''s '${key.name}' is not an array`);
       }
       else if (key.type == "object") {
         if (isObject(obj[key.name])) { continue; }
-        errors.push(`${objType} ${objIndex}'s '${key.name}' is not an object`);
+        errors.push(`${objType} '${objId}''s '${key.name}' is not an object`);
       }
       else if (typeof obj[key.name] != key.type) {
         errors.push(
-          `Unexpected type for ${objType} ${objIndex}'s '${key.name}':` +
+          `Unexpected type for ${objType} '${objId}''s '${key.name}': ` +
                         `expected ${key.type}, got ${ typeof obj[key.name] }`
         );
       }
@@ -280,28 +281,25 @@ export const useExportStore = defineStore('export', () => {
       { name: 'widthPx', type: 'number' },
     ];
 
-    for (const { index, t } of tables.map((t, index) => ({ index, t }))) {
+    for (const [index, t] of tables.entries()) {
       if (!isObject(t)) {
-        errors.push(`Table ${index} is not an object`);
+        errors.push(`Table at index ${index} is not an object`);
         continue;
       }
 
+      const tableId = t.id as string ?? String(index);
+
       errors.push(
-        ...validateObjectKeys(tableKeys, t, 'table', index)
+        ...validateObjectKeys(tableKeys, t, 'table', tableId)
       );
 
       if (!Array.isArray(t.cols)) {
         continue;
       }
 
-      for (const { colIndex, col } of t.cols.map((col, colIndex) => ({colIndex, col}))) {
+      for (const [colIndex, col] of t.cols.entries()) {
         errors.push(
-          ...validateJsonTableCol(
-            col,
-            t.id as string ?? colIndex.toString(),
-            index,
-            engine
-          )
+          ...validateJsonTableCol(col, tableId, colIndex, engine)
         );
       }
     }
@@ -312,12 +310,14 @@ export const useExportStore = defineStore('export', () => {
   function validateJsonTableCol(
     col: unknown,
     tableId: string,
-    index: number,
+    colIndex: number,
     engine: DatabaseEngine
   ): string[] {
     if (!isObject(col)) {
-      return [`Column ${index} of table ${tableId} is not an object`];
+      return [`Column at index ${colIndex} of table '${tableId}' is not an object`];
     }
+
+    const colId = col.id as string ?? String(colIndex);
 
     const errors: string[] = [];
 
@@ -335,10 +335,8 @@ export const useExportStore = defineStore('export', () => {
       { name: 'defaultValue', type: 'string', nullable: true },
     ];
 
-    const keyErrors = validateObjectKeys(columnKeys, col, 'column', index);
-
     errors.push(
-      ...keyErrors.map(it => `Table ${tableId}'s ${it}`)
+      ...validateObjectKeys(columnKeys, col, `table '${tableId}' column`, colId)
     );
 
     if (typeof col.type == 'string') {
@@ -346,7 +344,7 @@ export const useExportStore = defineStore('export', () => {
         .find(it => it.displayName === col.type);
 
       if (existingType == undefined) {
-        errors.push(`Unknown column type on column ${col.id} in table ${tableId}: ${col.type}`);
+        errors.push(`Unknown column type on column '${colId}' in table '${tableId}': ${col.type}`);
       }
     }
 
@@ -368,25 +366,27 @@ export const useExportStore = defineStore('export', () => {
       { name: 'secondTableId', type: 'string' },
     ];
 
-    for (const { index, rel } of rels.map((rel, index) => ({ index, rel }))) {
+    for (const [index, rel] of rels.entries()) {
       if (!isObject(rel)) {
-        errors.push(`Relation ${index} is not an object`);
+        errors.push(`Relation at index ${index} is not an object`);
         continue;
       }
 
+      const relId = rel.id as string ?? String(index);
+
       errors.push(
-        ...validateObjectKeys(relKeys, rel, 'relation', index)
+        ...validateObjectKeys(relKeys, rel, 'relation', relId)
       );
 
       if (typeof rel.firstTableId == 'string' && typeof rel.firstTableColId == 'string') {
         const table = tables.find(it => it.id == rel.firstTableId);
         if (!table) {
-          errors.push(`Unknown tableId ${rel.firstTableId} on relation ${rel.id ?? index}`);
+          errors.push(`Unknown tableId '${rel.firstTableId}' on relation '${relId}'`);
         } else {
           const col = table.cols.find(it => it.id == rel.firstTableColId);
           if (!col) {
-            errors.push(`Unknown colId ${rel.firstTableColId} in table ${rel.firstTableId}` +
-                         `on relation ${rel.id ?? index}`);
+            errors.push(`Unknown colId '${rel.firstTableColId}' in table '${rel.firstTableId}' ` +
+                         `on relation '${relId}'`);
           }
         }
       }
@@ -394,12 +394,12 @@ export const useExportStore = defineStore('export', () => {
       if (typeof rel.secondTableId == 'string' && typeof rel.secondTableColId == 'string') {
         const table = tables.find(it => it.id == rel.secondTableId);
         if (!table) {
-          errors.push(`Unknown tableId ${rel.secondTableId} on relation ${rel.id ?? index}`);
+          errors.push(`Unknown tableId '${rel.secondTableId}' on relation '${relId}'`);
         } else {
           const col = table.cols.find(it => it.id == rel.secondTableColId);
           if (!col) {
-            errors.push(`Unknown colId ${rel.secondTableColId} in table ${rel.secondTableId}` +
-                         `on relation ${rel.id ?? index}`);
+            errors.push(`Unknown colId '${rel.secondTableColId}' in table '${rel.secondTableId}' ` +
+                         `on relation '${relId}'`);
           }
         }
       }
@@ -424,14 +424,16 @@ export const useExportStore = defineStore('export', () => {
       { name: 'size', type: 'object' },
     ];
 
-    for (const { index, area } of areas.map((area, index) => ({ index, area }))) {
+    for (const [index, area] of areas.entries()) {
       if (!isObject(area)) {
-        errors.push(`Area ${ index } is not an object`);
+        errors.push(`Group at index ${index} is not an object`);
         continue;
       }
 
+      const groupId = area.id as string ?? String(index);
+
       errors.push(
-        ...validateObjectKeys(areaKeys, area, 'group', index)
+        ...validateObjectKeys(areaKeys, area, 'group', groupId)
       );
 
       if (isObject(area.size)) {
@@ -439,8 +441,8 @@ export const useExportStore = defineStore('export', () => {
           ...validateObjectKeys(
             [ { name: 'width', type: 'number' }, { name: 'height', type: 'number' } ],
             area.size,
-            'areaSize',
-            index
+            `group '${groupId}' size`,
+            groupId
           )
         );
       }
@@ -464,14 +466,16 @@ export const useExportStore = defineStore('export', () => {
       { name: 'linkedTo', type: 'object', nullable: true },
     ];
 
-    for (const { index, comment } of comments.map((c, index) => ({ index, comment: c }))) {
+    for (const [index, comment] of comments.entries()) {
       if (!isObject(comment)) {
-        errors.push(`Comment ${index} is not an object`);
+        errors.push(`Comment at index ${index} is not an object`);
         continue;
       }
 
+      const commentId = comment.id as string ?? String(index);
+
       errors.push(
-        ...validateObjectKeys(commentKeys, comment, 'comment', index)
+        ...validateObjectKeys(commentKeys, comment, 'comment', commentId)
       );
 
       // Validate linkedTo structure
@@ -484,13 +488,13 @@ export const useExportStore = defineStore('export', () => {
         ];
 
         errors.push(
-          ...validateObjectKeys(linkedToKeys, comment.linkedTo, 'linkedTo', index)
+          ...validateObjectKeys(linkedToKeys, comment.linkedTo, `comment '${commentId}' linkedTo`, commentId)
         );
 
         // Validate type enum
         if (typeof comment.linkedTo.type === 'string' &&
                   !['group', 'table', 'column'].includes(comment.linkedTo.type)) {
-          errors.push(`Invalid linkedTo type in comment ${index}: ${comment.linkedTo.type}`);
+          errors.push(`Invalid linkedTo type in comment '${commentId}': ${comment.linkedTo.type}`);
         }
       }
     }

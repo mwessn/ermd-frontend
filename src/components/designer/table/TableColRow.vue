@@ -39,7 +39,7 @@
 
         @value-change="onColNameChange"
       />
-      <div v-if="showColType" class="w-1/2 flex items-center pr-2">
+      <div v-if="showColType" class="w-1/2 min-w-0 flex items-center pr-2">
         <ColTypeSelect
           v-if="rowRef"
           ref="colTypeRef"

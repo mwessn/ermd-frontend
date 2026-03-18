@@ -9,7 +9,7 @@
           ref="inputRef"
 
           v-model="inputValue"
-          class="cursor-inherit p-1 overflow-ellipsis w-full"
+          class="cursor-inherit p-1 overflow-ellipsis w-full min-w-0"
           :class="{ 'opacity-50 cursor-not-allowed': isTypeDisabled }"
           tabindex="-1"
 
@@ -33,14 +33,22 @@
 
           @keydown.shift.prevent
         >
-        <div v-if="col.defaultValue" class="text-monolithicCyanTsunami text-right max-w-2/5 min-w-max overflow-hidden overflow-ellipsis">
-          {{ col.defaultValue }}
-        </div>
         <div
-          v-if="col.modifierValues && col.modifierValues.length > 0 && col.modifierValues[0]"
-          class="whitespace-nowrap w-fit"
+          v-if="hasExtras"
+          class="flex items-center gap-1 max-w-1/2 shrink-0 overflow-hidden"
         >
-          ({{ col.modifierValues.join(', ') }})
+          <span
+            v-if="col.defaultValue != undefined && col.defaultValue !== ''"
+            class="text-monolithicCyanTsunami truncate"
+          >
+            {{ col.defaultValue }}
+          </span>
+          <span
+            v-if="col.modifierValues && col.modifierValues.length > 0 && col.modifierValues[0]"
+            class="truncate"
+          >
+            ({{ col.modifierValues.join(', ') }})
+          </span>
         </div>
       </div>
 
@@ -97,6 +105,10 @@ const emit = defineEmits<{
   focus: []
   valueChange: [oldVal: TableCol]
 }>();
+
+const hasExtras = computed(() =>
+  (col.value.defaultValue != undefined && col.value.defaultValue !== '') ||
+  (col.value.modifierValues && col.value.modifierValues.length > 0 && col.value.modifierValues[0]));
 
 const inputRef = useTemplateRef('inputRef');
 

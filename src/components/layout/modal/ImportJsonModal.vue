@@ -9,8 +9,8 @@
       <template v-if="importErrors">
         <div
           class="text-red-500 max-h-64
-          overflow-hidden overscroll-y-auto
-          p-2 bg-accentDarkGray rounded mb-2"
+          overflow-y-auto
+          p-2 bg-accentDarkGray rounded mb-2 select-text"
         >
           <p>{{ $t('import.errors') }}:</p>
           <p v-for="(error, index) in importErrors" :key="index">

@@ -178,6 +178,11 @@ const defaultInputType = computed(() => {
 
 // input validation
 watch(() => col.value.defaultValue, (val) => {
+  // Number inputs produce numeric values at runtime — coerce to string
+  if (val != null && typeof val !== 'string') {
+    col.value.defaultValue = String(val);
+    return;
+  }
   if (val == null || val === "") return;
 
   let sanitized: string | undefined;

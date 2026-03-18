@@ -4,7 +4,7 @@
       class="min-w-40 max-w-160 absolute group/table focus:outline-0"
       tabindex="-1"
 
-      :class="focusedTable?.id == table.id ? 'z-20' : 'z-10'"
+      :class="focusedTable?.id == table.id ? 'z-70' : 'z-10'"
 
       :style="{ top: table.posY + 'px', left: table.posX + 'px', width: table.widthPx + 'px' }"
 

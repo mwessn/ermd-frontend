@@ -127,7 +127,8 @@ export interface ExportTableColType extends Omit<TableCol, 'type'>{
 export function TableCol2ExportType(c: TableCol): ExportTableColType {
   return {
     ...c,
-    type: c.type.displayName
+    type: c.type.displayName,
+    defaultValue: c.defaultValue != null ? String(c.defaultValue) : undefined
   };
 }
 
