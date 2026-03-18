@@ -139,7 +139,8 @@
     "projectCleared": "プロジェクトをクリアしました",
     "unknownEngine": "不明なデータベースエンジン: {engine}",
     "actionBufferError": "元に戻す/やり直し操作の実行に失敗しました",
-    "shortcutReassigned": "'{key}' を '{oldAction}' から '{newAction}' に再割り当てしました"
+    "shortcutReassigned": "'{key}' を '{oldAction}' から '{newAction}' に再割り当てしました",
+    "circularDependency": "循環依存。Shiftキーを押しながらクリックして確認してください。"
   },
   "criticalError": {
     "title": "重大なエラー",

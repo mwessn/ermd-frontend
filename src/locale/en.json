@@ -139,7 +139,8 @@
     "projectCleared": "Project cleared",
     "unknownEngine": "Unknown database engine: {engine}",
     "actionBufferError": "Failed to execute undo/redo action",
-    "shortcutReassigned": "'{key}' reassigned from '{oldAction}' to '{newAction}'"
+    "shortcutReassigned": "'{key}' reassigned from '{oldAction}' to '{newAction}'",
+    "circularDependency": "Circular dependency. Hold Shift and click to confirm."
   },
   "criticalError": {
     "title": "Critical Error",

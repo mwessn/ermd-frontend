@@ -139,7 +139,8 @@
     "projectCleared": "Tionscadal glanta",
     "unknownEngine": "Inneall bunachair sonraí anaithnid: {engine}",
     "actionBufferError": "Theip ar an ngníomh cealaigh/athdhéan a fheidhmiú",
-    "shortcutReassigned": "Athsannadh '{key}' ó '{oldAction}' go '{newAction}'"
+    "shortcutReassigned": "Athsannadh '{key}' ó '{oldAction}' go '{newAction}'",
+    "circularDependency": "Spleáchas ciorclach. Coinnigh Shift agus cliceáil le deimhniú."
   },
   "criticalError": {
     "title": "Earráid Chriticiúil",

@@ -287,7 +287,7 @@ export const useDesignStore = defineStore(
       }
     };
 
-    const createRelationship = (type: RelationshipType) => {
+    const createRelationship = (type: RelationshipType, shiftKey: boolean = false): 'circularWarning' | undefined => {
       if (!selectedTable.value) { return; }
 
       // If first table not selected, select and exit
@@ -308,100 +308,25 @@ export const useDesignStore = defineStore(
         return;
       }
 
+      // Circular dependency check (non-MtM only)
+      if (type !== 'mtm') {
+        const hasReverse = relations.value.some(it =>
+          it.type !== 'mtm' &&
+          it.firstTableId === selectedTable.value?.id &&
+          it.secondTableId === firstTable.id);
 
-      if (type != "mtm") {
-        // Check if relation between tables already exists
-        const existingRel = relations.value.find(it =>
-          (it.firstTableId == firstTable.id && it.secondTableId == selectedTable.value?.id) ||
-                    (it.firstTableId == selectedTable.value?.id && it.secondTableId == firstTable.id));
-
-        const bufferEntries: BufferEntity[] = [];
-
-        if (existingRel) {
-          if (existingRel.type != type && existingRel.type != 'mtm') {
-
-            // Recreate relationship with updated type
-            bufferEntries.push(
-              ...deleteRelationship(existingRel, true)
-            );
-
-            bufferEntries.push(
-              ...createSimpleRelation(firstTable.id, selectedTable.value.id, type)
-            );
-
-            bufferStore.addUndoBufferAction({
-              entities: bufferEntries
-            });
-          }
-
-          actionStore.resetAction();
-          return;
+        if (hasReverse && !shiftKey) {
+          return 'circularWarning';
         }
+      }
 
-        const existingMtM = relationOps.mtmRelationExists(firstTable, selectedTable.value);
+      if (type !== "mtm") {
+        const bufferEntries = createSimpleRelation(firstTable.id, selectedTable.value.id, type);
 
-        if (existingMtM) {
-          const pivot = tablesMap.value.get(existingMtM.firstTableId);
-          if (pivot) {
-            bufferEntries.push(
-              ...deleteTable(pivot),
-              // deleteTable() doesn't add buffer entry for table deletion so we must add it manually
-              {
-                action: 'delete',
-                type: 'table',
-                entityId: pivot.id,
-                oldVal: cloneDeep(pivot),
-              },
-            );
-          }
+        if (bufferEntries.length > 0) {
+          bufferStore.addUndoBufferAction({ entities: bufferEntries });
         }
-
-        bufferEntries.push(
-          ...createSimpleRelation(firstTable.id, selectedTable.value.id, type)
-        );
-
-        bufferStore.addUndoBufferAction({
-          entities: bufferEntries
-        });
       } else {
-        // Helper to create MtM relation
-        function createMtMRelation() {
-          const halfwayX = (firstTable!.posX + selectedTable.value!.posX) / 2;
-          const halfwayY = (firstTable!.posY + selectedTable.value!.posY) / 2;
-
-
-          const pivotTableEntry = tableOps.addTable(
-            halfwayX,
-            halfwayY,
-            currentSettings.value.generateMtMPrimaryKey,
-            false,
-            currentSettings.value.mtmPrimaryKeyType,
-          );
-
-          const pivotTable = tablesMap.value.get(pivotTableEntry[0].entityId);
-          if (!pivotTable) return [];
-
-          const nameJoin = currentSettings.value.namingConvention == 'snake' ?
-            '_has_' :
-            'Has';
-
-          pivotTable.name = `${ unpluralize(firstTable!.name) }${ nameJoin }${ selectedTable.value?.name }`;
-
-          const firstBufferEntry = createSimpleRelation(pivotTable.id, firstTable!.id, 'mtm');
-          const secondBufferEntry = createSimpleRelation(pivotTable.id, selectedTable.value!.id, 'mtm');
-
-          return [
-            ...pivotTableEntry,
-            ...firstBufferEntry,
-            ...secondBufferEntry
-          ];
-        }
-
-        // Check if MtM between given tables already exist
-        if (relationOps.mtmRelationExists(firstTable, selectedTable.value)) {
-          return;
-        }
-
         // Verify both tables have primary keys before creating pivot
         const firstHasPK = firstTable.cols.some(col => col.primaryKey);
         const secondHasPK = selectedTable.value.cols.some(col => col.primaryKey);
@@ -412,25 +337,35 @@ export const useDesignStore = defineStore(
           return;
         }
 
-        // Check if a simple relation between tables already exists
-        const existingRel = relations.value.find(it =>
-          (it.firstTableId == firstTable.id && it.secondTableId == selectedTable.value?.id) ||
-                    (it.secondTableId == firstTable.id && it.firstTableId == selectedTable.value?.id));
+        const halfwayX = (firstTable.posX + selectedTable.value.posX) / 2;
+        const halfwayY = (firstTable.posY + selectedTable.value.posY) / 2;
 
-        const bufferEntries: BufferEntity[] = [];
-
-        if (existingRel) {
-          bufferEntries.push(
-            ...deleteRelationship(existingRel, true)
-          );
-        }
-
-        bufferEntries.push(
-          ...createMtMRelation()
+        const pivotTableEntry = tableOps.addTable(
+          halfwayX,
+          halfwayY,
+          currentSettings.value.generateMtMPrimaryKey,
+          false,
+          currentSettings.value.mtmPrimaryKeyType,
         );
 
+        const pivotTable = tablesMap.value.get(pivotTableEntry[0].entityId);
+        if (!pivotTable) return;
+
+        const nameJoin = currentSettings.value.namingConvention == 'snake' ?
+          '_has_' :
+          'Has';
+
+        pivotTable.name = `${ unpluralize(firstTable.name) }${ nameJoin }${ selectedTable.value.name }`;
+
+        const firstBufferEntry = createSimpleRelation(pivotTable.id, firstTable.id, 'mtm');
+        const secondBufferEntry = createSimpleRelation(pivotTable.id, selectedTable.value.id, 'mtm');
+
         bufferStore.addUndoBufferAction({
-          entities: bufferEntries
+          entities: [
+            ...pivotTableEntry,
+            ...firstBufferEntry,
+            ...secondBufferEntry
+          ]
         });
       }
 
