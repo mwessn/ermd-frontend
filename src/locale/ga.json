@@ -140,7 +140,7 @@
     "unknownEngine": "Inneall bunachair sonraí anaithnid: {engine}",
     "actionBufferError": "Theip ar an ngníomh cealaigh/athdhéan a fheidhmiú",
     "shortcutReassigned": "Athsannadh '{key}' ó '{oldAction}' go '{newAction}'",
-    "circularDependency": "Spleáchas ciorclach. Coinnigh Shift agus cliceáil le deimhniú."
+    "circularDependency": "Cruthóidh an gníomh seo spleáchas ciorclach. Cliceáil ar an dara tábla arís agus an Eochair Shift brúite agat chun deimhniú."
   },
   "criticalError": {
     "title": "Earráid Chriticiúil",

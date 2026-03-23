@@ -140,7 +140,7 @@
     "unknownEngine": "Unknown database engine: {engine}",
     "actionBufferError": "Failed to execute undo/redo action",
     "shortcutReassigned": "'{key}' reassigned from '{oldAction}' to '{newAction}'",
-    "circularDependency": "Circular dependency. Hold Shift and click to confirm."
+    "circularDependency": "This action will create a circular dependency. Click the second table again with Shift Key pressed to confirm."
   },
   "criticalError": {
     "title": "Critical Error",

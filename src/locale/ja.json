@@ -140,7 +140,7 @@
     "unknownEngine": "不明なデータベースエンジン: {engine}",
     "actionBufferError": "元に戻す/やり直し操作の実行に失敗しました",
     "shortcutReassigned": "'{key}' を '{oldAction}' から '{newAction}' に再割り当てしました",
-    "circularDependency": "循環依存。Shiftキーを押しながらクリックして確認してください。"
+    "circularDependency": "この操作により循環依存が発生します。確認するには、Shiftキーを押しながら2つ目のテーブルをもう一度クリックしてください。"
   },
   "criticalError": {
     "title": "重大なエラー",
