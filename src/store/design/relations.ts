@@ -1,7 +1,7 @@
 import type { DatabaseRelationship } from "@/types/relationships.ts";
 import type { DesignState } from "./tables.ts";
 import type { BufferEntity } from "@/types/actionsBuffer.ts";
-import { cloneDeep } from "lodash";
+import { cloneDeep } from "lodash-es";
 
 export function createRelationOperations(
   state: () => DesignState

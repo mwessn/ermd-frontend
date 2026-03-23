@@ -81,7 +81,7 @@ import DoubleClickFocusInput from "@/components/core/DoubleClickFocusInput.vue";
 import { useDesignStore } from "@/store/design.ts";
 import { useActionsStore } from "@/store/action.ts";
 import { storeToRefs } from "pinia";
-import { cloneDeep } from "lodash";
+import { cloneDeep } from "lodash-es";
 import { SQL_IDENTIFIER_REGEX } from "@/types/misc.ts";
 import ColTypeSelect from "@/components/designer/table/ColTypeSelect.vue";
 import { resetFocus } from "@/utils/utils.ts";

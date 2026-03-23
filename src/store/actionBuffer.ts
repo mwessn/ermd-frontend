@@ -2,7 +2,7 @@ import { defineStore, storeToRefs } from "pinia";
 import { ref } from "vue";
 import type { ActionBufferEntry, BufferEntity } from "@/types/actionsBuffer.ts";
 import { useDesignStore } from "@/store/design.ts";
-import { cloneDeep } from "lodash";
+import { cloneDeep } from "lodash-es";
 import { useSettingsStore } from "@/store/settings.ts";
 import { useNotificationStore } from "@/store/ui/notifications.ts";
 import i18n from "@/utils/i18n.ts";

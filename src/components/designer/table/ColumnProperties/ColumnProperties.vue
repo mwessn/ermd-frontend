@@ -111,7 +111,7 @@ import { computed, nextTick, ref, watch } from "vue";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { faClose } from "@fortawesome/free-solid-svg-icons";
 import { nullOrEmpty } from "@/utils/utils.ts";
-import { cloneDeep } from "lodash";
+import { cloneDeep } from "lodash-es";
 import ModifierValueInput from "@/components/designer/table/ColumnProperties/ModifierValueInput.vue";
 
 const col = defineModel<TableCol>('col', { required: true });

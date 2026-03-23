@@ -151,7 +151,3 @@ const calculateLineCoordinates = () => {
 useLineTracker(calculateLineCoordinates);
 
 </script>
-
-<style scoped>
-
-</style>

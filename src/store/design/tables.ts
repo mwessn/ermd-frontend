@@ -6,7 +6,7 @@ import type { Comment } from "@/types/comments.ts";
 import type { CursorPos } from "@/components/designer/scripts/useDesignCanvas.ts";
 import type { ActionBufferEntry, BufferEntity } from "@/types/actionsBuffer.ts";
 import { generateNewTable } from "@/types/table.ts";
-import { cloneDeep } from "lodash";
+import { cloneDeep } from "lodash-es";
 import { clamp } from "@/utils/utils.ts";
 import { DEFAULT_GRID_SIZE, TABLE_MIN_WIDTH, TABLE_MAX_WIDTH } from "@/types/constants.ts";
 import type { useActionBuffer } from "@/store/actionBuffer.ts";

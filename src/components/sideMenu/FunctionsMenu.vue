@@ -213,7 +213,3 @@ const sections = computed(() => [
   { items: functionsMenuMiscItems },
 ]);
 </script>
-
-<style scoped>
-
-</style>

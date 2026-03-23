@@ -33,7 +33,7 @@ export default defineConfig({
             '@fortawesome/vue-fontawesome',
             'tailwindcss'
           ],
-          utils: ['lodash']
+          utils: ['lodash-es']
         }
       }
     }

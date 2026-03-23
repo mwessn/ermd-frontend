@@ -84,7 +84,7 @@ import { COMMENT_SIZE_CLASSES } from '@/types/constants.ts';
 import { useDesignStore } from '@/store/design.ts';
 import { useActionsStore } from '@/store/action.ts';
 import type { Comment } from '@/types/comments.ts';
-import { cloneDeep } from 'lodash';
+import { cloneDeep } from 'lodash-es';
 
 const props = defineProps<{
   comment: Comment;

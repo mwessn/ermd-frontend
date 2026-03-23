@@ -1,7 +1,7 @@
 import { useActionsStore } from "@/store/action.ts";
 import { useDesignStore } from "@/store/design.ts";
 import { storeToRefs } from "pinia";
-import { cloneDeep } from "lodash";
+import { cloneDeep } from "lodash-es";
 import { resetFocus } from "@/utils/utils.ts";
 
 export function useCommentActions() {

@@ -69,7 +69,3 @@ const onImport = async () => {
 };
 
 </script>
-
-<style scoped>
-
-</style>

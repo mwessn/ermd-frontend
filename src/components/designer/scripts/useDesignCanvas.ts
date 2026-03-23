@@ -6,7 +6,7 @@ import { clamp } from "@/utils/utils.ts";
 import { storeToRefs } from "pinia";
 import { useSettingsStore } from "@/store/settings.ts";
 import { useNotificationStore } from "@/store/ui/notifications.ts";
-import { cloneDeep } from "lodash";
+import { cloneDeep } from "lodash-es";
 import { ZOOM_SHIFT_MULTIPLIER, ZOOM_STEP, ZOOM_MIN, ZOOM_MAX } from "@/types/constants.ts";
 import i18n from "@/utils/i18n.ts";
 

@@ -1,7 +1,7 @@
 import type { TableCol } from "@/types/table.ts";
 import type { ColumnType } from "@/types/TableColumnTypes/tableField.ts";
 import type { DesignState } from "./tables.ts";
-import { cloneDeep } from "lodash";
+import { cloneDeep } from "lodash-es";
 import type { useActionBuffer } from "@/store/actionBuffer.ts";
 import type { useSettingsStore } from "@/store/settings.ts";
 import type { BufferEntity } from "@/types/actionsBuffer.ts";

@@ -90,7 +90,7 @@
 import { computed, ref, useTemplateRef, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { useSettingsStore } from "@/store/settings.ts";
-import { cloneDeep } from "lodash";
+import { cloneDeep } from "lodash-es";
 import { clamp } from "@/utils/utils.ts";
 import { type TableCol } from "@/types/table.ts";
 

@@ -2,7 +2,7 @@ import {defineStore} from "pinia";
 import {computed, ref} from "vue";
 import type {UserSettings} from "@/types/misc.ts";
 import {defaultSettings} from "@/types/misc.ts";
-import {cloneDeep} from "lodash";
+import {cloneDeep} from "lodash-es";
 import {
   type ColumnType,
   type DatabaseEngine,

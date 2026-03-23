@@ -1,9 +1,9 @@
 import { defineStore, storeToRefs } from "pinia";
 import { generateNewForeignKey, type Table, type TableCol } from "@/types/table.ts";
-import { computed, ref, watch } from "vue";
+import { computed, ref } from "vue";
 import { useActionBuffer } from "@/store/actionBuffer.ts";
 import { type CursorPos } from "@/components/designer/scripts/useDesignCanvas.ts";
-import { cloneDeep } from "lodash";
+import { cloneDeep } from "lodash-es";
 import type { BufferEntity } from "@/types/actionsBuffer.ts";
 import type { DatabaseRelationship, RelationshipType } from "@/types/relationships.ts";
 import { useActionsStore } from "@/store/action.ts";
@@ -666,55 +666,6 @@ export const useDesignStore = defineStore(
       commentsMap.value.clear();
       newComments.forEach(comment => commentsMap.value.set(comment.id, comment));
     }
-
-    // ==================== WATCHERS ====================
-
-    // Monitor when PK flag is removed from a column and delete corresponding relations
-    watch(
-      () => tables.value.flatMap(table =>
-        table.cols.map(col => ({
-          tableId: table.id,
-          colId: col.id,
-          isPrimaryKey: col.primaryKey
-        }))),
-      (newStates, oldStates) => {
-        if (!oldStates) return; // Skip initial run
-
-        // Check for columns that lost their PK flag
-        newStates.forEach(newState => {
-          const oldState = oldStates.find(
-            s => s.tableId === newState.tableId && s.colId === newState.colId
-          );
-
-          // If a column lost its PK flag, delete all relations that reference it as PK
-          if (oldState && oldState.isPrimaryKey && !newState.isPrimaryKey) {
-            const affectedRelations = relations.value.filter(
-              r => r.secondTableColId === newState.colId
-            );
-
-            if (affectedRelations.length > 0) {
-              const bufferEntries: BufferEntity[] = [];
-
-              affectedRelations.forEach(relation => {
-                bufferEntries.push(...deleteRelationship(
-                  relation,
-                  currentSettings.value.deleteForeignKeyColumnOnRelationDelete
-                ));
-              });
-
-              // Log all relation deletions as a single undo action
-              if (bufferEntries.length > 0) {
-                bufferStore.addUndoBufferAction({
-                  entities: bufferEntries
-                });
-              }
-            }
-          }
-        });
-      },
-      { deep: true }
-    );
-
 
     // ==================== RETURN API ====================
 

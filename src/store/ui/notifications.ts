@@ -1,12 +1,13 @@
 import { defineStore } from 'pinia';
 import { ref } from "vue";
 import type { UiMessage, UiMessageType } from "@/types/ui/notification.ts";
-import { generateId, sleep } from "@/utils/utils.ts";
+import { generateId } from "@/utils/utils.ts";
 
 export const useNotificationStore = defineStore(
-  'message',
+  'notifications',
   () => {
     const messages = ref<UiMessage[]>([]);
+    const timers = new Map<string, ReturnType<typeof setTimeout>>();
 
     const durationMs = 3000;
     const maxDurationMs = 15000;
@@ -19,21 +20,21 @@ export const useNotificationStore = defineStore(
       return Math.min(duration, maxDurationMs);
     };
 
-    const show = async (text: string, type: UiMessageType = "warning") => {
+    const show = (text: string, type: UiMessageType = "warning") => {
       if (text.length > 0) {
         const lastMessage = messages.value[messages.value.length - 1];
 
         // Check for duplicate text
         if (lastMessage && lastMessage.text === text && lastMessage.type === type) {
-          return; // Don't add the message again
+          return;
         }
 
         if (messages.value.length >= maxMessages) {
-          messages.value.splice(0, 1);
+          const removed = messages.value.splice(0, 1)[0];
+          clearTimer(removed.id);
         }
 
         const id = generateId('ui');
-
         const duration = adaptedDurationMs(text);
 
         const message: UiMessage = {
@@ -44,25 +45,37 @@ export const useNotificationStore = defineStore(
 
         messages.value.push(message);
 
-        await sleep(duration);
+        timers.set(id, setTimeout(() => {
+          timers.delete(id);
+          const index = messages.value.indexOf(message);
+          if (index != -1) {
+            messages.value.splice(index, 1);
+          }
+        }, duration));
+      }
+    };
 
-        const index = messages.value.indexOf(message);
-
-        if (index != -1) {
-          messages.value.splice(index, 1);
-        }
+    const clearTimer = (id: string) => {
+      const timer = timers.get(id);
+      if (timer) {
+        clearTimeout(timer);
+        timers.delete(id);
       }
     };
 
     const hide = (id: string) => {
+      clearTimer(id);
       const index = messages.value.findIndex(it => it.id == id);
-
       if (index != -1) {
         messages.value.splice(index, 1);
       }
     };
 
     const hideAll = () => {
+      for (const timer of timers.values()) {
+        clearTimeout(timer);
+      }
+      timers.clear();
       messages.value = [];
     };
 

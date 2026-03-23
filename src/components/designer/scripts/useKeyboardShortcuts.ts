@@ -9,7 +9,7 @@ import { useSettingsStore } from "@/store/settings.ts";
 import { useExportStore } from "@/store/export.ts";
 import type { KeyboardBindAction } from "@/types/shortcuts.ts";
 import { colCanBePrimary, colCanBeNullable, colCanAutoIncrement, type TableCol } from "@/types/table.ts";
-import { cloneDeep } from "lodash";
+import { cloneDeep } from "lodash-es";
 import { ZOOM_MIN, ZOOM_MAX } from "@/types/constants.ts";
 
 export function useKeyboardShortcuts(centerView: () => void, scaleFactor: Ref<number>) {

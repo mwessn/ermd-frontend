@@ -6,7 +6,7 @@ import type { DatabaseRelationship } from "@/types/relationships.ts";
 import type { Comment } from "@/types/comments.ts";
 import type { KeyboardBindings } from "@/types/shortcuts.ts";
 import { DEFAULT_KEYBOARD_BINDINGS } from "@/types/shortcuts.ts";
-import { cloneDeep } from "lodash";
+import { cloneDeep } from "lodash-es";
 
 export type AppLocale = 'en' | 'ga' | 'ja';
 export const APP_LOCALES: AppLocale[] = ['en', 'ga', 'ja'];

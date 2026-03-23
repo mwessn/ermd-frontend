@@ -97,7 +97,7 @@ import { useActionsStore } from "@/store/action.ts";
 import DoubleClickFocusInput from "@/components/core/DoubleClickFocusInput.vue";
 import { notBlankOrEmpty, resetFocus, sleep } from "@/utils/utils.ts";
 import TableColRow from "@/components/designer/table/TableColRow.vue";
-import { cloneDeep } from "lodash";
+import { cloneDeep } from "lodash-es";
 import { SQL_IDENTIFIER_REGEX } from "@/types/misc.ts";
 import { useSettingsStore } from "@/store/settings.ts";
 import { storeToRefs } from "pinia";

@@ -51,7 +51,3 @@ const onClick = (menu: 'functions' | 'settings') => {
   emit('menuToggle', menu);
 };
 </script>
-
-<style scoped>
-
-</style>
