@@ -188,5 +188,5 @@ const {
   centerView,
 } = useDesignCanvas();
 
-const { setAction } = useKeyboardShortcuts(centerView);
+const { setAction } = useKeyboardShortcuts(centerView, scaleFactor);
 </script>

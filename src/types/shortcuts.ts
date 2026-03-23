@@ -20,6 +20,17 @@ export type KeyboardBindAction =
   | "clipboard.paste"
   // Project actions
   | "project.save"
+  // Zoom actions
+  | "zoom.reset"
+  | "zoom.level1"
+  | "zoom.level2"
+  | "zoom.level3"
+  | "zoom.level4"
+  | "zoom.level5"
+  | "zoom.level6"
+  | "zoom.level7"
+  | "zoom.level8"
+  | "zoom.level9"
   // Column flag toggles
   | "column.togglePK"
   | "column.toggleNotNull"
@@ -56,6 +67,16 @@ export const DEFAULT_KEYBOARD_BINDINGS: KeyboardBindings = {
     'c': 'clipboard.copy',
     'v': 'clipboard.paste',
     's': 'project.save',
+    '0': 'zoom.reset',
+    '1': 'zoom.level1',
+    '2': 'zoom.level2',
+    '3': 'zoom.level3',
+    '4': 'zoom.level4',
+    '5': 'zoom.level5',
+    '6': 'zoom.level6',
+    '7': 'zoom.level7',
+    '8': 'zoom.level8',
+    '9': 'zoom.level9',
   },
   alt: {
     'p': 'column.togglePK',
@@ -74,7 +95,17 @@ export const LOCKED_ACTIONS: ReadonlySet<KeyboardBindAction> = new Set([
   'buffer.redoAlt',
   'clipboard.copy',
   'clipboard.paste',
-  'project.save'
+  'project.save',
+  'zoom.reset',
+  'zoom.level1',
+  'zoom.level2',
+  'zoom.level3',
+  'zoom.level4',
+  'zoom.level5',
+  'zoom.level6',
+  'zoom.level7',
+  'zoom.level8',
+  'zoom.level9',
 ]);
 
 export interface ShortcutDisplayGroup {
@@ -96,6 +127,14 @@ export const SHORTCUT_DISPLAY_GROUPS: readonly ShortcutDisplayGroup[] = [
     actions: [
       'buffer.undo', 'buffer.redo', 'buffer.redoAlt',
       'clipboard.copy', 'clipboard.paste', 'project.save',
+    ],
+  },
+  {
+    label: 'settings.shortcuts.zoomGroup',
+    actions: [
+      'zoom.reset',
+      'zoom.level1', 'zoom.level2', 'zoom.level3', 'zoom.level4', 'zoom.level5',
+      'zoom.level6', 'zoom.level7', 'zoom.level8', 'zoom.level9',
     ],
   },
   {
@@ -124,6 +163,16 @@ export const BIND_ACTION_LABELS: Record<KeyboardBindAction, string> = {
   'clipboard.copy': 'settings.shortcuts.actions.copy',
   'clipboard.paste': 'settings.shortcuts.actions.paste',
   'project.save': 'settings.shortcuts.actions.save',
+  'zoom.reset': 'settings.shortcuts.actions.zoomReset',
+  'zoom.level1': 'settings.shortcuts.actions.zoomLevel1',
+  'zoom.level2': 'settings.shortcuts.actions.zoomLevel2',
+  'zoom.level3': 'settings.shortcuts.actions.zoomLevel3',
+  'zoom.level4': 'settings.shortcuts.actions.zoomLevel4',
+  'zoom.level5': 'settings.shortcuts.actions.zoomLevel5',
+  'zoom.level6': 'settings.shortcuts.actions.zoomLevel6',
+  'zoom.level7': 'settings.shortcuts.actions.zoomLevel7',
+  'zoom.level8': 'settings.shortcuts.actions.zoomLevel8',
+  'zoom.level9': 'settings.shortcuts.actions.zoomLevel9',
   'column.togglePK': 'settings.shortcuts.actions.togglePK',
   'column.toggleNotNull': 'settings.shortcuts.actions.toggleNotNull',
   'column.toggleUnique': 'settings.shortcuts.actions.toggleUnique',

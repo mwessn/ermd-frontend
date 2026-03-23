@@ -1,5 +1,5 @@
 
-import { onMounted, onUnmounted } from 'vue';
+import { onMounted, onUnmounted, type Ref } from 'vue';
 import { useActionsStore } from '@/store/action.ts';
 import type { UserAction } from "@/types/actions.ts";
 import { useDesignStore } from "@/store/design.ts";
@@ -10,8 +10,9 @@ import { useExportStore } from "@/store/export.ts";
 import type { KeyboardBindAction } from "@/types/shortcuts.ts";
 import { colCanBePrimary, colCanBeNullable, colCanAutoIncrement, type TableCol } from "@/types/table.ts";
 import { cloneDeep } from "lodash";
+import { ZOOM_MIN, ZOOM_MAX } from "@/types/constants.ts";
 
-export function useKeyboardShortcuts(centerView: () => void) {
+export function useKeyboardShortcuts(centerView: () => void, scaleFactor: Ref<number>) {
   const actionsStore = useActionsStore();
   const designStore = useDesignStore();
   const bufferStore = useActionBuffer();
@@ -34,6 +35,10 @@ export function useKeyboardShortcuts(centerView: () => void) {
     }
   }
 
+  // Map 1-9 linearly across ZOOM_MIN..ZOOM_MAX (excluding scale 1.0)
+  const zoomLevel = (level: number): number =>
+    ZOOM_MIN + (level - 1) * (ZOOM_MAX - ZOOM_MIN) / 8;
+
   const actionHandlers: Partial<Record<KeyboardBindAction, () => void>> = {
     'canvas.escape': () => { setAction(undefined); resetFocus(); },
     'canvas.createTable': () => setAction('table'),
@@ -52,6 +57,16 @@ export function useKeyboardShortcuts(centerView: () => void) {
     'clipboard.copy': () => { /* TODO: implement copy */ },
     'clipboard.paste': () => { /* TODO: implement paste */ },
     'project.save': () => { exportStore.exportModalVisible = true; },
+    'zoom.reset': () => { scaleFactor.value = 1; },
+    'zoom.level1': () => { scaleFactor.value = zoomLevel(1); },
+    'zoom.level2': () => { scaleFactor.value = zoomLevel(2); },
+    'zoom.level3': () => { scaleFactor.value = zoomLevel(3); },
+    'zoom.level4': () => { scaleFactor.value = zoomLevel(4); },
+    'zoom.level5': () => { scaleFactor.value = zoomLevel(5); },
+    'zoom.level6': () => { scaleFactor.value = zoomLevel(6); },
+    'zoom.level7': () => { scaleFactor.value = zoomLevel(7); },
+    'zoom.level8': () => { scaleFactor.value = zoomLevel(8); },
+    'zoom.level9': () => { scaleFactor.value = zoomLevel(9); },
     'column.togglePK': () => {
       const fc = designStore.focusedCol;
       if (!fc || fc.col.type.primitive === 'serial') return;
