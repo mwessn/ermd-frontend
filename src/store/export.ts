@@ -332,7 +332,7 @@ export const useExportStore = defineStore('export', () => {
       { name: 'notNull', type: 'boolean' },
       { name: 'unique', type: 'boolean' },
       { name: 'autoIncrement', type: 'boolean' },
-      { name: 'defaultValue', type: 'string', nullable: true },
+      // defaultValue omitted — coerced to string on import in exportType2ColType()
     ];
 
     errors.push(

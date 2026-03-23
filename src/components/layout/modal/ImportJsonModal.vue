@@ -59,7 +59,7 @@ const onImport = async () => {
       importErrors.value = await exportStore.importProjectJson(file.value);
 
       if (importErrors.value == undefined) {
-        emit('close');
+        emit('close', true);
       }
     }
     catch (e: unknown) {
