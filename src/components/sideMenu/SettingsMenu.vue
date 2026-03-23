@@ -1,7 +1,7 @@
 <template>
     <div
       class="fixed right-0 h-full p-4 mt-header-height w-right-menu-width
-          bg-accentDarkGray text-center z-50
+          bg-accentDarkGray text-center z-100
           text-textColor overflow-auto pb-24
             transition-transform duration-300
             border-l border-backgroundDark"

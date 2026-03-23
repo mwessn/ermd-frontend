@@ -2,7 +2,7 @@
     <div
       class="bg-accentDarkGray text-accentGray
         fixed top-header-height left-left-menu-width right-right-menu-width
-        bottom-0 z-90 p-6"
+        bottom-0 z-99 p-6"
     >
       <!--   Close button   -->
       <div

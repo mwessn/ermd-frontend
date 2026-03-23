@@ -2,7 +2,7 @@
     <div
       class="fixed left-0 h-full w-left-menu-width
        bg-accentDarkGray transition-transform duration-300 text-center
-        pt-4 mt-header-height z-50
+        pt-4 mt-header-height z-100
         border-r border-backgroundDark"
       :class="[visible ? 'translate-x-0' : '-translate-x-full',
                disabled ? 'pointer-events-none' : '']"
