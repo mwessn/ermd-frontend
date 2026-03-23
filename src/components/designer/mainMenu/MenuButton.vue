@@ -1,7 +1,7 @@
 <template>
     <div
       class="flex flex-col justify-between
-        w-full max-w-40 aspect-square p-6
+        w-full max-w-42 aspect-square p-6
         border border-l-accentGray border-t-accentGray
         border-r-backgroundDark border-b-backgroundDark
         active:border-l-backgroundDark active:border-t-backgroundDark

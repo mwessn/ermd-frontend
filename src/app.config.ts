@@ -1,5 +1,5 @@
 export const appConfig = {
-  appVersion: 0.1,
+  appVersion: 0.9,
   appName: 'ERMD',
   appGitHub: 'https://github.com/mwessn/ermd-frontend',
 
