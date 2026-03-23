@@ -1,5 +1,5 @@
 <template>
-    <ModalLayout :modal-name="$t('modal.importJson')" @close="emit('close')">
+    <ModalLayout :modal-name="$t('modal.importJson')" @close="emit('close', false)">
       <div class="my-4">
         <FileUpload
           @on-file-change="onFileChange"

@@ -6,11 +6,18 @@
         :visible="functionsMenuVisible"
         @open-export-modal="exportStore.exportModalVisible = true"
         @open-import-modal="importModalVisible = true"
-        @open-new-project-modal="newProjectModalVisible = true"
+        @open-new-project-modal="onNewProjectModalOpen"
         @open-main-menu="onMainMenuToggle"
       />
 
-      <MainMenu v-if="mainMenuVisible" />
+      <Transition name="slide-right">
+        <MainMenu
+          v-if="mainMenuVisible"
+          @new-project="onNewProjectModalOpen"
+          @import-project="importModalVisible = true"
+          @close-menu="closeMainMenu"
+        />
+      </Transition>
 
       <SettingsMenu :visible="settingsMenuVisible" />
 
@@ -21,7 +28,7 @@
 
       <ImportJsonModal
         v-if="importModalVisible"
-        @close="importModalVisible = false"
+        @close="onImportModalClose"
       />
 
       <YesNoModal
@@ -51,10 +58,13 @@ import YesNoModal from "@/components/layout/modal/YesNoModal.vue";
 import { useI18n } from "vue-i18n";
 import MainMenu from "@/components/designer/mainMenu/MainMenu.vue";
 
-const { tables } = storeToRefs(useDesignStore());
+const { tables, comments, groups } = storeToRefs(useDesignStore());
 const exportStore = useExportStore();
 
-const isFirstLaunch = computed(() => tables.value.length == 0);
+const isFirstLaunch = computed(() =>
+  tables.value.length == 0 &&
+    comments.value.length == 0 &&
+    groups.value.length == 0);
 
 const mainMenuVisible = ref<boolean>(isFirstLaunch.value);
 
@@ -82,18 +92,44 @@ const newProjectModalVisible = ref<boolean>(false);
 const { t } = useI18n();
 const newProjectModalBodyText = computed(() => t('messages.newProjectConfirm'));
 
+const onNewProjectModalOpen = () => {
+  if (isFirstLaunch.value) {
+    // Clear the state in case of any orphaned relations
+    useDesignStore().createNewProject();
+    // Close the main menu if triggered from it
+    closeMainMenu();
+  } else {
+    newProjectModalVisible.value = true;
+  }
+};
+
 const onNewProjectModalClose = (val: boolean | undefined) => {
   newProjectModalVisible.value = false;
   if (val) {
     useDesignStore().createNewProject();
+    // Close the main menu if triggered from it
+    closeMainMenu();
   }
+};
+
+const onImportModalClose = (val: boolean | undefined) => {
+  importModalVisible.value = false;
+  if (val) {
+    // Close the main menu if triggered from it
+    closeMainMenu();
+  }
+};
+
+const closeMainMenu = () => {
+  // Set the menus to working state
+  mainMenuVisible.value = false;
+  settingsMenuVisible.value = false;
+  functionsMenuVisible.value = true;
 };
 
 const onMainMenuToggle = () => {
   if (mainMenuVisible.value) {
-    // Close the main menu, keep the functions menu, settings menu based on the canvas state.
-    mainMenuVisible.value = false;
-    settingsMenuVisible.value = isFirstLaunch.value;
+    closeMainMenu();
   } else {
     // Open main and side menus
     mainMenuVisible.value = true;
@@ -103,3 +139,15 @@ const onMainMenuToggle = () => {
 };
 
 </script>
+
+<style scoped>
+.slide-right-enter-active,
+.slide-right-leave-active {
+  transition: transform 0.3s ease;
+}
+
+.slide-right-enter-from,
+.slide-right-leave-to {
+  transform: translateX(calc(100% + var(--spacing-left-menu-width) + var(--spacing-right-menu-width)));
+}
+</style>
