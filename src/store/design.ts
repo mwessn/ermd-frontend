@@ -621,7 +621,7 @@ export const useDesignStore = defineStore(
 
     // ==================== MISC OPERATIONS ====================
 
-    const createNewProject = () => {
+    const createNewProject = (silent: boolean = false) => {
       tablesMap.value.clear();
       newTableIndex.value = 1;
 
@@ -633,7 +633,9 @@ export const useDesignStore = defineStore(
 
       useExportStore().resetProjectInfo();
 
-      notificationStore.show(i18n.global.t('notifications.projectCleared'), 'success');
+      if (!silent) {
+        notificationStore.show(i18n.global.t('notifications.projectCleared'), 'success');
+      }
     };
 
     const setMovedComment = (comment: Comment | undefined = undefined) => {

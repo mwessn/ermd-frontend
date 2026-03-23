@@ -115,8 +115,8 @@ export const useExportStore = defineStore('export', () => {
 
       const validatedJson: ExportJson = data as ExportJson;
 
-      // Clear the project state
-      designStore.createNewProject();
+      // Clear the project state silently — import has its own notification
+      designStore.createNewProject(true);
 
       // Try to parse project name and version from filename
       const filename = assertDefined(file.name).replace('.json', ''); // strip extension
