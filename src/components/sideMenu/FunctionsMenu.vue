@@ -1,6 +1,9 @@
 <template>
     <div
-      class="fixed left-0 h-full w-12 bg-accentDarkGray transition-transform duration-300 text-center pt-4 mt-12 z-50"
+      class="fixed left-0 h-full w-left-menu-width
+       bg-accentDarkGray transition-transform duration-300 text-center
+        pt-4 mt-header-height z-50
+        border-r border-backgroundDark"
       :class="[visible ? 'translate-x-0' : '-translate-x-full',
                disabled ? 'pointer-events-none' : '']"
     >
@@ -63,7 +66,12 @@ withDefaults(defineProps<{
   disabled: false
 });
 
-const emit = defineEmits(['openImportModal', 'openExportModal', 'openNewProjectModal']);
+const emit = defineEmits([
+  'openImportModal',
+  'openExportModal',
+  'openNewProjectModal',
+  'openMainMenu'
+]);
 
 const actionStore = useActionsStore();
 const settingsStore = useSettingsStore();
@@ -184,7 +192,7 @@ const functionsMenuMiscItems: readonly MenuItem[] = [
     pic: faCircleInfo,
     hint: 'actions.info',
     action: () => {
-      //
+      emit('openMainMenu');
     }
   },
   {

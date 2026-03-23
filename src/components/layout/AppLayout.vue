@@ -7,7 +7,10 @@
         @open-export-modal="exportStore.exportModalVisible = true"
         @open-import-modal="importModalVisible = true"
         @open-new-project-modal="newProjectModalVisible = true"
+        @open-main-menu="onMainMenuToggle"
       />
+
+      <MainMenu v-if="mainMenuVisible" />
 
       <SettingsMenu :visible="settingsMenuVisible" />
 
@@ -46,16 +49,22 @@ import ExportJsonModal from "@/components/layout/modal/ExportJsonModal.vue";
 import ImportJsonModal from "@/components/layout/modal/ImportJsonModal.vue";
 import YesNoModal from "@/components/layout/modal/YesNoModal.vue";
 import { useI18n } from "vue-i18n";
+import MainMenu from "@/components/designer/mainMenu/MainMenu.vue";
 
 const { tables } = storeToRefs(useDesignStore());
 const exportStore = useExportStore();
 
-const isFirstLaunch = tables.value.length == 0;
+const isFirstLaunch = computed(() => tables.value.length == 0);
+
+const mainMenuVisible = ref<boolean>(isFirstLaunch.value);
 
 const functionsMenuVisible = ref<boolean>(true);
-const settingsMenuVisible = ref<boolean>(isFirstLaunch);
+const settingsMenuVisible = ref<boolean>(mainMenuVisible.value);
 
 const toggleMenu = (val: 'functions' | 'settings') => {
+  // Can't toggle side menus while main is active;
+  if (mainMenuVisible.value) { return; }
+
   switch (val) {
     case "functions":
       functionsMenuVisible.value = !functionsMenuVisible.value;
@@ -77,6 +86,19 @@ const onNewProjectModalClose = (val: boolean | undefined) => {
   newProjectModalVisible.value = false;
   if (val) {
     useDesignStore().createNewProject();
+  }
+};
+
+const onMainMenuToggle = () => {
+  if (mainMenuVisible.value) {
+    // Close the main menu, keep the functions menu, settings menu based on the canvas state.
+    mainMenuVisible.value = false;
+    settingsMenuVisible.value = isFirstLaunch.value;
+  } else {
+    // Open main and side menus
+    mainMenuVisible.value = true;
+    settingsMenuVisible.value = true;
+    functionsMenuVisible.value = true;
   }
 };
 

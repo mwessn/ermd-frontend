@@ -164,5 +164,8 @@
     "centerView": "Lárú an amhairc",
     "info": "Eolas",
     "projectGitHub": "GitHub an Tionscadail"
+  },
+  "mainMenu": {
+    "description": "Dearthóir bunachar sonraí coibhneasta atá dírithe ar thaithí úsáideora. Tá an cód foinse ar fáil go poiblí agus ritheann sé go hiomlán ar thaobh an chliaint — stóráltar na scéimrí go háitiúil i do bhrabhsálaí. Tacaíonn sé le hinnill bhunachar sonraí éagsúla agus le honnmhairiú SQL."
   }
 }

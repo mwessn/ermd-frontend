@@ -48,6 +48,7 @@ import { useNotificationStore } from "@/store/ui/notifications.ts";
 import { useSettingsStore } from "@/store/settings.ts";
 import { faClose } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+import { type AppLocale, APP_LOCALES } from "@/types/misc.ts";
 
 const i18n = useI18n();
 const route = useRoute();
@@ -58,8 +59,13 @@ const notificationStore = useNotificationStore();
 const settingsStore = useSettingsStore();
 const { criticalError } = storeToRefs(settingsStore);
 
-// Restore persisted language on load
-i18n.locale.value = settingsStore.currentSettings.language;
+// Allow ?lang= URL param to override locale (for crawlers)
+const urlLang = new URLSearchParams(window.location.search).get('lang');
+if (urlLang && APP_LOCALES.includes(urlLang as AppLocale)) {
+  i18n.locale.value = urlLang as AppLocale;
+} else {
+  i18n.locale.value = settingsStore.currentSettings.language;
+}
 
 watch(
   () => i18n.locale,
@@ -75,6 +81,40 @@ watch(
     if (newTitle) {
       document.title = `${ appConfig.appName } – ${ i18n.t(newTitle as string) }`;
     }
+  },
+  { immediate: true }
+);
+
+// Meta description for search engines, reactive to locale
+function setMeta(name: string, content: string) {
+  let el = document.querySelector(`meta[name="${name}"]`);
+  if (!el) {
+    el = document.createElement('meta');
+    el.setAttribute('name', name);
+    document.head.appendChild(el);
+  }
+  el.setAttribute('content', content);
+}
+
+function setHreflangLinks() {
+  // Remove old hreflang links
+  document.querySelectorAll('link[hreflang]').forEach(el => el.remove());
+
+  const base = window.location.origin + window.location.pathname;
+  for (const locale of APP_LOCALES) {
+    const link = document.createElement('link');
+    link.setAttribute('rel', 'alternate');
+    link.setAttribute('hreflang', locale);
+    link.setAttribute('href', `${base}?lang=${locale}`);
+    document.head.appendChild(link);
+  }
+}
+
+watch(
+  () => i18n.locale.value,
+  () => {
+    setMeta('description', `${appConfig.appName} — ${i18n.t('mainMenu.description')}`);
+    setHreflangLinks();
   },
   { immediate: true }
 );

@@ -1,9 +1,10 @@
 <template>
     <div
-      class="fixed right-0 h-full p-4 mt-12 w-64
+      class="fixed right-0 h-full p-4 mt-header-height w-right-menu-width
           bg-accentDarkGray text-center z-50
           text-textColor overflow-auto pb-24
-            transition-transform duration-300"
+            transition-transform duration-300
+            border-l border-backgroundDark"
       :class="visible ? 'translate-x-0' : 'translate-x-full'"
     >
       <div class="flex mb-4 rounded overflow-hidden border border-accentGray">

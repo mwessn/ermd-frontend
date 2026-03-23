@@ -9,6 +9,7 @@ import { DEFAULT_KEYBOARD_BINDINGS } from "@/types/shortcuts.ts";
 import { cloneDeep } from "lodash";
 
 export type AppLocale = 'en' | 'ga' | 'ja';
+export const APP_LOCALES: AppLocale[] = ['en', 'ga', 'ja'];
 
 export interface UserSettings {
   language: AppLocale;
