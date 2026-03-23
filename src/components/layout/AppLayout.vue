@@ -57,7 +57,9 @@ import ImportJsonModal from "@/components/layout/modal/ImportJsonModal.vue";
 import YesNoModal from "@/components/layout/modal/YesNoModal.vue";
 import { useI18n } from "vue-i18n";
 import MainMenu from "@/components/designer/mainMenu/MainMenu.vue";
+import { useActionsStore } from "@/store/action.ts";
 
+const actionsStore = useActionsStore();
 const { tables, comments, groups } = storeToRefs(useDesignStore());
 const exportStore = useExportStore();
 
@@ -67,6 +69,9 @@ const isFirstLaunch = computed(() =>
     groups.value.length == 0);
 
 const mainMenuVisible = ref<boolean>(isFirstLaunch.value);
+if (mainMenuVisible.value) {
+  actionsStore.allowAction(false);
+}
 
 const functionsMenuVisible = ref<boolean>(true);
 const settingsMenuVisible = ref<boolean>(mainMenuVisible.value);
@@ -125,6 +130,7 @@ const closeMainMenu = () => {
   mainMenuVisible.value = false;
   settingsMenuVisible.value = false;
   functionsMenuVisible.value = true;
+  actionsStore.allowAction(true);
 };
 
 const onMainMenuToggle = () => {
@@ -132,6 +138,8 @@ const onMainMenuToggle = () => {
     closeMainMenu();
   } else {
     // Open main and side menus
+    actionsStore.resetAction();
+    actionsStore.allowAction(false);
     mainMenuVisible.value = true;
     settingsMenuVisible.value = true;
     functionsMenuVisible.value = true;

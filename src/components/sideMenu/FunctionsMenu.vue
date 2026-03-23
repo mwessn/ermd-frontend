@@ -172,13 +172,6 @@ const functionsMenuProjectItems: readonly MenuItem[] = [
     }
   },
   {
-    pic: faFileArrowDown,
-    hint: 'actions.saveAsJson',
-    action: () => {
-      emit('openExportModal');
-    }
-  },
-  {
     pic: faFileArrowUp,
     hint: 'actions.uploadJson',
     action: () => {
@@ -204,10 +197,19 @@ const functionsMenuMiscItems: readonly MenuItem[] = [
   },
 ];
 
+const exportButton = computed((): MenuItem => ({
+  pic: faFileArrowDown,
+  hint: 'actions.saveAsJson',
+  button: getButtonLabel('project.save'),
+  action: () => {
+    emit('openExportModal');
+  }
+}));
+
 const sections = computed(() => [
   { items: functionsMenuTopItems.value },
   { items: functionsCommentItems.value },
-  { items: functionsMenuProjectItems },
+  { items: [...functionsMenuProjectItems, exportButton.value] },
   { items: functionsMenuMiscItems },
 ]);
 </script>

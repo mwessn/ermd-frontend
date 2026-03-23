@@ -11,7 +11,7 @@
         <div>
           {{ $t(text) }}
         </div>
-        <KeyDisplay v-if="button" :text="button" />
+        <KeyDisplay v-if="button" :text="button" :square="button.length == 1" />
       </div>
     </div>
 </template>
