@@ -43,7 +43,7 @@ import {
 } from "@/types/TableColumnTypes/tableField.ts";
 import { useSettingsStore } from "@/store/settings.ts";
 import TextInput from "@/components/core/inputs/TextInput.vue";
-import { cloneDeep } from "lodash";
+import { cloneDeep } from "lodash-es";
 
 const model = defineModel({ type: String, required: true });
 

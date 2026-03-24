@@ -13,6 +13,7 @@
     }
   },
   "settings": {
+    "language": "Language",
     "namingConvention": {
       "label": "Naming convention",
       "hint": "Will only apply to newly created tables"
@@ -42,7 +43,53 @@
       "hint": "Capped to {max} to prevent performance issues"
     },
     "databaseEngine": "Database Engine",
-    "customColumnTypes": "Custom column types"
+    "customColumnTypes": "Custom column types",
+    "tabs": {
+      "general": "General",
+      "shortcuts": "Shortcuts"
+    },
+    "shortcuts": {
+      "canvasGroup": "Canvas",
+      "globalGroup": "Global",
+      "zoomGroup": "Zoom",
+      "columnGroup": "Column",
+      "pressKey": "Press a key...",
+      "resetDefaults": "Reset to defaults",
+      "locked": "Locked",
+      "actions": {
+        "escape": "Reset / Deselect",
+        "createTable": "Create table",
+        "createNoto": "Non-identifying 1:1",
+        "createIoto": "Identifying 1:1",
+        "createNotm": "Non-identifying 1:M",
+        "createIotm": "Identifying 1:M",
+        "createMtm": "Many-to-many",
+        "createComment": "Create comment",
+        "createGroup": "Create group",
+        "centerView": "Center view",
+        "deleteSelected": "Delete selected",
+        "undo": "Undo",
+        "redo": "Redo",
+        "redoAlt": "Redo (alt)",
+        "copy": "Copy",
+        "paste": "Paste",
+        "save": "Save",
+        "zoomReset": "Reset zoom",
+        "zoomLevel1": "Zoom level 1",
+        "zoomLevel2": "Zoom level 2",
+        "zoomLevel3": "Zoom level 3",
+        "zoomLevel4": "Zoom level 4",
+        "zoomLevel5": "Zoom level 5",
+        "zoomLevel6": "Zoom level 6",
+        "zoomLevel7": "Zoom level 7",
+        "zoomLevel8": "Zoom level 8",
+        "zoomLevel9": "Zoom level 9",
+        "togglePK": "Toggle Primary Key",
+        "toggleNotNull": "Toggle Not Null",
+        "toggleUnique": "Toggle Unique",
+        "toggleAutoIncrement": "Toggle Auto Increment"
+      }
+    }
   },
   "modal": {
     "importJson": "Import JSON",
@@ -95,6 +142,24 @@
     "dbTypeChange": "You are about to change the database engine. ERMD will try its best with type coercion for the existing tables, but some data may be lost. Please confirm whether you want to continue.",
     "newProjectConfirm": "Creating a new project will permanently delete all existing data. Please confirm you want to proceed."
   },
+  "notifications": {
+    "tableNotFound": "Table not found: {firstTableId}, {secondTableId}",
+    "noPrimaryKey": "Table {tableName} has no primary key",
+    "projectExported": "Project exported successfully",
+    "projectImported": "Project imported successfully",
+    "projectCleared": "Project cleared",
+    "unknownEngine": "Unknown database engine: {engine}",
+    "actionBufferError": "Failed to execute undo/redo action",
+    "shortcutReassigned": "'{key}' reassigned from '{oldAction}' to '{newAction}'",
+    "circularDependency": "This action will create a circular dependency. Click the second table again with Shift Key pressed to confirm."
+  },
+  "criticalError": {
+    "title": "Critical Error",
+    "body": "Something went terribly wrong. You can export your project as JSON to save your work for a bug report or manual recovery, or clear the project to start fresh.",
+    "exportJson": "Export JSON",
+    "clearProject": "Clear Project",
+    "errorDetails": "Error details"
+  },
   "actions": {
     "createTable": "Create table",
     "nonIdentifyingOneToOne": "Non-identifying One-to-One relation",
@@ -107,7 +172,11 @@
     "newProject": "New project",
     "saveAsJson": "Save as JSON",
     "uploadJson": "Upload JSON",
-    "info": "Info",
+    "centerView": "Center view",
+    "info": "Menu",
     "projectGitHub": "Project GitHub"
+  },
+  "mainMenu": {
+    "description": "A focused, UX-driven relational database designer. Open-source and entirely client-side — schemas are stored locally in your browser. Supports multiple database engines and SQL export."
   }
 }

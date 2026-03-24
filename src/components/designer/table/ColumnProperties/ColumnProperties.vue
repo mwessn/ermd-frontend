@@ -111,7 +111,7 @@ import { computed, nextTick, ref, watch } from "vue";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { faClose } from "@fortawesome/free-solid-svg-icons";
 import { nullOrEmpty } from "@/utils/utils.ts";
-import { cloneDeep } from "lodash";
+import { cloneDeep } from "lodash-es";
 import ModifierValueInput from "@/components/designer/table/ColumnProperties/ModifierValueInput.vue";
 
 const col = defineModel<TableCol>('col', { required: true });
@@ -178,6 +178,11 @@ const defaultInputType = computed(() => {
 
 // input validation
 watch(() => col.value.defaultValue, (val) => {
+  // Number inputs produce numeric values at runtime — coerce to string
+  if (val != null && typeof val !== 'string') {
+    col.value.defaultValue = String(val);
+    return;
+  }
   if (val == null || val === "") return;
 
   let sanitized: string | undefined;

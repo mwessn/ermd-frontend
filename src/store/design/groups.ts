@@ -5,7 +5,7 @@ import type { AreaSize, CursorPos } from "@/components/designer/scripts/useDesig
 import type { DesignState } from "./tables.ts";
 import type { BufferEntity } from "@/types/actionsBuffer.ts";
 import { generateGroup } from "@/types/misc.ts";
-import { cloneDeep } from "lodash";
+import { cloneDeep } from "lodash-es";
 import { GROUP_MIN_SIZE } from "@/types/constants.ts";
 import type { useActionBuffer } from "@/store/actionBuffer.ts";
 

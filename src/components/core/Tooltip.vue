@@ -4,14 +4,18 @@
 
       <div
         class="absolute bottom-0 left-full ml-2 p-2 w-max
-     cursor-default select-none
-   bg-accentGray text-accentDarkGray rounded-sm
-     hidden group-hover:flex group-focus:flex gap-2 items-center"
+           cursor-default select-none
+         bg-accentGray text-accentDarkGray rounded-sm
+           hidden group-hover:flex group-focus:flex gap-2 items-center"
       >
         <div>
           {{ $t(text) }}
         </div>
-        <KeyDisplay v-if="button" :text="button" />
+        <KeyDisplay
+          v-if="button"
+          :text="button"
+          :square="button.length == 1"
+        />
       </div>
     </div>
 </template>
@@ -24,7 +28,3 @@ defineProps<{
   button?: string
 }>();
 </script>
-
-<style scoped>
-
-</style>

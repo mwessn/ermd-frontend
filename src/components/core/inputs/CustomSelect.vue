@@ -67,7 +67,7 @@ import { computed, ref } from "vue";
 import type { SelectOption } from "@/types/misc.ts";
 import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import { isEqual } from "lodash";
+import { isEqual } from "lodash-es";
 
 const model = defineModel({ type: [String, Object], required: true });
 
@@ -84,7 +84,7 @@ const props = withDefaults(defineProps<{
   hint: ""
 });
 
-const rootDiv = ref();
+const rootDiv = ref<HTMLDivElement | undefined>();
 
 const emit = defineEmits(["change"]);
 

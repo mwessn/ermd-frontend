@@ -1,6 +1,9 @@
 <template>
     <div
-      class="fixed left-0 h-full w-12 bg-accentDarkGray transition-transform duration-300 text-center pt-4 mt-12 z-50"
+      class="fixed left-0 h-full w-left-menu-width
+       bg-accentDarkGray transition-transform duration-300 text-center
+        pt-4 mt-header-height z-100
+        border-r border-backgroundDark"
       :class="[visible ? 'translate-x-0' : '-translate-x-full',
                disabled ? 'pointer-events-none' : '']"
     >
@@ -10,7 +13,7 @@
           :key="itemIndex"
           :text="item.hint"
           :button="item.button"
-          :aria-label="item.hint"
+          :aria-label="$t(item.hint)"
           tabindex="0"
           @keyup.enter="execAction(item.action)"
         >
@@ -47,11 +50,14 @@ import {
   faTable
 } from "@fortawesome/free-solid-svg-icons";
 import { useActionsStore } from "@/store/action.ts";
+import { useSettingsStore } from "@/store/settings.ts";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
 import { appConfig } from "@/app.config.ts";
 import Tooltip from "@/components/core/Tooltip.vue";
 import { resetFocus } from "@/utils/utils.ts";
-import { useI18n } from "vue-i18n";
+import { computed } from "vue";
+import type { KeyboardBindAction } from "@/types/shortcuts.ts";
+import { findActionBinding, formatFullShortcut } from "@/utils/shortcutUtils.ts";
 
 withDefaults(defineProps<{
   visible: boolean
@@ -60,10 +66,15 @@ withDefaults(defineProps<{
   disabled: false
 });
 
-const emit = defineEmits(['openImportModal', 'openExportModal', 'openNewProjectModal']);
+const emit = defineEmits([
+  'openImportModal',
+  'openExportModal',
+  'openNewProjectModal',
+  'openMainMenu'
+]);
 
 const actionStore = useActionsStore();
-const { t } = useI18n();
+const settingsStore = useSettingsStore();
 
 interface MenuItem {
   pic: IconDefinition;
@@ -77,94 +88,92 @@ const execAction = (action: () => void) => {
   resetFocus();
 };
 
-const functionsMenuTopItems: readonly MenuItem[] = [
+const getButtonLabel = (action: KeyboardBindAction): string | undefined => {
+  const binding = findActionBinding(settingsStore.currentSettings.shortcuts, action);
+  return binding ? formatFullShortcut(binding.group, binding.key) : undefined;
+};
+
+const functionsMenuTopItems = computed((): readonly MenuItem[] => [
   {
     pic: faTable,
-    hint: t('actions.createTable'),
-    button: 'T',
+    hint: 'actions.createTable',
+    button: getButtonLabel('canvas.createTable'),
     action: () => {
       actionStore.setAction('table');
     }
   },
   {
     pic: faArrowRight,
-    hint: t('actions.nonIdentifyingOneToOne'),
-    button: 'H',
+    hint: 'actions.nonIdentifyingOneToOne',
+    button: getButtonLabel('canvas.createNoto'),
     action: () => {
       actionStore.setAction('noto');
     }
   },
   {
     pic: faCircleArrowRight,
-    hint: t('actions.identifyingOneToOne'),
-    button: 'B',
+    hint: 'actions.identifyingOneToOne',
+    button: getButtonLabel('canvas.createIoto'),
     action: () => {
       actionStore.setAction('ioto');
     }
   },
   {
     pic: faChevronRight,
-    hint: t('actions.nonIdentifyingOneToMany'),
-    button: 'J',
+    hint: 'actions.nonIdentifyingOneToMany',
+    button: getButtonLabel('canvas.createNotm'),
     action: () => {
       actionStore.setAction('notm');
     }
   },
   {
     pic: faChevronCircleRight,
-    hint: t('actions.identifyingOneToMany'),
-    button: 'N',
+    hint: 'actions.identifyingOneToMany',
+    button: getButtonLabel('canvas.createIotm'),
     action: () => {
       actionStore.setAction('iotm');
     }
   },
   {
     pic: faArrowsUpDownLeftRight,
-    hint: t('actions.manyToMany'),
-    button: 'M',
+    hint: 'actions.manyToMany',
+    button: getButtonLabel('canvas.createMtm'),
     action: () => {
       actionStore.setAction('mtm');
     }
   },
-];
+]);
 
-const functionsCommentItems: readonly MenuItem[] = [
+const functionsCommentItems = computed((): readonly MenuItem[] => [
   {
     pic: faComment,
-    hint: t('actions.comment'),
-    button: 'C',
+    hint: 'actions.comment',
+    button: getButtonLabel('canvas.createComment'),
     action: () => {
       actionStore.setAction('comment');
     }
   },
   {
     pic: faObjectGroup,
-    hint: t('actions.group'),
-    button: 'G',
+    hint: 'actions.group',
+    button: getButtonLabel('canvas.createGroup'),
     action: () => {
       actionStore.setAction('group');
     }
   },
-];
+]);
 
 const functionsMenuProjectItems: readonly MenuItem[] = [
   {
     pic: faFile,
-    hint: t('actions.newProject'),
+    hint: 'actions.newProject',
     action: () => {
       emit('openNewProjectModal');
     }
   },
   {
-    pic: faFileArrowDown,
-    hint: t('actions.saveAsJson'),
-    action: () => {
-      emit('openExportModal');
-    }
-  },
-  {
     pic: faFileArrowUp,
-    hint: t('actions.uploadJson'),
+    hint: 'actions.uploadJson',
     action: () => {
       emit('openImportModal');
     }
@@ -174,28 +183,33 @@ const functionsMenuProjectItems: readonly MenuItem[] = [
 const functionsMenuMiscItems: readonly MenuItem[] = [
   {
     pic: faCircleInfo,
-    hint: t('actions.info'),
+    hint: 'actions.info',
     action: () => {
-      //
+      emit('openMainMenu');
     }
   },
   {
     pic: faGithub,
-    hint: t('actions.projectGitHub'),
+    hint: 'actions.projectGitHub',
     action: () => {
       window.open(appConfig.appGitHub);
     }
   },
 ];
 
-const sections = [
-  { items: functionsMenuTopItems },
-  { items: functionsCommentItems },
-  { items: functionsMenuProjectItems },
+const exportButton = computed((): MenuItem => ({
+  pic: faFileArrowDown,
+  hint: 'actions.saveAsJson',
+  button: getButtonLabel('project.save'),
+  action: () => {
+    emit('openExportModal');
+  }
+}));
+
+const sections = computed(() => [
+  { items: functionsMenuTopItems.value },
+  { items: functionsCommentItems.value },
+  { items: [...functionsMenuProjectItems, exportButton.value] },
   { items: functionsMenuMiscItems },
-] as const;
+]);
 </script>
-
-<style scoped>
-
-</style>

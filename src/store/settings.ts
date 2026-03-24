@@ -2,7 +2,7 @@ import {defineStore} from "pinia";
 import {computed, ref} from "vue";
 import type {UserSettings} from "@/types/misc.ts";
 import {defaultSettings} from "@/types/misc.ts";
-import {cloneDeep} from "lodash";
+import {cloneDeep} from "lodash-es";
 import {
   type ColumnType,
   type DatabaseEngine,
@@ -11,12 +11,27 @@ import {
   getDefaultModifierParams
 } from "@/types/TableColumnTypes/tableField.ts";
 import {mysqlTypes} from "@/types/TableColumnTypes/mysqlTypes.ts";
-import {useDesignStore} from "@/store/design.ts";
 import {postgresTypes} from "@/types/TableColumnTypes/postgresTypes.ts";
+import {useNotificationStore} from "@/store/ui/notifications.ts";
+import i18n from "@/utils/i18n.ts";
+import {DEFAULT_KEYBOARD_BINDINGS, type KeyboardBindAction} from "@/types/shortcuts.ts";
 
 interface ErrorDetails {
-  datetime: Date,
-  error: Error
+  datetime: string,
+  message: string,
+  stack?: string
+}
+
+function deduplicateBindings(group: Record<string, KeyboardBindAction>): Record<string, KeyboardBindAction> {
+  const seen = new Set<KeyboardBindAction>();
+  const result: Record<string, KeyboardBindAction> = {};
+  for (const [key, action] of Object.entries(group)) {
+    if (!seen.has(action)) {
+      seen.add(action);
+      result[key] = action;
+    }
+  }
+  return result;
 }
 
 export const useSettingsStore = defineStore('settings', () => {
@@ -24,13 +39,20 @@ export const useSettingsStore = defineStore('settings', () => {
   const criticalError = ref<ErrorDetails | undefined>(undefined);
 
   const loadSettings = (): UserSettings => {
-    const json: UserSettings | null = JSON.parse(localStorage.getItem("__ermd_settings") ?? "null");
+    const stored = JSON.parse(localStorage.getItem("__ermd_settings") ?? "null");
+    const json = stored?.currentSettings as UserSettings | undefined;
 
     if (json) {
-      return {
+      const settings: UserSettings = {
         ...cloneDeep(defaultSettings),
-        ...json
+        ...json,
       };
+
+      for (const group of ['keys', 'ctrl', 'alt', 'shift'] as const) {
+        settings.shortcuts[group] = deduplicateBindings(settings.shortcuts[group]);
+      }
+
+      return settings;
     } else {
       return cloneDeep(defaultSettings);
     }
@@ -78,6 +100,7 @@ export const useSettingsStore = defineStore('settings', () => {
     // Sanity check
     if (!DatabaseEngines.includes(val)) {
       console.error('Unknown engine', val);
+      useNotificationStore().show(i18n.global.t('notifications.unknownEngine', { engine: val }), 'error');
       throw new Error(`Unknown engine: ${val}`);
     }
 
@@ -102,10 +125,18 @@ export const useSettingsStore = defineStore('settings', () => {
 
   const setCriticalError = (e: Error) => {
     criticalError.value = {
-      datetime: new Date(),
-      error: e
+      datetime: new Date().toISOString(),
+      message: e.message,
+      stack: e.stack
     };
-    useDesignStore().createNewProject();
+  };
+
+  const clearCriticalError = () => {
+    criticalError.value = undefined;
+  };
+
+  const resetShortcuts = () => {
+    currentSettings.value.shortcuts = cloneDeep(DEFAULT_KEYBOARD_BINDINGS);
   };
 
   return {
@@ -128,13 +159,15 @@ export const useSettingsStore = defineStore('settings', () => {
     setCurrentEngine,
 
     setCriticalError,
+    clearCriticalError,
+    resetShortcuts,
   };
 }, {
   persist: {
     key: `__ermd_settings`,
     pick: [
       'currentSettings',
-      'userDefinedColumnTypes'
-    ],
+      'userDefinedColumnTypes',
+    ]
   }
 });

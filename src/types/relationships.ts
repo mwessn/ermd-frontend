@@ -17,7 +17,6 @@ export interface DatabaseRelationship {
   secondTableColId: string;
   secondTableId: string;
 
-  type: RelationshipType;
 }
 
 export const createNewRelationship = (
@@ -26,7 +25,6 @@ export const createNewRelationship = (
 
   secondColId: string,
   secondTableId: string,
-  type: RelationshipType
 ): DatabaseRelationship => {
   return {
     id: generateId('relation'),
@@ -34,6 +32,5 @@ export const createNewRelationship = (
     firstTableId: firstTableId,
     secondTableColId: secondColId,
     secondTableId: secondTableId,
-    type: type
   };
 };

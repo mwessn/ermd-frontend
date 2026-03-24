@@ -1,8 +1,7 @@
-import type { Table } from "@/types/table.ts";
 import type { DatabaseRelationship } from "@/types/relationships.ts";
 import type { DesignState } from "./tables.ts";
 import type { BufferEntity } from "@/types/actionsBuffer.ts";
-import { cloneDeep } from "lodash";
+import { cloneDeep } from "lodash-es";
 
 export function createRelationOperations(
   state: () => DesignState
@@ -36,28 +35,10 @@ export function createRelationOperations(
     }
   }
 
-  // Helpers
-
-  function mtmRelationExists(first: Table, second: Table): DatabaseRelationship | undefined {
-    const { relations, tablesMap } = state();
-    const mtmRels = relations.value.filter(it => it.type == 'mtm' && it.secondTableId == first.id);
-
-    return mtmRels.find(relation => {
-      const pivot = tablesMap.value.get(relation.firstTableId);
-      if (!pivot) return false;
-
-      return relations.value.some(it =>
-        it.type === 'mtm' &&
-                it.firstTableId === pivot.id &&
-                it.secondTableId === second.id);
-    });
-  }
-
   return {
     resetRelationshipCreation,
     bufferDeleteRelation,
     bufferRestoreRelation,
     bufferChangeRelation,
-    mtmRelationExists,
   };
 }

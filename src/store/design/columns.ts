@@ -1,7 +1,7 @@
 import type { TableCol } from "@/types/table.ts";
 import type { ColumnType } from "@/types/TableColumnTypes/tableField.ts";
 import type { DesignState } from "./tables.ts";
-import { cloneDeep } from "lodash";
+import { cloneDeep } from "lodash-es";
 import type { useActionBuffer } from "@/store/actionBuffer.ts";
 import type { useSettingsStore } from "@/store/settings.ts";
 import type { BufferEntity } from "@/types/actionsBuffer.ts";
@@ -77,9 +77,9 @@ export function createColumnOperations(
     }
   }
 
-  function bufferLogColChange(col: TableCol, oldVal: TableCol) {
+  function buildColChangeEntries(col: TableCol, oldVal: TableCol): BufferEntity[] {
     const { selectedTable, relationsByPKColumnId, tablesMap } = state();
-    if (!selectedTable.value) return;
+    if (!selectedTable.value) return [];
 
     const bufferEntries: BufferEntity[] = [];
 
@@ -139,10 +139,7 @@ export function createColumnOperations(
       });
     }
 
-    // Log all changes (PK + FKs) as a single batch
-    stores.bufferStore.addUndoBufferAction({
-      entities: bufferEntries
-    });
+    return bufferEntries;
   }
 
   return {
@@ -150,6 +147,6 @@ export function createColumnOperations(
     bufferDeleteCol,
     bufferRestoreCol,
     bufferRevertColumnVal,
-    bufferLogColChange,
+    buildColChangeEntries,
   };
 }

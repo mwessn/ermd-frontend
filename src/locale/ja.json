@@ -1,0 +1,182 @@
+{
+  "mobile": {
+    "title": "このアプリは",
+    "notAvailable": "ご利用いただけません",
+    "devices": "モバイルデバイスでは"
+  },
+  "menu": {
+    "functions": {
+      "open": "機能メニューを開く"
+    },
+    "settings": {
+      "open": "設定メニューを開く"
+    }
+  },
+  "settings": {
+    "language": "言語",
+    "namingConvention": {
+      "label": "命名規則",
+      "hint": "新しく作成されたテーブルにのみ適用されます"
+    },
+    "defaultPrimaryKey": "デフォルト主キー",
+    "generateMtMPrimaryKey": "多対多テーブルの主キーを生成",
+    "defaultMtMPrimaryKey": "デフォルト多対多主キー",
+    "updateFKTypes": {
+      "label": "主キーの型変更時に外部キーの型を更新",
+      "hint": "外部キーのカラム型を参照先の主キーと自動的に同期します"
+    },
+    "deleteFKColumn": {
+      "label": "リレーション削除時に外部キーカラムを削除",
+      "hint": "無効にすると、外部キーカラムは通常のカラムになります"
+    },
+    "deleteLinkedComments": {
+      "label": "エンティティと共にリンクされたコメントを削除",
+      "hint": "有効にすると、エンティティに紐づいたコメントはエンティティの削除時に一緒に削除されます。無効の場合、独立したコメントになります。"
+    },
+    "dragCanvasButton": "キャンバスドラッグボタン",
+    "snapToGrid": {
+      "label": "グリッドにスナップ",
+      "hint": "実験的機能、不具合の可能性あり"
+    },
+    "actionBufferSize": {
+      "label": "操作バッファサイズ",
+      "hint": "パフォーマンスの問題を防ぐため、最大{max}に制限されています"
+    },
+    "databaseEngine": "データベースエンジン",
+    "customColumnTypes": "カスタムカラム型",
+    "tabs": {
+      "general": "一般",
+      "shortcuts": "ショートカット"
+    },
+    "shortcuts": {
+      "canvasGroup": "キャンバス",
+      "globalGroup": "グローバル",
+      "zoomGroup": "ズーム",
+      "columnGroup": "カラム",
+      "pressKey": "キーを押してください...",
+      "resetDefaults": "デフォルトに戻す",
+      "locked": "ロック済み",
+      "actions": {
+        "escape": "リセット / 選択解除",
+        "createTable": "テーブルを作成",
+        "createNoto": "非依存 1:1",
+        "createIoto": "依存 1:1",
+        "createNotm": "非依存 1:N",
+        "createIotm": "依存 1:N",
+        "createMtm": "多対多",
+        "createComment": "コメントを作成",
+        "createGroup": "グループを作成",
+        "centerView": "表示を中央に合わせる",
+        "deleteSelected": "選択した項目を削除",
+        "undo": "元に戻す",
+        "redo": "やり直し",
+        "redoAlt": "やり直し (Alt)",
+        "copy": "コピー",
+        "paste": "貼り付け",
+        "save": "保存",
+        "zoomReset": "ズームをリセット",
+        "zoomLevel1": "ズームレベル 1",
+        "zoomLevel2": "ズームレベル 2",
+        "zoomLevel3": "ズームレベル 3",
+        "zoomLevel4": "ズームレベル 4",
+        "zoomLevel5": "ズームレベル 5",
+        "zoomLevel6": "ズームレベル 6",
+        "zoomLevel7": "ズームレベル 7",
+        "zoomLevel8": "ズームレベル 8",
+        "zoomLevel9": "ズームレベル 9",
+        "togglePK": "主キーの切り替え",
+        "toggleNotNull": "NOT NULLの切り替え",
+        "toggleUnique": "ユニークの切り替え",
+        "toggleAutoIncrement": "自動インクリメントの切り替え"
+      }
+    }
+  },
+  "modal": {
+    "importJson": "JSONインポート",
+    "exportJson": "JSONエクスポート",
+    "addCustomType": "カスタム型を追加",
+    "createNewProject": "新規プロジェクト作成",
+    "changingDatabaseEngine": "データベースエンジンの変更"
+  },
+  "project": {
+    "name": {
+      "label": "プロジェクト名",
+      "placeholder": "プロジェクト名を入力"
+    },
+    "version": {
+      "label": "プロジェクトバージョン",
+      "optional": "任意"
+    }
+  },
+  "group": {
+    "new": "新しいグループ"
+  },
+  "column": {
+    "type": {
+      "canBePrimaryKey": "主キーとして使用可能",
+      "canAutoIncrement": "オートインクリメント可能",
+      "canHaveDefault": "デフォルト値を設定可能",
+      "typeAliases": "型エイリアス"
+    },
+    "property": {
+      "default": "デフォルト"
+    }
+  },
+  "file": {
+    "drop": "ここにファイルをドロップ",
+    "clickToSelect": "またはクリックして選択"
+  },
+  "import": {
+    "errors": "インポートエラー"
+  },
+  "common": {
+    "add": "追加",
+    "save": "保存",
+    "import": "インポート",
+    "export": "エクスポート",
+    "confirm": "確認",
+    "cancel": "キャンセル",
+    "name": "名前"
+  },
+  "messages": {
+    "dbTypeChange": "データベースエンジンを変更しようとしています。ERMDは既存テーブルの型変換を可能な限り行いますが、一部のデータが失われる可能性があります。続行するか確認してください。",
+    "newProjectConfirm": "新規プロジェクトを作成すると、既存のデータがすべて完全に削除されます。続行するか確認してください。"
+  },
+  "notifications": {
+    "tableNotFound": "テーブルが見つかりません: {firstTableId}, {secondTableId}",
+    "noPrimaryKey": "テーブル {tableName} に主キーがありません",
+    "projectExported": "プロジェクトのエクスポートに成功しました",
+    "projectImported": "プロジェクトのインポートに成功しました",
+    "projectCleared": "プロジェクトをクリアしました",
+    "unknownEngine": "不明なデータベースエンジン: {engine}",
+    "actionBufferError": "元に戻す/やり直し操作の実行に失敗しました",
+    "shortcutReassigned": "'{key}' を '{oldAction}' から '{newAction}' に再割り当てしました",
+    "circularDependency": "この操作により循環依存が発生します。確認するには、Shiftキーを押しながら2つ目のテーブルをもう一度クリックしてください。"
+  },
+  "criticalError": {
+    "title": "重大なエラー",
+    "body": "重大なエラーが発生しました。バグ報告や手動でのデータ復旧のために、プロジェクトをJSONとしてエクスポートして保存するか、プロジェクトをクリアして最初からやり直すことができます。",
+    "exportJson": "JSONエクスポート",
+    "clearProject": "プロジェクトをクリア",
+    "errorDetails": "エラー詳細"
+  },
+  "actions": {
+    "createTable": "テーブルを作成",
+    "nonIdentifyingOneToOne": "非依存1対1リレーション",
+    "identifyingOneToOne": "依存1対1リレーション",
+    "nonIdentifyingOneToMany": "非依存1対多リレーション",
+    "identifyingOneToMany": "依存1対多リレーション",
+    "manyToMany": "多対多リレーション",
+    "comment": "コメント",
+    "group": "グループ",
+    "newProject": "新規プロジェクト",
+    "saveAsJson": "JSONとして保存",
+    "uploadJson": "JSONアップロード",
+    "centerView": "ビューを中央に移動",
+    "info": "メニュー",
+    "projectGitHub": "プロジェクトGitHub"
+  },
+  "mainMenu": {
+    "description": "UX重視のリレーショナルデータベース設計ツール。オープンソースで、完全にクライアントサイドで動作します。スキーマはブラウザ内にローカル保存されます。複数のデータベースエンジンとSQLエクスポートに対応しています。"
+  }
+}

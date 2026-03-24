@@ -8,7 +8,7 @@
       @contextmenu.prevent="setAction(undefined)"
       @mouseup.left="onMouseUp"
       @mouseup.middle="onMiddleMouseUp"
-      @mousemove="onMouseMove"
+      @mousemove="onCanvasMouseMove"
       @mouseleave="onMouseLeave"
       @wheel.prevent="onScroll"
     >
@@ -49,6 +49,17 @@
             :scale-factor="scaleFactor"
             :offset-x="translateOffsetX"
             :offset-y="translateOffsetY"
+          />
+          <RelationPreviewLine
+            v-if="designStore.relationFirstTableId"
+            :table-id="designStore.relationFirstTableId"
+            :scale-factor="scaleFactor"
+            :offset-x="translateOffsetX"
+            :offset-y="translateOffsetY"
+            :mouse-x="canvasMouseX"
+            :mouse-y="canvasMouseY"
+            :dashed="actionsStore.currentAction === 'noto' || actionsStore.currentAction === 'notm'"
+            :is-mtm="actionsStore.currentAction === 'mtm'"
           />
         </svg>
 
@@ -99,7 +110,7 @@
           @mouseup.left="centerView(0, 0)"
         >
           <Tooltip
-            text="Center view"
+            text="actions.centerView"
             button="X"
             class="full"
           >
@@ -114,7 +125,7 @@
 
 <script setup lang="ts">
 import { useActionsStore } from "@/store/action.ts";
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { faArrowsToDot, faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import Tooltip from "@/components/core/Tooltip.vue";
@@ -124,6 +135,7 @@ import { useDesignStore } from "@/store/design.ts";
 import DesignerTable from "@/components/designer/DesignerTable.vue";
 import { resetFocus } from "@/utils/utils.ts";
 import DesignerRelation from "@/components/designer/DesignerRelation.vue";
+import RelationPreviewLine from "@/components/designer/RelationPreviewLine.vue";
 import DesignerGroup from "@/components/designer/DesignerGroup.vue";
 import DesignerComment from "@/components/designer/DesignerComment.vue";
 import DesignerCommentLink from "@/components/designer/DesignerCommentLink.vue";
@@ -141,6 +153,15 @@ const cursorStyle = computed(() => {
 const bgSize = computed(() => `${ CANVAS_GRID_BG_SIZE * scaleFactor.value }px ${ CANVAS_GRID_BG_SIZE * scaleFactor.value }px`);
 
 const isTableNameDuplicate = (name: string) => designStore.duplicateTableNames.has(name.trim().toLowerCase());
+
+const canvasMouseX = ref<number>(0);
+const canvasMouseY = ref<number>(0);
+
+const onCanvasMouseMove = (evt: MouseEvent) => {
+  onMouseMove(evt);
+  canvasMouseX.value = evt.clientX / scaleFactor.value - translateOffsetX.value;
+  canvasMouseY.value = evt.clientY / scaleFactor.value - translateOffsetY.value;
+};
 
 const onMouseLeave = () => {
   onMouseUp();
@@ -167,5 +188,5 @@ const {
   centerView,
 } = useDesignCanvas();
 
-const { setAction } = useKeyboardShortcuts(centerView);
+const { setAction } = useKeyboardShortcuts(centerView, scaleFactor);
 </script>

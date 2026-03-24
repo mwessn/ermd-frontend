@@ -20,7 +20,7 @@
 import CustomSelect from "@/components/core/inputs/CustomSelect.vue";
 import { ref } from "vue";
 import { type DatabaseEngine, DatabaseEngines, EngineNamingMap } from "@/types/TableColumnTypes/tableField.ts";
-import { cloneDeep } from "lodash";
+import { cloneDeep } from "lodash-es";
 import { storeToRefs } from "pinia";
 import { useDesignStore } from "@/store/design.ts";
 import type { SelectOption } from "@/types/misc.ts";

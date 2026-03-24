@@ -35,7 +35,7 @@
 </template>
 
 <script setup lang="ts">
-import { cloneDeep } from "lodash";
+import { cloneDeep } from "lodash-es";
 import { notBlankOrEmpty } from "@/utils/utils.ts";
 import KeyDisplay from "@/components/core/KeyDisplay.vue";
 import { useTemplateRef } from "vue";

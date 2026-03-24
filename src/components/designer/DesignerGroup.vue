@@ -77,7 +77,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import type { Group } from "@/types/misc.ts";
-import { cloneDeep } from "lodash";
+import { cloneDeep } from "lodash-es";
 import DoubleClickFocusInput from "@/components/core/DoubleClickFocusInput.vue";
 import { resetFocus } from "@/utils/utils.ts";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";

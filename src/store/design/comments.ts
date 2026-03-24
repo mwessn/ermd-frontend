@@ -3,7 +3,7 @@ import type { CursorPos } from "@/components/designer/scripts/useDesignCanvas.ts
 import type { DesignState } from "./tables.ts";
 import type { BufferEntity } from "@/types/actionsBuffer.ts";
 import { generateComment } from "@/types/comments.ts";
-import { cloneDeep } from "lodash";
+import { cloneDeep } from "lodash-es";
 import type { useActionBuffer } from "@/store/actionBuffer.ts";
 import { watch } from "vue";
 

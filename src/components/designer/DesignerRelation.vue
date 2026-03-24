@@ -28,7 +28,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import type { DatabaseRelationship, RelationshipType } from "@/types/relationships.ts";
+import type { DatabaseRelationship } from "@/types/relationships.ts";
 import { useDesignStore } from "@/store/design.ts";
 import { clamp } from "@/utils/utils.ts";
 import { storeToRefs } from "pinia";
@@ -47,6 +47,8 @@ import {
   RELATION_LINE_OFFSET
 } from "@/types/constants.ts";
 
+const designStore = useDesignStore();
+
 const props = defineProps<{
   relation: DatabaseRelationship
   scaleFactor: number
@@ -54,18 +56,12 @@ const props = defineProps<{
   offsetY: number
 }>();
 
-const nonIdentifyingTypes: RelationshipType[] = [
-  'notm',
-  'noto'
-];
+const fkColumn = computed(() => {
+  const table = designStore.tablesMap.get(props.relation.firstTableId);
+  return table?.cols.find(c => c.id === props.relation.firstTableColId);
+});
 
-const manyRelationshipTypes: RelationshipType[] = [
-  'notm',
-  'iotm',
-  'mtm'
-];
-
-const isManyRelationship = computed(() => manyRelationshipTypes.includes(props.relation.type));
+const isManyRelationship = computed(() => fkColumn.value ? !fkColumn.value.unique : false);
 
 // Increase circle size on zooming out
 const circleRadius = computed(() => clamp(
@@ -94,9 +90,9 @@ const x1offset = computed(() =>
     (anchor1side.value == 'r' ? -1 : 1));
 
 // Non-identifying are dashed
-const lineDash = computed(() => nonIdentifyingTypes.includes(props.relation.type) ? RELATION_DASH_PATTERN : undefined);
+const lineDash = computed(() => fkColumn.value && !fkColumn.value.notNull ? RELATION_DASH_PATTERN : undefined);
 
-const { selectedTable } = storeToRefs(useDesignStore());
+const { selectedTable } = storeToRefs(designStore);
 
 const lineColor = computed(() =>
   selectedTable.value && props.relation.firstTableId == selectedTable.value.id
@@ -155,7 +151,3 @@ const calculateLineCoordinates = () => {
 useLineTracker(calculateLineCoordinates);
 
 </script>
-
-<style scoped>
-
-</style>

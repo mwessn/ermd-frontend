@@ -4,11 +4,11 @@
       class="min-w-40 max-w-160 absolute group/table focus:outline-0"
       tabindex="-1"
 
-      :class="focusedTable?.id == table.id ? 'z-20' : 'z-10'"
+      :class="focusedTable?.id == table.id ? 'z-70' : 'z-10'"
 
       :style="{ top: table.posY + 'px', left: table.posX + 'px', width: table.widthPx + 'px' }"
 
-      @click="focusedTable = table"
+      @mousedown="focusedTable = table"
 
       @focus="selectTable(table)"
       @focusout="onFocusOut"
@@ -63,15 +63,21 @@
             @delete-col="onDeleteCol(col)"
           />
 
-          <TableColRow
-            ref="newColRef"
-            v-model:col="newTableCol"
-            :table-id="table.id"
-            non-focusable-row
-            @focus-next="storeNewCol"
-            @focus-out="storeNewCol(false)"
-            @mouse-down="focusTable()"
-          />
+          <div class="relative">
+            <TableColRow
+              ref="newColRef"
+              v-model:col="newTableCol"
+              :table-id="table.id"
+              non-focusable-row
+              @focus-next="storeNewCol"
+              @focus-out="storeNewCol(false)"
+              @mouse-down="focusTable()"
+            />
+            <div class="absolute inset-0 flex items-center justify-between pointer-events-none">
+              <div :id="`anchor-newcol-${table.id}-l`" />
+              <div :id="`anchor-newcol-${table.id}-r`" />
+            </div>
+          </div>
         </div>
       </div>
 
@@ -91,7 +97,7 @@ import { useActionsStore } from "@/store/action.ts";
 import DoubleClickFocusInput from "@/components/core/DoubleClickFocusInput.vue";
 import { notBlankOrEmpty, resetFocus, sleep } from "@/utils/utils.ts";
 import TableColRow from "@/components/designer/table/TableColRow.vue";
-import { cloneDeep } from "lodash";
+import { cloneDeep } from "lodash-es";
 import { SQL_IDENTIFIER_REGEX } from "@/types/misc.ts";
 import { useSettingsStore } from "@/store/settings.ts";
 import { storeToRefs } from "pinia";

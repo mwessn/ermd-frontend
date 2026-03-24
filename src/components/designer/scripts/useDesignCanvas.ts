@@ -5,8 +5,10 @@ import { useDesignStore } from "@/store/design.ts";
 import { clamp } from "@/utils/utils.ts";
 import { storeToRefs } from "pinia";
 import { useSettingsStore } from "@/store/settings.ts";
-import { cloneDeep } from "lodash";
+import { useNotificationStore } from "@/store/ui/notifications.ts";
+import { cloneDeep } from "lodash-es";
 import { ZOOM_SHIFT_MULTIPLIER, ZOOM_STEP, ZOOM_MIN, ZOOM_MAX } from "@/types/constants.ts";
+import i18n from "@/utils/i18n.ts";
 
 export interface CursorPos {
   x: number;
@@ -21,6 +23,7 @@ export interface AreaSize {
 export function useDesignCanvas() {
   const actionStore = useActionsStore();
   const designStore = useDesignStore();
+  const notificationStore = useNotificationStore();
 
   const { currentSettings } = storeToRefs(useSettingsStore());
   const {
@@ -110,7 +113,10 @@ export function useDesignCanvas() {
       case 'iotm':
       case 'notm':
       case 'mtm': {
-        designStore.createRelationship(actionStore.currentAction);
+        const result = designStore.createRelationship(actionStore.currentAction, evt.shiftKey);
+        if (result === 'circularWarning') {
+          notificationStore.show(i18n.global.t('notifications.circularDependency'), 'warning');
+        }
         break;
       }
       case 'group': {
