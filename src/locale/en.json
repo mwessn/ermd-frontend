@@ -177,6 +177,6 @@
     "projectGitHub": "Project GitHub"
   },
   "mainMenu": {
-    "description": "A focused, UX-driven relational database designer. Source-available and entirely client-side — schemas are stored locally in your browser. Supports multiple database engines and SQL export."
+    "description": "A focused, UX-driven relational database designer. Open-source and entirely client-side — schemas are stored locally in your browser. Supports multiple database engines and SQL export."
   }
 }

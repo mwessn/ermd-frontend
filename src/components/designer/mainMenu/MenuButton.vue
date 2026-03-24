@@ -2,6 +2,7 @@
     <div
       class="flex flex-col justify-between
         w-full max-w-42 aspect-square p-6
+        rounded-tl-lg
         border border-l-accentGray border-t-accentGray
         border-r-backgroundDark border-b-backgroundDark
         active:border-l-backgroundDark active:border-t-backgroundDark
