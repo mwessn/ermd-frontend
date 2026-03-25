@@ -483,8 +483,6 @@ export const useExportStore = defineStore('export', () => {
         const linkedToKeys: ObjectKeyValue[] = [
           { name: 'type', type: 'string' },
           { name: 'entityId', type: 'string' },
-          { name: 'offsetX', type: 'number' },
-          { name: 'offsetY', type: 'number' }
         ];
 
         errors.push(

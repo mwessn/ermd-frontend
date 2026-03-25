@@ -6,11 +6,6 @@ export type CommentLinkType = 'group' | 'table' | 'column';
 export interface CommentLinkedTo {
   type: CommentLinkType;
   entityId: string; // For columns: 'tableId.columnId'
-
-  // offsets from the linked entity are stored in-memory to allow
-  // for cleaner store separation.
-  offsetX: number;
-  offsetY: number;
 }
 
 export interface Comment {

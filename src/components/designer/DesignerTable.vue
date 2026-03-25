@@ -16,7 +16,7 @@
       <div class="z-20 bg-accentGray rounded-b-lg">
         <div
           :id="`table-header-${table.id}`"
-          class="w-full border-b border-b-accentDarkGray flex items-center justify-between bg-monolithicCyanTsunami relative"
+          class="w-full h-9 border-b border-b-accentDarkGray flex items-center justify-between bg-monolithicCyanTsunami relative"
           @mousedown.left="onHeaderMouseDown"
         >
           <DoubleClickFocusInput
@@ -63,21 +63,15 @@
             @delete-col="onDeleteCol(col)"
           />
 
-          <div class="relative">
-            <TableColRow
-              ref="newColRef"
-              v-model:col="newTableCol"
-              :table-id="table.id"
-              non-focusable-row
-              @focus-next="storeNewCol"
-              @focus-out="storeNewCol(false)"
-              @mouse-down="focusTable()"
-            />
-            <div class="absolute inset-0 flex items-center justify-between pointer-events-none">
-              <div :id="`anchor-newcol-${table.id}-l`" />
-              <div :id="`anchor-newcol-${table.id}-r`" />
-            </div>
-          </div>
+          <TableColRow
+            ref="newColRef"
+            v-model:col="newTableCol"
+            :table-id="table.id"
+            non-focusable-row
+            @focus-next="storeNewCol"
+            @focus-out="storeNewCol(false)"
+            @mouse-down="focusTable()"
+          />
         </div>
       </div>
 
@@ -157,7 +151,7 @@ const onHeaderMouseDown = (evt: MouseEvent) => {
       ? table.value.posX - COMMENT_LINK_OFFSET - COMMENT_WIDTH
       : table.value.posX + table.value.widthPx + COMMENT_LINK_OFFSET;
 
-    addComment(commentX, canvasY, { type: 'table', entityId: table.value.id, offsetX: 0, offsetY: 0 });
+    addComment(commentX, canvasY, { type: 'table', entityId: table.value.id });
 
     resetFocus();
     actionStore.setAction(undefined);
@@ -186,7 +180,7 @@ const onColCommentClick = (evt: MouseEvent, colId: string) => {
     ? table.value.posX - COMMENT_LINK_OFFSET - COMMENT_WIDTH
     : table.value.posX + table.value.widthPx + COMMENT_LINK_OFFSET;
 
-  addComment(commentX, canvasY, { type: 'column', entityId, offsetX: 0, offsetY: 0 });
+  addComment(commentX, canvasY, { type: 'column', entityId });
 };
 
 const onFocusOut = () => {

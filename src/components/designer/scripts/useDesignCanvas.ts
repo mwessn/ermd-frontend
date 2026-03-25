@@ -250,27 +250,8 @@ export function useDesignCanvas() {
 
     // Handle comment movement
     else if (movedComment.value) {
-      const comment = movedComment.value;
-      comment.posX += deltaX;
-      comment.posY += deltaY;
-
-      // If linked, recalculate offset from parent
-      if (comment.linkedTo) {
-        const parent = designStore.getLinkedEntity?.(comment.linkedTo);
-        if (parent) {
-          // Determine which side the comment is on
-          const isOnLeft = comment.posX < parent.posX + parent.width / 2;
-
-          if (isOnLeft) {
-            // Left side: offset from left edge
-            comment.linkedTo.offsetX = comment.posX - parent.posX;
-          } else {
-            // Right side: offset from right edge
-            comment.linkedTo.offsetX = comment.posX - parent.posX - parent.width;
-          }
-          comment.linkedTo.offsetY = comment.posY - parent.posY;
-        }
-      }
+      movedComment.value.posX += deltaX;
+      movedComment.value.posY += deltaY;
     }
     // No table selected, drag canvas
     else if (!selectedTable.value) {
@@ -290,6 +271,7 @@ export function useDesignCanvas() {
           lastSelectedPos.value = { x: table.posX, y: table.posY };
         }
         designStore.moveSelectedTable(deltaX, deltaY);
+        designStore.moveCommentsLinkedToTable(table.id, deltaX, deltaY);
       }
     }
 

@@ -152,7 +152,7 @@ const onHeaderMouseDown = (evt: MouseEvent) => {
       ? area.value.posX - COMMENT_LINK_OFFSET - COMMENT_WIDTH
       : area.value.posX + area.value.size.width + COMMENT_LINK_OFFSET;
 
-    addComment(commentX, canvasY, { type: 'group', entityId: area.value.id, offsetX: 0, offsetY: 0 });
+    addComment(commentX, canvasY, { type: 'group', entityId: area.value.id });
 
     resetFocus();
     actionStore.setAction(undefined);

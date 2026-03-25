@@ -284,6 +284,12 @@ export const useDesignStore = defineStore(
             comment.posY = snapToGrid(comment.posY + deltaY, gridSize.value);
           }
         }
+
+        // Move linked comments that follow the moved group or its tables
+        commentOps.moveCommentsLinkedToGroup(area.id, deltaX, deltaY);
+        for (const tableId of tableIdsInside) {
+          commentOps.moveCommentsLinkedToTable(tableId, deltaX, deltaY);
+        }
       }
     };
 

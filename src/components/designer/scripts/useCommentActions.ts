@@ -30,12 +30,7 @@ export function useCommentActions() {
       designStore.addComment(
         clickX,
         clickY,
-        {
-          type: entityType,
-          entityId: entityId,
-          offsetX: 0,
-          offsetY: 0
-        }
+        { type: entityType, entityId }
       );
       resetFocus();
       actionStore.setAction(undefined);
@@ -43,24 +38,8 @@ export function useCommentActions() {
     } else if (actionStore.currentAction === 'linkComment' && linkingComment.value) {
       // Link existing comment to entity
       const oldVal = cloneDeep(linkingComment.value);
-      const parent = designStore.getLinkedEntity?.({
-        type: entityType,
-        entityId: entityId,
-        offsetX: 0,
-        offsetY: 0
-      });
-      if (parent) {
-        const isOnLeft = linkingComment.value.posX < parent.posX + parent.width / 2;
-        linkingComment.value.linkedTo = {
-          type: entityType,
-          entityId: entityId,
-          offsetX: isOnLeft
-            ? linkingComment.value.posX - parent.posX
-            : linkingComment.value.posX - parent.posX - parent.width,
-          offsetY: linkingComment.value.posY - parent.posY
-        };
-        designStore.bufferLogCommentChange(oldVal);
-      }
+      linkingComment.value.linkedTo = { type: entityType, entityId };
+      designStore.bufferLogCommentChange(oldVal);
       resetFocus();
       designStore.setLinkingComment(undefined);
       actionStore.setAction(undefined);

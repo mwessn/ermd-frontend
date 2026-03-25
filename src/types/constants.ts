@@ -5,6 +5,8 @@ export const DEFAULT_GRID_SIZE = 10;
 // Table Dimensions
 export const TABLE_MIN_WIDTH = 120;
 export const TABLE_MAX_WIDTH = 480;
+export const TABLE_HEADER_HEIGHT = 37; // h-9 (36px) + 1px border-bottom
+export const TABLE_ROW_HEIGHT = 29; // h-7 (28px) + 1px border
 
 // Group Dimensions
 export const GROUP_MIN_SIZE = 56;
