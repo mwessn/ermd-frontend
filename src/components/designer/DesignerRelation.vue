@@ -127,7 +127,7 @@ const x2 = computed(() => {
   const baseX = isLeft
     ? secondTable.value.posX
     : secondTable.value.posX + secondTable.value.widthPx;
-  return baseX + (isLeft ? -RELATION_LINE_OFFSET : RELATION_LINE_OFFSET);
+  return baseX;
 });
 
 const y2 = computed(() => {

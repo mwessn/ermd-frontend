@@ -94,20 +94,34 @@ function updateCoordinates() {
   const commentAnchorSide = commentLeftOfEntity ? '-r' : '-l';
   const commentAnchor = document.getElementById(`anchor-comment-${props.comment.id}${commentAnchorSide}`);
 
-  // Use the entity anchor that faces the comment
+  // Entity anchor: use dedicated anchor elements for groups/tables,
+  // or derive from the row element for columns (no anchor divs)
   const entityAnchorSide = commentLeftOfEntity ? '-l' : '-r';
-  const entityAnchorId = getEntityAnchorId(props.comment.linkedTo, entityAnchorSide);
-  const entityAnchor = document.getElementById(entityAnchorId);
+  let entityAnchorX: number;
+  let entityAnchorY: number;
 
-  if (!commentAnchor || !entityAnchor) return;
+  if (props.comment.linkedTo.type === 'column') {
+    // Column rows no longer have anchor divs — use the row element's edges
+    const entityAnchorRect = entityEl.getBoundingClientRect();
+    entityAnchorX = commentLeftOfEntity ? entityAnchorRect.left : entityAnchorRect.right;
+    entityAnchorY = entityAnchorRect.top + entityAnchorRect.height / 2;
+  } else {
+    const entityAnchorId = getEntityAnchorId(props.comment.linkedTo, entityAnchorSide);
+    const entityAnchor = document.getElementById(entityAnchorId);
+    if (!entityAnchor) return;
+    const entityAnchorRect = entityAnchor.getBoundingClientRect();
+    entityAnchorX = entityAnchorRect.left;
+    entityAnchorY = entityAnchorRect.top;
+  }
+
+  if (!commentAnchor) return;
 
   const commentAnchorRect = commentAnchor.getBoundingClientRect();
   commentX.value = commentAnchorRect.left / props.scaleFactor - props.offsetX;
   commentY.value = commentAnchorRect.top / props.scaleFactor - props.offsetY;
 
-  const entityAnchorRect = entityAnchor.getBoundingClientRect();
-  entityX.value = entityAnchorRect.left / props.scaleFactor - props.offsetX;
-  entityY.value = entityAnchorRect.top / props.scaleFactor - props.offsetY;
+  entityX.value = entityAnchorX / props.scaleFactor - props.offsetX;
+  entityY.value = entityAnchorY / props.scaleFactor - props.offsetY;
 }
 
 function getEntityAnchorId(linkedTo: { type: string; entityId: string }, side: string): string {
