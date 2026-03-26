@@ -2,7 +2,7 @@
     <div
       :id="`col-${col.id}`"
       ref="rowRef"
-      class="flex items-center w-full h-7 not-last:border-b relative group/cols outline-none focus-within:bg-headerBlack focus-within:text-textColor"
+      class="flex items-center w-full h-table-row not-last:border-b relative group/cols outline-none focus-within:bg-headerBlack focus-within:text-textColor"
 
       :tabindex="props.nonFocusableRow ? undefined : -1"
       :aria-label="props.nonFocusableRow ? 'New column input' : `Column ${col.name || 'unnamed'}, press Delete to remove`"

@@ -52,6 +52,6 @@ const x1 = computed(() => {
 
 const y1 = computed(() => {
   if (!table.value || anchorColIndex.value === -1) return 0;
-  return table.value.posY + TABLE_HEADER_HEIGHT + anchorColIndex.value * TABLE_ROW_HEIGHT + (TABLE_ROW_HEIGHT - 1) / 2;
+  return table.value.posY + TABLE_HEADER_HEIGHT + anchorColIndex.value * TABLE_ROW_HEIGHT + TABLE_ROW_HEIGHT / 2;
 });
 </script>

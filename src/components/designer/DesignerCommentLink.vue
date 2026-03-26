@@ -13,38 +13,33 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
 import { useDesignStore } from '@/store/design.ts';
 import type { Comment } from '@/types/comments.ts';
-import { useLineTracker } from '@/components/designer/scripts/useLineTracker.ts';
+import {
+  COMMENT_WIDTH,
+  TABLE_HEADER_HEIGHT,
+  TABLE_ROW_HEIGHT
+} from "@/types/constants.ts";
+
+const COMMENT_HEADER_CENTER_Y = 16; // p-1 (4px) + h-6 drag handle (24px) + p-1 (4px) = 32px, center at 16
+const GROUP_HEADER_CENTER_Y = 16; // p-2 header ≈ 32px, center at 16
 
 const props = defineProps<{
   comment: Comment;
-  scaleFactor: number;
-  offsetX: number;
-  offsetY: number;
 }>();
 
 const designStore = useDesignStore();
 
-const commentX = ref<number>(0);
-const commentY = ref<number>(0);
-const entityX = ref<number>(0);
-const entityY = ref<number>(0);
-
 // Highlight when linked table/column is selected
 const isHighlighted = computed(() => {
   if (!props.comment.linkedTo) return false;
-
-  // Groups don't highlight
   if (props.comment.linkedTo.type === 'group') return false;
 
-  // Check if linked table is selected
   if (props.comment.linkedTo.type === 'table') {
     return designStore.selectedTable?.id === props.comment.linkedTo.entityId;
   }
 
-  // Check if linked column's table is selected
   if (props.comment.linkedTo.type === 'column') {
     const [tableId] = props.comment.linkedTo.entityId.split('.');
     return designStore.selectedTable?.id === tableId;
@@ -58,86 +53,69 @@ const lineColor = computed(() =>
     ? 'var(--color-monolithicCyanTsunami)'
     : 'var(--color-lycheeIce)');
 
-function updateCoordinates() {
-  if (!props.comment.linkedTo) return;
+// Entity anchor position from store state
+const entityAnchor = computed(() => {
+  if (!props.comment.linkedTo) return undefined;
+  const { type, entityId } = props.comment.linkedTo;
 
-  let entityEl: HTMLElement | undefined;
-  switch (props.comment.linkedTo.type) {
-    case 'group':
-      entityEl = document.getElementById(`group-header-${props.comment.linkedTo.entityId}`) ?? undefined;
-      break;
-    case 'table':
-      entityEl = document.getElementById(`table-header-${props.comment.linkedTo.entityId}`) ?? undefined;
-      break;
-    case 'column': {
-      const [, colId] = props.comment.linkedTo.entityId.split('.');
-      entityEl = document.getElementById(`col-${colId}`) ?? undefined;
-      break;
-    }
+  if (type === 'group') {
+    const group = designStore.groupsMap.get(entityId);
+    if (!group) return undefined;
+    return {
+      posX: group.posX,
+      centerY: group.posY + GROUP_HEADER_CENTER_Y,
+      width: group.size.width,
+    };
   }
 
-  if (!entityEl) return;
-
-  const commentEl = document.getElementById(`comment-${props.comment.id}`);
-  if (!commentEl) return;
-
-  const entityRect = entityEl.getBoundingClientRect();
-  const commentRect = commentEl.getBoundingClientRect();
-
-  const entityCenterX = entityRect.left + entityRect.width / 2;
-  const commentCenterX = commentRect.left + commentRect.width / 2;
-
-  // Determine which side the comment is on relative to entity
-  const commentLeftOfEntity = commentCenterX < entityCenterX;
-
-  // Use the comment anchor that faces the entity
-  const commentAnchorSide = commentLeftOfEntity ? '-r' : '-l';
-  const commentAnchor = document.getElementById(`anchor-comment-${props.comment.id}${commentAnchorSide}`);
-
-  // Entity anchor: use dedicated anchor elements for groups/tables,
-  // or derive from the row element for columns (no anchor divs)
-  const entityAnchorSide = commentLeftOfEntity ? '-l' : '-r';
-  let entityAnchorX: number;
-  let entityAnchorY: number;
-
-  if (props.comment.linkedTo.type === 'column') {
-    // Column rows no longer have anchor divs — use the row element's edges
-    const entityAnchorRect = entityEl.getBoundingClientRect();
-    entityAnchorX = commentLeftOfEntity ? entityAnchorRect.left : entityAnchorRect.right;
-    entityAnchorY = entityAnchorRect.top + entityAnchorRect.height / 2;
-  } else {
-    const entityAnchorId = getEntityAnchorId(props.comment.linkedTo, entityAnchorSide);
-    const entityAnchor = document.getElementById(entityAnchorId);
-    if (!entityAnchor) return;
-    const entityAnchorRect = entityAnchor.getBoundingClientRect();
-    entityAnchorX = entityAnchorRect.left;
-    entityAnchorY = entityAnchorRect.top;
+  if (type === 'table') {
+    const table = designStore.tablesMap.get(entityId);
+    if (!table) return undefined;
+    return {
+      posX: table.posX,
+      centerY: table.posY + TABLE_HEADER_HEIGHT / 2,
+      width: table.widthPx,
+    };
   }
 
-  if (!commentAnchor) return;
-
-  const commentAnchorRect = commentAnchor.getBoundingClientRect();
-  commentX.value = commentAnchorRect.left / props.scaleFactor - props.offsetX;
-  commentY.value = commentAnchorRect.top / props.scaleFactor - props.offsetY;
-
-  entityX.value = entityAnchorX / props.scaleFactor - props.offsetX;
-  entityY.value = entityAnchorY / props.scaleFactor - props.offsetY;
-}
-
-function getEntityAnchorId(linkedTo: { type: string; entityId: string }, side: string): string {
-  switch (linkedTo.type) {
-    case 'group':
-      return `anchor-group-${linkedTo.entityId}${side}`;
-    case 'table':
-      return `anchor-table-${linkedTo.entityId}${side}`;
-    case 'column': {
-      const [, colId] = linkedTo.entityId.split('.');
-      return `anchor-${colId}${side}`;
-    }
-    default:
-      return '';
+  if (type === 'column') {
+    const [tableId, colId] = entityId.split('.');
+    const table = designStore.tablesMap.get(tableId);
+    if (!table) return undefined;
+    const colIndex = table.cols.findIndex(c => c.id === colId);
+    if (colIndex === -1) return undefined;
+    return {
+      posX: table.posX,
+      centerY: table.posY + TABLE_HEADER_HEIGHT + colIndex * TABLE_ROW_HEIGHT + TABLE_ROW_HEIGHT / 2,
+      width: table.widthPx,
+    };
   }
-}
 
-useLineTracker(updateCoordinates);
+  return undefined;
+});
+
+// Comment anchor: left/right edge at header center
+const commentCenterX = computed(() => props.comment.posX + COMMENT_WIDTH / 2);
+
+const commentLeftOfEntity = computed(() => {
+  if (!entityAnchor.value) return true;
+  return commentCenterX.value < entityAnchor.value.posX + entityAnchor.value.width / 2;
+});
+
+const commentX = computed(() =>
+  commentLeftOfEntity.value
+    ? props.comment.posX + COMMENT_WIDTH
+    : props.comment.posX);
+
+const commentY = computed(() =>
+  props.comment.posY + COMMENT_HEADER_CENTER_Y);
+
+const entityX = computed(() => {
+  if (!entityAnchor.value) return 0;
+  return commentLeftOfEntity.value
+    ? entityAnchor.value.posX
+    : entityAnchor.value.posX + entityAnchor.value.width;
+});
+
+const entityY = computed(() => entityAnchor.value?.centerY ?? 0);
 </script>

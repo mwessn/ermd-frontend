@@ -57,12 +57,6 @@
             @mousedown.left="onMouseDown"
           />
         </div>
-
-        <!-- Left/right anchors for comment links -->
-        <div class="absolute inset-0 flex items-center justify-between pointer-events-none">
-          <div :id="`anchor-comment-${comment.id}-l`" class="w-0 h-0" />
-          <div :id="`anchor-comment-${comment.id}-r`" class="w-0 h-0" />
-        </div>
       </div>
 
       <!-- Comment body -->

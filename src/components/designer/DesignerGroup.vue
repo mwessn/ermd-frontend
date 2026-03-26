@@ -57,12 +57,6 @@
 
           @change="onChange"
         />
-
-        <!-- Left/right anchors for comment links (on header) -->
-        <div class="absolute inset-0 flex items-center justify-between pointer-events-none">
-          <div :id="`anchor-group-${area.id}-l`" class="w-0 h-0" />
-          <div :id="`anchor-group-${area.id}-r`" class="w-0 h-0" />
-        </div>
       </div>
 
       <!--  Resize handle  -->

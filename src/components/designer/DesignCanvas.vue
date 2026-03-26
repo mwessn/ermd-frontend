@@ -44,9 +44,6 @@
             v-for="comment in designStore.comments"
             :key="comment.id"
             :comment="comment"
-            :scale-factor="scaleFactor"
-            :offset-x="translateOffsetX"
-            :offset-y="translateOffsetY"
           />
           <RelationPreviewLine
             v-if="designStore.relationFirstTableId"

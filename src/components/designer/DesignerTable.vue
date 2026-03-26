@@ -16,7 +16,7 @@
       <div class="z-20 bg-accentGray rounded-b-lg">
         <div
           :id="`table-header-${table.id}`"
-          class="w-full h-9 border-b border-b-accentDarkGray flex items-center justify-between bg-monolithicCyanTsunami relative"
+          class="w-full h-table-header border-b border-b-accentDarkGray flex items-center justify-between bg-monolithicCyanTsunami relative"
           @mousedown.left="onHeaderMouseDown"
         >
           <DoubleClickFocusInput
@@ -39,12 +39,6 @@
             @mousedown.left="setResizedTable(table)"
             @mouseup.left="setResizedTable()"
           />
-
-          <!-- Left/right anchors for comment links -->
-          <div class="absolute inset-0 flex items-center justify-between pointer-events-none">
-            <div :id="`anchor-table-${table.id}-l`" class="w-0 h-0" />
-            <div :id="`anchor-table-${table.id}-r`" class="w-0 h-0" />
-          </div>
         </div>
         <div class="w-full min-h-4">
           <TableColRow

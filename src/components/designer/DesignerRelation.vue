@@ -43,7 +43,6 @@ import {
   RELATION_LINE_WIDTH_MULTIPLIER,
   RELATION_MAX_LINE_WIDTH,
   RELATION_DASH_PATTERN,
-  RELATION_LINE_OFFSET,
   TABLE_HEADER_HEIGHT,
   TABLE_ROW_HEIGHT
 } from "@/types/constants.ts";
@@ -103,7 +102,7 @@ const secondColIndex = computed(() =>
   secondTable.value?.cols.findIndex(c => c.id === props.relation.secondTableColId) ?? -1);
 
 const colAnchorY = (tablePosY: number, colIndex: number) =>
-  tablePosY + TABLE_HEADER_HEIGHT + colIndex * TABLE_ROW_HEIGHT + (TABLE_ROW_HEIGHT - 1) / 2;
+  tablePosY + TABLE_HEADER_HEIGHT + colIndex * TABLE_ROW_HEIGHT + TABLE_ROW_HEIGHT / 2;
 
 const anchor1side = computed<'r' | 'l'>(() =>
   (firstTable.value && secondTable.value && firstTable.value.posX <= secondTable.value.posX)
