@@ -2,7 +2,7 @@
     <div
       :id="`col-${col.id}`"
       ref="rowRef"
-      class="flex items-center w-full not-last:border-b relative group/cols"
+      class="flex items-center w-full h-table-row not-last:border-b relative group/cols outline-none focus-within:bg-headerBlack focus-within:text-textColor"
 
       :tabindex="props.nonFocusableRow ? undefined : -1"
       :aria-label="props.nonFocusableRow ? 'New column input' : `Column ${col.name || 'unnamed'}, press Delete to remove`"
@@ -66,11 +66,6 @@
         @keydown.delete.stop
         @keyup.delete.stop
       />
-
-      <div class="absolute full flex items-center justify-between z-0 pointer-events-none">
-        <div :id="`anchor-${col.id}-l`" />
-        <div :id="`anchor-${col.id}-r`" />
-      </div>
     </div>
 </template>
 

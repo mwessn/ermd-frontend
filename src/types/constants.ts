@@ -5,6 +5,13 @@ export const DEFAULT_GRID_SIZE = 10;
 // Table Dimensions
 export const TABLE_MIN_WIDTH = 120;
 export const TABLE_MAX_WIDTH = 480;
+// Table header and row heights used for reactive relation line positioning.
+// These MUST match the Tailwind vars in style.css (@theme):
+//   --spacing-table-header  →  h-table-header on DesignerTable header div
+//   --spacing-table-row     →  h-table-row on TableColRow div
+// Tailwind uses border-box — borders are INSIDE the height, not added on top.
+export const TABLE_HEADER_HEIGHT = 36; // --spacing-table-header: 2.25rem (36px), includes 1px border-b
+export const TABLE_ROW_HEIGHT = 28; // --spacing-table-row: 1.75rem (28px), includes 1px border-b
 
 // Group Dimensions
 export const GROUP_MIN_SIZE = 56;

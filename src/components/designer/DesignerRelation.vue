@@ -27,12 +27,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed } from "vue";
 import type { DatabaseRelationship } from "@/types/relationships.ts";
 import { useDesignStore } from "@/store/design.ts";
 import { clamp } from "@/utils/utils.ts";
 import { storeToRefs } from "pinia";
-import { useLineTracker } from "@/components/designer/scripts/useLineTracker.ts";
 import {
   RELATION_BASE_CIRCLE_SIZE,
   RELATION_CIRCLE_SIZE_MULTIPLIER,
@@ -44,7 +43,8 @@ import {
   RELATION_LINE_WIDTH_MULTIPLIER,
   RELATION_MAX_LINE_WIDTH,
   RELATION_DASH_PATTERN,
-  RELATION_LINE_OFFSET
+  TABLE_HEADER_HEIGHT,
+  TABLE_ROW_HEIGHT
 } from "@/types/constants.ts";
 
 const designStore = useDesignStore();
@@ -52,8 +52,6 @@ const designStore = useDesignStore();
 const props = defineProps<{
   relation: DatabaseRelationship
   scaleFactor: number
-  offsetX: number
-  offsetY: number
 }>();
 
 const fkColumn = computed(() => {
@@ -84,11 +82,6 @@ const lineWidth = computed(() => clamp(
   RELATION_MAX_LINE_WIDTH
 ));
 
-// Make the line come out of the triangle tip / circle center
-const x1offset = computed(() =>
-  (isManyRelationship.value ? triangleRadius.value : circleRadius.value) *
-    (anchor1side.value == 'r' ? -1 : 1));
-
 // Non-identifying are dashed
 const lineDash = computed(() => fkColumn.value && !fkColumn.value.notNull ? RELATION_DASH_PATTERN : undefined);
 
@@ -99,55 +92,66 @@ const lineColor = computed(() =>
     ? 'var(--color-monolithicCyanTsunami)'
     : 'var(--color-lycheeIce)');
 
-const x1 = ref<number>(0);
-const y1 = ref<number>(0);
-const x2 = ref<number>(0);
-const y2 = ref<number>(0);
+// Reactive anchor positions from store state
+const firstTable = computed(() => designStore.tablesMap.get(props.relation.firstTableId));
+const secondTable = computed(() => designStore.tablesMap.get(props.relation.secondTableId));
+
+const firstColIndex = computed(() =>
+  firstTable.value?.cols.findIndex(c => c.id === props.relation.firstTableColId) ?? -1);
+const secondColIndex = computed(() =>
+  secondTable.value?.cols.findIndex(c => c.id === props.relation.secondTableColId) ?? -1);
+
+const colAnchorY = (tablePosY: number, colIndex: number) =>
+  tablePosY + TABLE_HEADER_HEIGHT + colIndex * TABLE_ROW_HEIGHT + TABLE_ROW_HEIGHT / 2;
+
+const anchor1side = computed<'r' | 'l'>(() =>
+  (firstTable.value && secondTable.value && firstTable.value.posX <= secondTable.value.posX)
+    ? 'r' : 'l');
+
+const x1 = computed(() => {
+  if (!firstTable.value || firstColIndex.value === -1) return 0;
+  return anchor1side.value === 'r'
+    ? firstTable.value.posX + firstTable.value.widthPx
+    : firstTable.value.posX;
+});
+
+const y1 = computed(() => {
+  if (!firstTable.value || firstColIndex.value === -1) return 0;
+  return colAnchorY(firstTable.value.posY, firstColIndex.value);
+});
+
+const x2 = computed(() => {
+  if (!secondTable.value || secondColIndex.value === -1) return 0;
+  const isLeft = anchor1side.value === 'r';
+  const baseX = isLeft
+    ? secondTable.value.posX
+    : secondTable.value.posX + secondTable.value.widthPx;
+  return baseX;
+});
+
+const y2 = computed(() => {
+  if (!secondTable.value || secondColIndex.value === -1) return 0;
+  return colAnchorY(secondTable.value.posY, secondColIndex.value);
+});
+
+// Make the line come out of the triangle tip / circle center
+const x1offset = computed(() =>
+  (isManyRelationship.value ? triangleRadius.value : circleRadius.value) *
+    (anchor1side.value == 'r' ? -1 : 1));
 
 const trianglePoints = computed(() => {
   if (isManyRelationship.value) {
     const points: string[] = [];
-    const baseAngle = anchor1side.value == 'r' ? 0 : Math.PI; // 0° or 180°
+    const baseAngle = anchor1side.value == 'r' ? 0 : Math.PI;
     for (let i = 0; i < 3; i++) {
-      const angle = baseAngle + (i * 2 * Math.PI / 3); // each 120° apart
+      const angle = baseAngle + (i * 2 * Math.PI / 3);
       const px = x1.value + triangleRadius.value * Math.cos(angle);
       const py = y1.value + triangleRadius.value * Math.sin(angle);
       points.push(`${px},${py}`);
     }
-
     return points.join(" ");
   } else {
     return undefined;
   }
 });
-
-const anchor1side = ref<'r' | 'l'>('r');
-
-const calculateLineCoordinates = () => {
-  const firstTableDOM = document.getElementById(`table-${ props.relation.firstTableId }`);
-  const secondTableDOM = document.getElementById(`table-${ props.relation.secondTableId }`);
-
-  if (firstTableDOM && secondTableDOM) {
-    const firstLeftOfSecond = firstTableDOM.getBoundingClientRect().x <= secondTableDOM.getBoundingClientRect().x;
-
-    anchor1side.value = firstLeftOfSecond ? 'r' : 'l';
-
-    const anchor1 = document.getElementById(`anchor-${ props.relation.firstTableColId }-${ anchor1side.value }`);
-    const anchor2 = document.getElementById(`anchor-${ props.relation.secondTableColId }-${ firstLeftOfSecond ? 'l' : 'r' }`);
-
-    if (anchor1 && anchor2) {
-      const firstPos = anchor1.getBoundingClientRect();
-      x1.value = firstPos.x / props.scaleFactor - props.offsetX;
-      y1.value = firstPos.y / props.scaleFactor - props.offsetY;
-
-      const secondPos = anchor2.getBoundingClientRect();
-      // Little offset to prevent line corners from sticking out
-      x2.value = secondPos.x / props.scaleFactor - props.offsetX + (firstLeftOfSecond ? RELATION_LINE_OFFSET : -RELATION_LINE_OFFSET);
-      y2.value = secondPos.y / props.scaleFactor - props.offsetY;
-    }
-  }
-};
-
-useLineTracker(calculateLineCoordinates);
-
 </script>

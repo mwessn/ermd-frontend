@@ -58,6 +58,10 @@ Tailwind
   --spacing-left-menu-width: 3rem;
   --spacing-right-menu-width: 16rem;
 
+  /* Table dimensions — synced with TABLE_HEADER_HEIGHT / TABLE_ROW_HEIGHT in constants.ts */
+  --spacing-table-header: 2.25rem; /* 36px */
+  --spacing-table-row: 1.75rem; /* 28px */
+
   --color-notificationMessage: #41ff41;
   --color-warningMessage: #ffcb1f;
   --color-errorMessage: #ff3030;

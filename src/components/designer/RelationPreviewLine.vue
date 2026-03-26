@@ -13,16 +13,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
-import { useLineTracker } from "@/components/designer/scripts/useLineTracker.ts";
+import { computed } from "vue";
 import { useDesignStore } from "@/store/design.ts";
-import { RELATION_DASH_PATTERN } from "@/types/constants.ts";
+import {
+  RELATION_DASH_PATTERN,
+  TABLE_HEADER_HEIGHT,
+  TABLE_ROW_HEIGHT
+} from "@/types/constants.ts";
 
 const props = defineProps<{
   tableId: string
-  scaleFactor: number
-  offsetX: number
-  offsetY: number
   mouseX: number
   mouseY: number
   dashed: boolean
@@ -31,28 +31,27 @@ const props = defineProps<{
 
 const designStore = useDesignStore();
 
-const x1 = ref<number>(0);
-const y1 = ref<number>(0);
+const table = computed(() => designStore.tablesMap.get(props.tableId));
 
-function getAnchorId(side: 'l' | 'r'): string {
+const anchorColIndex = computed(() => {
+  if (!table.value) return -1;
   if (props.isMtm) {
-    const table = designStore.tablesMap.get(props.tableId);
-    const pkCol = table?.cols.find(c => c.primaryKey);
-    if (pkCol) return `anchor-${pkCol.id}-${side}`;
+    const pkIndex = table.value.cols.findIndex(c => c.primaryKey);
+    if (pkIndex !== -1) return pkIndex;
   }
-  return `anchor-newcol-${props.tableId}-${side}`;
-}
+  return table.value.cols.length;
+});
 
-const calculateLineStart = () => {
-  const mouseIsRight = props.mouseX > x1.value;
-  const side = mouseIsRight ? 'r' : 'l';
-  const anchor = document.getElementById(getAnchorId(side));
-  if (!anchor) return;
+const x1 = computed(() => {
+  if (!table.value) return 0;
+  const mouseIsRight = props.mouseX > table.value.posX + table.value.widthPx / 2;
+  return mouseIsRight
+    ? table.value.posX + table.value.widthPx
+    : table.value.posX;
+});
 
-  const rect = anchor.getBoundingClientRect();
-  x1.value = rect.x / props.scaleFactor - props.offsetX;
-  y1.value = rect.y / props.scaleFactor - props.offsetY;
-};
-
-useLineTracker(calculateLineStart);
+const y1 = computed(() => {
+  if (!table.value || anchorColIndex.value === -1) return 0;
+  return table.value.posY + TABLE_HEADER_HEIGHT + anchorColIndex.value * TABLE_ROW_HEIGHT + TABLE_ROW_HEIGHT / 2;
+});
 </script>

@@ -37,8 +37,6 @@
             :key="relation.id"
             :relation="relation"
             :scale-factor="scaleFactor"
-            :offset-x="translateOffsetX"
-            :offset-y="translateOffsetY"
             @mousedown.stop
             @mouseup.stop
           />
@@ -46,16 +44,10 @@
             v-for="comment in designStore.comments"
             :key="comment.id"
             :comment="comment"
-            :scale-factor="scaleFactor"
-            :offset-x="translateOffsetX"
-            :offset-y="translateOffsetY"
           />
           <RelationPreviewLine
             v-if="designStore.relationFirstTableId"
             :table-id="designStore.relationFirstTableId"
-            :scale-factor="scaleFactor"
-            :offset-x="translateOffsetX"
-            :offset-y="translateOffsetY"
             :mouse-x="canvasMouseX"
             :mouse-y="canvasMouseY"
             :dashed="actionsStore.currentAction === 'noto' || actionsStore.currentAction === 'notm'"

@@ -57,12 +57,6 @@
 
           @change="onChange"
         />
-
-        <!-- Left/right anchors for comment links (on header) -->
-        <div class="absolute inset-0 flex items-center justify-between pointer-events-none">
-          <div :id="`anchor-group-${area.id}-l`" class="w-0 h-0" />
-          <div :id="`anchor-group-${area.id}-r`" class="w-0 h-0" />
-        </div>
       </div>
 
       <!--  Resize handle  -->
@@ -152,7 +146,7 @@ const onHeaderMouseDown = (evt: MouseEvent) => {
       ? area.value.posX - COMMENT_LINK_OFFSET - COMMENT_WIDTH
       : area.value.posX + area.value.size.width + COMMENT_LINK_OFFSET;
 
-    addComment(commentX, canvasY, { type: 'group', entityId: area.value.id, offsetX: 0, offsetY: 0 });
+    addComment(commentX, canvasY, { type: 'group', entityId: area.value.id });
 
     resetFocus();
     actionStore.setAction(undefined);
