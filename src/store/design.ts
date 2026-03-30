@@ -9,11 +9,11 @@ import type { DatabaseRelationship, RelationshipType } from "@/types/relationshi
 import { useActionsStore } from "@/store/action.ts";
 import { useSettingsStore } from "@/store/settings.ts";
 import { createNewRelationship } from "@/types/relationships.ts";
-import { unpluralize } from "@/utils/utils.ts";
+import { unpluralize, snapToGrid } from "@/utils/utils.ts";
 import { type Group } from "@/types/misc.ts";
 import type { Comment } from "@/types/comments.ts";
 import { useExportStore } from "@/store/export.ts";
-import { GRID_SNAP_SIZE, DEFAULT_GRID_SIZE } from "@/types/constants.ts";
+import { GRID_SNAP_SIZE } from "@/types/constants.ts";
 
 import { createTableOperations } from "./design/tables.ts";
 import { createColumnOperations } from "./design/columns.ts";
@@ -143,9 +143,6 @@ export const useDesignStore = defineStore(
 
     // ==================== CROSS-DOMAIN OPERATIONS ====================
 
-    const snapToGrid = (value: number, gridSizeVal: number = DEFAULT_GRID_SIZE) => {
-      return Math.round(value / gridSizeVal) * gridSizeVal;
-    };
 
     const deleteSelectedTable = () => {
       if (selectedTable.value) {
@@ -286,9 +283,9 @@ export const useDesignStore = defineStore(
         }
 
         // Move linked comments that follow the moved group or its tables
-        commentOps.moveCommentsLinkedToGroup(area.id, deltaX, deltaY);
+        commentOps.moveCommentsLinkedToGroup(area.id, deltaX, deltaY, gridSize.value);
         for (const tableId of tableIdsInside) {
-          commentOps.moveCommentsLinkedToTable(tableId, deltaX, deltaY);
+          commentOps.moveCommentsLinkedToTable(tableId, deltaX, deltaY, gridSize.value);
         }
       }
     };

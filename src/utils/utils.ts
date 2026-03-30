@@ -10,6 +10,9 @@ export function generateId(scope: IdScope): string {
 
 export const clamp = (val: number, min: number, max: number) => Math.min(Math.max(val, min), max);
 
+export const snapToGrid = (value: number, gridSize: number) =>
+  Math.round(value / gridSize) * gridSize;
+
 export const resetFocus = () => {
   document.body.setAttribute("tabindex", "-1");
   document.body.focus();
