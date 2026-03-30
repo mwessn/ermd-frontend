@@ -12,7 +12,7 @@
             hover:opacity-80 active:opacity-50"
         @click="emit('closeMenu')"
       >
-        <FontAwesomeIcon :icon="faClose" class="text-accentDarkGray" />
+        <FontAwesomeIcon :icon="faClose" class="text-accentGray" />
       </div>
 
       <!--   Header   -->
