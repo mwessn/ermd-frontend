@@ -7,8 +7,8 @@ import type { CursorPos } from "@/components/designer/scripts/useDesignCanvas.ts
 import type { ActionBufferEntry, BufferEntity } from "@/types/actionsBuffer.ts";
 import { generateNewTable } from "@/types/table.ts";
 import { cloneDeep } from "lodash-es";
-import { clamp } from "@/utils/utils.ts";
-import { DEFAULT_GRID_SIZE, TABLE_MIN_WIDTH, TABLE_MAX_WIDTH } from "@/types/constants.ts";
+import { clamp, snapToGrid } from "@/utils/utils.ts";
+import { TABLE_MIN_WIDTH, TABLE_MAX_WIDTH } from "@/types/constants.ts";
 import type { useActionBuffer } from "@/store/actionBuffer.ts";
 import type { useSettingsStore } from "@/store/settings.ts";
 
@@ -88,10 +88,6 @@ export function createTableOperations(
 
   const setResizedTable = (val: Table | undefined = undefined) => {
     state().resizedTable.value = val;
-  };
-
-  const snapToGrid = (value: number, gridSizeVal: number = DEFAULT_GRID_SIZE) => {
-    return Math.round(value / gridSizeVal) * gridSizeVal;
   };
 
   const moveSelectedTable = (deltaX: number, deltaY: number) => {

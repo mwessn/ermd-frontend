@@ -5,6 +5,7 @@ import type { BufferEntity } from "@/types/actionsBuffer.ts";
 import { generateComment } from "@/types/comments.ts";
 import { cloneDeep } from "lodash-es";
 import type { useActionBuffer } from "@/store/actionBuffer.ts";
+import { snapToGrid } from "@/utils/utils.ts";
 
 export function createCommentOperations(
   state: () => DesignState,
@@ -49,7 +50,7 @@ export function createCommentOperations(
    * Move all comments linked to a specific table (or its columns) by delta.
    * Called from moveSelectedTable to keep linked comments in sync.
    */
-  const moveCommentsLinkedToTable = (tableId: string, deltaX: number, deltaY: number) => {
+  const moveCommentsLinkedToTable = (tableId: string, deltaX: number, deltaY: number, gridSize: number) => {
     const { comments } = state();
     for (const comment of comments.value) {
       if (!comment.linkedTo) continue;
@@ -58,8 +59,8 @@ export function createCommentOperations(
         (comment.linkedTo.type === 'table' && comment.linkedTo.entityId === tableId) ||
         (comment.linkedTo.type === 'column' && comment.linkedTo.entityId.startsWith(`${tableId}.`))
       ) {
-        comment.posX += deltaX;
-        comment.posY += deltaY;
+        comment.posX = snapToGrid(comment.posX + deltaX, gridSize);
+        comment.posY = snapToGrid(comment.posY + deltaY, gridSize);
       }
     }
   };
@@ -68,14 +69,14 @@ export function createCommentOperations(
    * Move all comments linked to a specific group by delta.
    * Called from moveGroup to keep linked comments in sync.
    */
-  const moveCommentsLinkedToGroup = (groupId: string, deltaX: number, deltaY: number) => {
+  const moveCommentsLinkedToGroup = (groupId: string, deltaX: number, deltaY: number, gridSize: number) => {
     const { comments } = state();
     for (const comment of comments.value) {
       if (!comment.linkedTo) continue;
 
       if (comment.linkedTo.type === 'group' && comment.linkedTo.entityId === groupId) {
-        comment.posX += deltaX;
-        comment.posY += deltaY;
+        comment.posX = snapToGrid(comment.posX + deltaX, gridSize);
+        comment.posY = snapToGrid(comment.posY + deltaY, gridSize);
       }
     }
   };

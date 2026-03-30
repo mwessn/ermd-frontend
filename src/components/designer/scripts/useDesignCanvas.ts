@@ -7,7 +7,7 @@ import { storeToRefs } from "pinia";
 import { useSettingsStore } from "@/store/settings.ts";
 import { useNotificationStore } from "@/store/ui/notifications.ts";
 import { cloneDeep } from "lodash-es";
-import { ZOOM_SHIFT_MULTIPLIER, ZOOM_STEP, ZOOM_MIN, ZOOM_MAX } from "@/types/constants.ts";
+import { ZOOM_SHIFT_MULTIPLIER, ZOOM_STEP, ZOOM_MIN, ZOOM_MAX, GRID_SNAP_SIZE } from "@/types/constants.ts";
 import i18n from "@/utils/i18n.ts";
 
 export interface CursorPos {
@@ -271,7 +271,8 @@ export function useDesignCanvas() {
           lastSelectedPos.value = { x: table.posX, y: table.posY };
         }
         designStore.moveSelectedTable(deltaX, deltaY);
-        designStore.moveCommentsLinkedToTable(table.id, deltaX, deltaY);
+        const commentGridSize = currentSettings.value.snapToGrid ? GRID_SNAP_SIZE : 1;
+        designStore.moveCommentsLinkedToTable(table.id, deltaX, deltaY, commentGridSize);
       }
     }
 

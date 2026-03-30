@@ -12,7 +12,7 @@
       :style="{
         top: comment.posY + 'px',
         left: comment.posX + 'px',
-        zIndex: isSelected ? 60 : 50
+        zIndex: isSelected ? 85 : 80
       }"
     >
       <!-- Header -->
