@@ -140,7 +140,7 @@
     "headerCopy": "There has been over a year since the last update; I want to get back to this project eventually, but currently just don't have the time. For now, the git repo is made public - contributions are welcome (except AI-generated contributions which will be rejected)."
   },
   "messages": {
-    "dbTypeChange": "You are about to change the database engine. ERMD will try its best with type coercion for the existing tables, but some data may be lost. Please confirm whether you want to continue.",
+    "dbTypeChange": "(Note: this currently does not work - clicking 'Confirm' wouldn't do anything) You are about to change the database engine. ERMD will try its best with type coercion for the existing tables, but some data may be lost. Please confirm whether you want to continue.",
     "newProjectConfirm": "Creating a new project will permanently delete all existing data. Please confirm you want to proceed."
   },
   "notifications": {

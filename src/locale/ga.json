@@ -140,7 +140,7 @@
     "headerCopy": "There has been over a year since the last update; I want to get back to this project eventually, but currently just don't have the time. For now, the git repo is made public - contributions are welcome (except AI-generated contributions which will be rejected)."
   },
   "messages": {
-    "dbTypeChange": "Tá tú ar tí inneall an bhunachair sonraí a athrú. Déanfaidh ERMD a dhícheall le comhéigniú cineáil do na táblaí atá ann cheana, ach d'fhéadfaí roinnt sonraí a chailliúint. Deimhnigh le do thoil ar mhaith leat leanúint ar aghaidh.",
+    "dbTypeChange": "(Nóta: níl sé seo ag obair faoi láthair - ní tharlóidh aon rud má chliceálann tú ar 'Deimhnigh') Tá tú ar tí inneall an bhunachair sonraí a athrú. Déanfaidh ERMD a dhícheall le comhéigniú cineáil do na táblaí atá ann cheana, ach d'fhéadfaí roinnt sonraí a chailliúint. Deimhnigh le do thoil ar mhaith leat leanúint ar aghaidh.",
     "newProjectConfirm": "Scriosfaidh tionscadal nua na sonraí go léir atá ann cheana go buan. Deimhnigh le do thoil gur mhaith leat leanúint ar aghaidh."
   },
   "notifications": {

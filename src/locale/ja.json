@@ -140,7 +140,7 @@
     "headerCopy": "There has been over a year since the last update; I want to get back to this project eventually, but currently just don't have the time. For now, the git repo is made public - contributions are welcome (except AI-generated contributions which will be rejected)."
   },
   "messages": {
-    "dbTypeChange": "データベースエンジンを変更しようとしています。ERMDは既存テーブルの型変換を可能な限り行いますが、一部のデータが失われる可能性があります。続行するか確認してください。",
+    "dbTypeChange": "（注：この機能は現在動作しません。「確認」をクリックしても何も起こりません）データベースエンジンを変更しようとしています。ERMDは既存テーブルの型変換を可能な限り行いますが、一部のデータが失われる可能性があります。続行するか確認してください。",
     "newProjectConfirm": "新規プロジェクトを作成すると、既存のデータがすべて完全に削除されます。続行するか確認してください。"
   },
   "notifications": {
