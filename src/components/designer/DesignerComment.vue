@@ -1,7 +1,6 @@
 <template>
     <div
       :id="`comment-${comment.id}`"
-      ref="commentRef"
       class="absolute rounded-lg overflow-hidden
             slashed-accentDarkGray text-lycheeIce
             border border-accentDarkGray"
@@ -87,7 +86,6 @@ const props = defineProps<{
 const designStore = useDesignStore();
 const actionsStore = useActionsStore();
 
-const commentRef = ref<HTMLDivElement>();
 const commentText = ref(props.comment.text);
 
 // Sync with prop changes (for undo/redo)

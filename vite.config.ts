@@ -10,35 +10,28 @@ export default defineConfig({
     vue(),
     tailwindcss(),
     VueI18nPlugin({
-      include: [path.resolve(__dirname, './src/locale/**')],
+      include: [path.resolve(import.meta.dirname, './src/locale/**')],
       compositionOnly: true,
     }),
   ],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
+      '@': path.resolve(import.meta.dirname, './src'),
     }
   },
   build: {
-    rollupOptions: {
+    rolldownOptions: {
       output: {
-        manualChunks: {
-          vue: ['vue', 'vue-router'],
-          state: ['pinia', 'pinia-plugin-persistedstate'],
-          i18n: ['vue-i18n'],
-          ui: [
-            '@fortawesome/fontawesome-svg-core',
-            '@fortawesome/free-brands-svg-icons',
-            '@fortawesome/free-solid-svg-icons',
-            '@fortawesome/vue-fontawesome',
-            'tailwindcss'
+        codeSplitting: {
+          groups: [
+            { name: 'vue', test: /node_modules[\\/](vue|vue-router|@vue)[\\/]/ },
+            { name: 'state', test: /node_modules[\\/](pinia|pinia-plugin-persistedstate)[\\/]/ },
+            { name: 'i18n', test: /node_modules[\\/](vue-i18n|@intlify)[\\/]/ },
+            { name: 'ui', test: /node_modules[\\/]@fortawesome[\\/]/ },
+            { name: 'utils', test: /node_modules[\\/]lodash-es[\\/]/ },
           ],
-          utils: ['lodash-es']
-        }
-      }
-    }
-  },
-  esbuild: {
-    logLevel: 'debug',
+        },
+      },
+    },
   },
 });
