@@ -18,7 +18,7 @@
             @enter-key="resetFocus"
           />
         </div>
-        <p>The tool is still in development, this is a staging page. What are you doing here?</p>
+        <p>{{ $t('common.headerCopy') }}</p>
       </div>
       <div
         class="cursor-pointer"

@@ -136,7 +136,8 @@
     "export": "Easpórtáil",
     "confirm": "Deimhnigh",
     "cancel": "Cealaigh",
-    "name": "Ainm"
+    "name": "Ainm",
+    "headerCopy": "There has been over a year since the last update; I want to get back to this project eventually, but currently just don't have the time. For now, the git repo is made public - contributions are welcome (except AI-generated contributions which will be rejected)."
   },
   "messages": {
     "dbTypeChange": "Tá tú ar tí inneall an bhunachair sonraí a athrú. Déanfaidh ERMD a dhícheall le comhéigniú cineáil do na táblaí atá ann cheana, ach d'fhéadfaí roinnt sonraí a chailliúint. Deimhnigh le do thoil ar mhaith leat leanúint ar aghaidh.",
