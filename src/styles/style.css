@@ -1,81 +1,141 @@
 @import "tailwindcss";
 
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
+  width: 100vw;
   min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-.card {
-  padding: 2em;
+  display: flex;
 }
 
 #app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  width: 100%;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+:root {
+  font-family: "Red Hat Display", sans-serif;
+}
+
+:root:lang(ja) {
+  font-family: "Red Hat Display", "Noto Sans JP", sans-serif;
+}
+
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: #383838;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #222222;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #4B4B4B;
+}
+
+/*
+Tailwind
+*/
+
+@theme {
+  /* Colors */
+  --color-backgroundDark: #383838;
+  --color-headerBlack: #222222;
+  --color-textColor: #DCE5E5;
+  --color-accentGray: #B0B0B0;
+  --color-accentDarkGray: #4B4B4B;
+  --color-lycheeIce: #F3E9E5;
+  --color-monolithicCyanTsunami: #0492a5;
+
+  --color-tinted: rgba(0, 0, 0, 0.4);
+
+  /* Layout */
+  --spacing-header-height: 3rem;
+  --spacing-left-menu-width: 3rem;
+  --spacing-right-menu-width: 16rem;
+
+  /* Table dimensions — synced with TABLE_HEADER_HEIGHT / TABLE_ROW_HEIGHT in constants.ts */
+  --spacing-table-header: 2.25rem; /* 36px */
+  --spacing-table-row: 1.75rem; /* 28px */
+
+  --color-notificationMessage: #41ff41;
+  --color-warningMessage: #ffcb1f;
+  --color-errorMessage: #ff3030;
+}
+
+@utility slider-thumb-* {
+  &::-webkit-slider-thumb {
+    background: --value(--color-*);
   }
-  a:hover {
-    color: #747bff;
+
+  &::-moz-range-thumb {
+    background: --value(--color-*);
   }
-  button {
-    background-color: #f9f9f9;
+}
+
+@utility radial-* {
+  background-image: radial-gradient(--value(--color-*) 1px, transparent 0);
+  background-size: 0.5rem 0.5rem;
+}
+
+@utility slashed-* {
+  background-image:
+          repeating-linear-gradient(
+            45deg,
+            transparent,
+            transparent 10px,
+            --value(--color-*) 10px,
+            --value(--color-*) 20px
+          );
+}
+
+.cursor-inherit {
+  cursor: inherit;
+}
+
+.bg-grid {
+  background-image:
+          linear-gradient(to right, var(--color-accentDarkGray) 1px, transparent 1px),
+          linear-gradient(to bottom, var(--color-accentDarkGray) 1px, transparent 1px);
+}
+
+.full {
+  width: 100%;
+  height: 100%;
+}
+
+.slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 0.8rem;
+  outline: none;
+  opacity: 0.7;
+  -webkit-transition: .2s;
+  transition: opacity .2s;
+  border-radius: 4px;
+
+  &:hover {
+    opacity: 1;
+  }
+
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 1rem;
+    height: 1rem;
+    cursor: pointer;
+    border-radius: 12px;
+  }
+
+  &::-moz-range-thumb {
+    width: 1rem;
+    height: 1rem;
+    cursor: pointer;
+    border-radius: 12px;
   }
 }

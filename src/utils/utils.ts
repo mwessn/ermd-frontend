@@ -1,0 +1,109 @@
+import { irregularPlurals } from "@/types/irregularPlurals.ts";
+
+type IdScope = 'col' | 'table' | 'relation' | 'group' | 'comment' | 'ui';
+
+export function generateId(scope: IdScope): string {
+  const random = Math.random().toString(36).substring(2, 8); // 6-char random
+  const timestamp = Date.now().toString(36); // compact timestamp
+  return `${ scope }-${ timestamp }-${ random }`;
+}
+
+export const clamp = (val: number, min: number, max: number) => Math.min(Math.max(val, min), max);
+
+export const snapToGrid = (value: number, gridSize: number) =>
+  Math.round(value / gridSize) * gridSize;
+
+export const resetFocus = () => {
+  document.body.setAttribute("tabindex", "-1");
+  document.body.focus();
+  document.body.removeAttribute("tabindex");
+};
+
+export const focusElement = (elId: string) => {
+  const el = document.getElementById(elId);
+  el?.focus();
+};
+
+export function sleep(ms: number, signal?: AbortSignal): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (signal?.aborted) {
+      reject(signal.reason);
+      return;
+    }
+
+    const timeoutId = setTimeout(resolve, ms);
+
+    signal?.addEventListener('abort', () => {
+      clearTimeout(timeoutId);
+      reject(signal.reason);
+    }, { once: true });
+  });
+}
+
+export function notBlankOrEmpty(val: string) {
+  return val.trim().length > 0;
+}
+
+/**
+ * Un-pluralizes a word by removing common English plural suffixes.
+ * Handles irregular plurals and maintains case sensitivity.
+ */
+export function unpluralize(word: string): string {
+  // Assume words shorter than 3 chars are not pluralized
+  if (!word || word.length <= 3) return word;
+
+  const lowerWord = word.toLowerCase();
+
+  // Check irregular plurals first
+  const irregularMatch = irregularPlurals[lowerWord];
+  if (irregularMatch) {
+    return preserveCase(word, irregularMatch);
+  }
+
+  // Common suffix patterns (ordered by specificity)
+  const pluralPatterns = [
+    { pattern: /(qu)ies$/i, replace: '$1y' }, // "qu" words like "queries" → "query"
+    { pattern: /([^aeiou])ies$/i, replace: '$1y' }, // "cities" → "city"
+    { pattern: /(ss|sh|ch|x|z)es$/i, replace: '$1' }, // "boxes" → "box"
+    { pattern: /([^s])s$/i, replace: '$1' }, // "cats" → "cat"
+    { pattern: /(matrices)$/i, replace: 'matrix' }, // special cases
+    { pattern: /(appendices)$/i, replace: 'appendix' }
+  ];
+
+  for (const { pattern, replace } of pluralPatterns) {
+    if (pattern.test(word)) {
+      const singular = word.replace(pattern, replace);
+      // Validate that we didn't create an invalid singular (e.g., "news" → "new")
+      if (singular !== word) return singular;
+    }
+  }
+
+  return word;
+}
+
+/** Helper to preserve original word casing */
+function preserveCase(original: string, newWord: string): string {
+  if (original === original.toUpperCase()) {
+    return newWord.toUpperCase();
+  } else if (original[0] === original[0].toUpperCase()) {
+    return newWord[0].toUpperCase() + newWord.slice(1);
+  }
+  return newWord;
+}
+
+
+// String validators
+export function nullOrEmpty(val: string | undefined): boolean {
+  return val == undefined || val.length == 0;
+}
+
+export function notNullOrEmpty(val: string | undefined): boolean {
+  return !nullOrEmpty(val);
+}
+
+export function assertDefined<ValType>(value: ValType | null | undefined, errorMessage: string | undefined = undefined): ValType {
+  if (value == null) {
+    throw new Error(errorMessage || 'Value should not be NULL.');
+  }
+  return value;
+}

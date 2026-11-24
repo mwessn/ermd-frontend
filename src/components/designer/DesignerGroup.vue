@@ -1,0 +1,179 @@
+<template>
+    <div
+      class="absolute border border-lycheeIce rounded-lg z-1 opacity-75"
+      :class="props.isTemporary ? 'min-w-0.5 min-h-0.5' : 'min-w-24 min-h-24'"
+      :style="{ top: area.posY + 'px', left: area.posX + 'px',
+                width: area.size.width + 'px', height: area.size.height + 'px',
+                background: area.color}"
+    >
+      <!--  Header  -->
+      <div
+        :id="`group-header-${area.id}`"
+        class="group-header w-full relative
+          text-lycheeIce bg-accentDarkGray p-2 flex items-center justify-between
+            rounded-t-lg"
+        :style="{ fontSize: headerFontSize + 'px' }"
+        @mousedown.left="onHeaderMouseDown"
+      >
+        <div class="flex items-center gap-2">
+          <FontAwesomeIcon
+            :icon="faPalette"
+            class="cursor-pointer hover:opacity-50"
+            :style="{ color: area.color }"
+            @mouseup.left="showColorSelector = !showColorSelector"
+
+            @mouseenter="colorSelectorIconHovered = true"
+            @mouseleave="colorSelectorIconHovered = false"
+          />
+          <DoubleClickFocusInput
+            v-model="area.name"
+
+            class="max-w-52"
+
+            :placeholder="$t('group.new')"
+
+            @value-change="onChange"
+            @enter-key="resetFocus"
+          />
+        </div>
+        <div class="flex items-center gap-4 overflow-hidden">
+          <FontAwesomeIcon
+            :icon="faTrashCan"
+            class="cursor-pointer text-accentGray hover:opacity-50"
+            @mouseup.left="deleteGroup(area)"
+          />
+          <div
+            class="h-6 w-6 bg-accentDarkGray radial-accentGray cursor-move"
+            @mousedown.left="setMovedGroup(area)"
+          />
+        </div>
+
+        <!-- Color picker -->
+        <AreaColorSelector
+          v-if="showColorSelector"
+          v-model="area.color"
+          class="absolute bottom-full left-0"
+          @focusout="onColorSelectorFocusOut"
+
+          @change="onChange"
+        />
+      </div>
+
+      <!--  Resize handle  -->
+      <div
+        class="absolute bottom-0 right-0 rounded-br-lg rounded-tl
+          h-4 w-4 bg-accentDarkGray radial-accentGray cursor-nw-resize"
+        @mousedown.left="setResizedGroup(area)"
+      />
+    </div>
+</template>
+
+<script setup lang="ts">
+import { computed, ref } from "vue";
+import type { Group } from "@/types/misc.ts";
+import { cloneDeep } from "lodash-es";
+import DoubleClickFocusInput from "@/components/core/DoubleClickFocusInput.vue";
+import { resetFocus } from "@/utils/utils.ts";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+import { faPalette, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { useDesignStore } from "@/store/design.ts";
+import { useActionsStore } from "@/store/action.ts";
+import { storeToRefs } from "pinia";
+import AreaColorSelector from "@/components/core/AreaColorSelector.vue";
+import {
+  GROUP_FONT_SIZES,
+  GROUP_DEFAULT_FONT_SIZE,
+  COMMENT_LINK_OFFSET,
+  COMMENT_WIDTH
+} from "@/types/constants.ts";
+
+const props = withDefaults(defineProps<{
+  area: Group
+  isTemporary?: boolean
+  scaleValue?: number
+  offsetX?: number
+  offsetY?: number
+}>(), {
+  isTemporary: false,
+  scaleValue: 1,
+  offsetX: 0,
+  offsetY: 0
+});
+
+const area = computed(() => props.area);
+
+const designStore = useDesignStore();
+const {
+  setResizedGroup,
+  setMovedGroup,
+  deleteGroup,
+  bufferLogGroupChange,
+  addComment,
+  linkCommentTo,
+} = designStore;
+
+const actionStore = useActionsStore();
+const { linkingComment } = storeToRefs(designStore);
+
+const oldVal = ref<Group>(cloneDeep(area.value));
+
+const headerFontSize = computed(() => {
+  for (const { maxScale, fontSize } of GROUP_FONT_SIZES) {
+    if (props.scaleValue < maxScale) return fontSize;
+  }
+  return GROUP_DEFAULT_FONT_SIZE;
+});
+
+const showColorSelector = ref<boolean>(false);
+const onChange = () => {
+  // Update values that might have been modified externally
+  oldVal.value.posX = area.value.posX;
+  oldVal.value.posY = area.value.posY;
+  oldVal.value.size = area.value.size;
+
+  bufferLogGroupChange(oldVal.value);
+  oldVal.value = cloneDeep(area.value);
+};
+
+const onHeaderMouseDown = (evt: MouseEvent) => {
+  if (actionStore.currentAction === 'comment') {
+    // Convert screen coordinates to canvas coordinates
+    const canvasX = (evt.clientX / props.scaleValue) - props.offsetX;
+    const canvasY = (evt.clientY / props.scaleValue) - props.offsetY;
+
+    const isOnLeft = canvasX < area.value.posX + area.value.size.width / 2;
+    const commentX = isOnLeft
+      ? area.value.posX - COMMENT_LINK_OFFSET - COMMENT_WIDTH
+      : area.value.posX + area.value.size.width + COMMENT_LINK_OFFSET;
+
+    addComment(commentX, canvasY, { type: 'group', entityId: area.value.id });
+
+    resetFocus();
+    actionStore.setAction(undefined);
+    evt.stopPropagation();
+    return;
+  }
+
+  if (linkingComment.value) {
+    linkCommentTo('group', area.value.id);
+    resetFocus();
+    actionStore.setAction(undefined);
+    evt.stopPropagation();
+    return;
+  }
+};
+
+const colorSelectorIconHovered = ref<boolean>(false);
+
+const onColorSelectorFocusOut = () => {
+  if (!colorSelectorIconHovered.value) {
+    showColorSelector.value = false;
+  }
+};
+</script>
+
+<style scoped>
+.group-header {
+  transition: font-size .2s ease;
+}
+</style>

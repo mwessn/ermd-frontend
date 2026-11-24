@@ -1,0 +1,53 @@
+<template>
+    <div class="absolute top-0 w-full h-header-height bg-headerBlack flex justify-between items-center px-4 text-monolithicCyanTsunami z-100">
+      <div class="flex gap-3 items-center">
+        <div
+          class="cursor-pointer"
+          tabindex="0"
+          :aria-label="$t('menu.functions.open')"
+          @keydown.enter="onClick('functions')"
+          @click="onClick('functions')"
+        >
+          <FontAwesomeIcon :icon="faBars" />
+        </div>
+        <div class="text-lycheeIce">
+          <DoubleClickFocusInput
+            v-model="projectName"
+            class="placeholder:text-accentDarkGray"
+            :placeholder="`${$t('project.name.placeholder')}...`"
+            @enter-key="resetFocus"
+          />
+        </div>
+        <p>{{ $t('common.headerCopy') }}</p>
+      </div>
+      <div
+        class="cursor-pointer"
+        tabindex="0"
+        :aria-label="$t('menu.settings.open')"
+        @keydown.enter="onClick('settings')"
+        @click="onClick('settings')"
+      >
+        <FontAwesomeIcon :icon="faCog" />
+      </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+
+import { faBars, faCog } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+import DoubleClickFocusInput from "@/components/core/DoubleClickFocusInput.vue";
+import { storeToRefs } from "pinia";
+import { useExportStore } from "@/store/export.ts";
+import { resetFocus } from "@/utils/utils.ts";
+
+const emit = defineEmits(['menuToggle']);
+
+const {
+  projectName,
+} = storeToRefs(useExportStore());
+
+const onClick = (menu: 'functions' | 'settings') => {
+  emit('menuToggle', menu);
+};
+</script>
